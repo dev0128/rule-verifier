@@ -1,0 +1,118 @@
+{
+  "finding": "F019",
+  "rule": "REME-0103900005",
+  "service": "route53",
+  "status": "reproducible",
+  "note": "route53.py:290-292 — (now - ExpirationDate).days >= int(args_[0]) 일 때만 취약. 만료된 지 N일(기본 30)이 안 된 도메인은 양호. 날짜가 고정된 케이스라 기본 인자 30 으로는 '최근 만료' 를 오래 유지할 수 없어, 버그 시나리오는 인자를 3650 으로 키워 같은 식(만료 후 경과 일수 < 인자 → 양호)을 시간과 무관하게 재현한다.",
+  "scenarios": [
+    {
+      "id": "expired-within-arg-days",
+      "role": "bug",
+      "condition": "2026-11-01 에 이미 만료된 도메인, 인자 ['3650'] (만료 후 경과 일수 < 인자)",
+      "args": [
+        "3650"
+      ],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_domain_detail": [
+              {
+                "DomainName": "expired.com",
+                "AutoRenew": false,
+                "AdminPrivacy": true,
+                "RegistrantPrivacy": true,
+                "TechPrivacy": true,
+                "ExpirationDate": "2026-11-01 00:00:00+00:00",
+                "TransferLock": true,
+                "Expiry": "2026-11-01 00:00:00+00:00",
+                "StatusList": [
+                  "clientTransferProhibited"
+                ],
+                "TagList": {}
+              }
+            ],
+            "get_hosted_zone": [],
+            "list_query_logging_configs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "항목명은 '만료된 도메인 존재 여부' — 이미 만료된 도메인은 경과 일수와 무관하게 취약. 인자를 '만료 N일 전 경고' 로 읽어도 이미 만료된 도메인은 취약"
+    },
+    {
+      "id": "expired-long-ago",
+      "role": "control",
+      "condition": "2020-01-01 에 만료된 도메인, 기본 인자 ['30']",
+      "args": [
+        "30"
+      ],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_domain_detail": [
+              {
+                "DomainName": "old.com",
+                "AutoRenew": false,
+                "AdminPrivacy": true,
+                "RegistrantPrivacy": true,
+                "TechPrivacy": true,
+                "ExpirationDate": "2020-01-01 00:00:00+00:00",
+                "TransferLock": true,
+                "Expiry": "2020-01-01 00:00:00+00:00",
+                "StatusList": [
+                  "clientTransferProhibited"
+                ],
+                "TagList": {}
+              }
+            ],
+            "get_hosted_zone": [],
+            "list_query_logging_configs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "far-future",
+      "role": "control",
+      "condition": "2099-01-01 만료 예정 도메인, 기본 인자 ['30']",
+      "args": [
+        "30"
+      ],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_domain_detail": [
+              {
+                "DomainName": "ok.com",
+                "AutoRenew": true,
+                "AdminPrivacy": true,
+                "RegistrantPrivacy": true,
+                "TechPrivacy": true,
+                "ExpirationDate": "2099-01-01 00:00:00+00:00",
+                "TransferLock": true,
+                "Expiry": "2099-01-01 00:00:00+00:00",
+                "StatusList": [
+                  "clientTransferProhibited"
+                ],
+                "TagList": {}
+              }
+            ],
+            "get_hosted_zone": [],
+            "list_query_logging_configs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

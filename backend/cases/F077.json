@@ -1,0 +1,223 @@
+{
+  "finding": "F077",
+  "rule": "REME-0100700004",
+  "service": "s3",
+  "status": "reproducible",
+  "note": "s3.py:220 — Status 가 None 일 때만 취약. get_bucket_versioning 은 Enabled|Suspended 를 돌려주는데 Suspended 를 양호로 본다.",
+  "scenarios": [
+    {
+      "id": "suspended",
+      "role": "bug",
+      "condition": "버전관리를 켰다가 일시중지한 버킷 (Status=Suspended)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "suspended",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Suspended",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Suspended 는 새 객체에 버전이 생기지 않는 상태 — Versioning 미적용과 같으므로 취약"
+    },
+    {
+      "id": "enabled",
+      "role": "control",
+      "condition": "Status=Enabled",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "enabled",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "never",
+      "role": "control",
+      "condition": "버전관리를 한 번도 설정하지 않은 버킷 (Status 없음 → None)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "never",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": null,
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

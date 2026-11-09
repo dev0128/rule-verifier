@@ -1,0 +1,157 @@
+{
+  "finding": "X005",
+  "rule": "REME-0102000001",
+  "service": "cloudformation",
+  "status": "reproducible",
+  "note": "cloudformation.py:68-78 — 리소스(Resources.<논리 ID>)가 아니라 템플릿 최상위 키를 돌며 DeletionPolicy 를 찾는다. 'Resources' dict 에는 DeletionPolicy 가 없고 문자열 값(AWSTemplateFormatVersion 등)은 else 로 바로 취약이라 모든 템플릿이 취약. :64 YAML 문자열은 cfn_flip 으로 바꾸는데 PyYAML 이 못 읽는 템플릿에서 JSONDecodeError 로 룰 전체가 N/A (0106 운영 예외 실측).",
+  "scenarios": [
+    {
+      "id": "all-retain-json",
+      "role": "bug",
+      "condition": "모든 리소스에 DeletionPolicy: Retain 을 둔 JSON 템플릿 (botocore 가 dict 로 풀어 줌)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudformation": {
+            "list_stacks": [
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/data-stack/0a1b2c3d",
+                "StackName": "data-stack",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "TemplateBody": {
+                  "AWSTemplateFormatVersion": "2010-09-09",
+                  "Description": "data stack",
+                  "Resources": {
+                    "Bucket": {
+                      "Type": "AWS::S3::Bucket",
+                      "DeletionPolicy": "Retain"
+                    },
+                    "Table": {
+                      "Type": "AWS::DynamoDB::Table",
+                      "DeletionPolicy": "Retain",
+                      "Properties": {
+                        "BillingMode": "PAY_PER_REQUEST"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "모든 리소스가 Retain 으로 유지되므로 판단기준상 양호"
+    },
+    {
+      "id": "all-retain-yaml",
+      "role": "bug",
+      "condition": "모든 리소스에 DeletionPolicy: Retain 을 둔 YAML 템플릿 (문자열 → cfn_flip)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudformation": {
+            "list_stacks": [
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/data-stack/0a1b2c3d",
+                "StackName": "data-stack",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "TemplateBody": "AWSTemplateFormatVersion: '2010-09-09'\nResources:\n  Bucket:\n    Type: AWS::S3::Bucket\n    DeletionPolicy: Retain\n  Table:\n    Type: AWS::DynamoDB::Table\n    DeletionPolicy: Retain\n"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "모든 리소스가 Retain 으로 유지되므로 양호"
+    },
+    {
+      "id": "unparseable-template",
+      "role": "bug",
+      "condition": "stack-bad: PyYAML 이 읽지 못하는 YAML 템플릿 문자열(값이 @ 로 시작) + stack-norule: Retain 없는 JSON 템플릿",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudformation": {
+            "list_stacks": [
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-bad/0a1b2c3d",
+                "StackName": "stack-bad",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "TemplateBody": "Resources:\n  Bucket:\n    Type: AWS::S3::Bucket\n    DeletionPolicy: Retain\n    Properties:\n      BucketName: @data-bucket\n"
+              },
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-norule/0a1b2c3d",
+                "StackName": "stack-norule",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "TemplateBody": {
+                  "AWSTemplateFormatVersion": "2010-09-09",
+                  "Resources": {
+                    "Bucket": {
+                      "Type": "AWS::S3::Bucket"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "stack-norule"
+        ],
+        "flag_excludes": [
+          "stack-bad"
+        ]
+      },
+      "why": "템플릿 하나를 못 읽었다고 룰 전체가 죽으면 안 된다 — 못 읽은 스택은 판정 불가(N/A)로 빼고 Retain 없는 stack-norule 은 취약"
+    },
+    {
+      "id": "no-retain",
+      "role": "control",
+      "condition": "Retain 이 없는 리소스가 있는 JSON 템플릿",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudformation": {
+            "list_stacks": [
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/s1/0a1b2c3d",
+                "StackName": "s1",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "TemplateBody": {
+                  "AWSTemplateFormatVersion": "2010-09-09",
+                  "Resources": {
+                    "Bucket": {
+                      "Type": "AWS::S3::Bucket"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

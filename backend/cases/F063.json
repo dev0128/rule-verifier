@@ -1,0 +1,140 @@
+{
+  "finding": "F063",
+  "rule": "REME-0101200001",
+  "service": "apigateway",
+  "status": "reproducible",
+  "note": "Analyze/apigateway.py:44,48-55 — v1 REST API 는 스테이지 webAclArn 이 있어도 CloudFront 배포 Origin DomainName 이 ApiEndpoint 와 같아야 양호. v1 get_rest_apis 응답에는 ApiEndpoint 가 없어 비교값이 '' → CloudFront 경유가 아닌 한(사실상 항상) 취약. 스테이지에 Web ACL 을 직접 연결한 가장 일반적인 구성이 오탐.",
+  "scenarios": [
+    {
+      "id": "v1-stage-webacl",
+      "role": "bug",
+      "condition": "리전 REST API prod 스테이지에 WAFv2 Web ACL 직접 연결 (webAclArn), CloudFront 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "webAclArn": "arn:aws:wafv2:ap-northeast-2:111122223333:regional/webacl/api-acl/11111111-2222-3333-4444-555555555555"
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "API Gateway 스테이지에 연결된 Web ACL(GetStage webAclArn)은 그 자체로 WAF 통합이다 — CloudFront 배포를 따로 둘 필요가 없다"
+    },
+    {
+      "id": "v1-no-webacl",
+      "role": "control",
+      "condition": "REST API 스테이지에 Web ACL 없음, CloudFront 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

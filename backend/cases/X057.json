@@ -1,0 +1,312 @@
+{
+  "finding": "X057",
+  "rule": "REME-0100700011",
+  "service": "s3",
+  "status": "reproducible",
+  "note": "s3.py:651-664 — Grants(ACL) 만 보고 Policy·PolicyStatus 는 보지 않는다. 버킷 정책으로 공개한 버킷(정적 웹사이트 등 흔한 형태)을 놓친다. 수집 실패 시 Grants=[] 로 채워지는 부분(Raw/Service/s3.py:441)은 collection 시나리오로 분리.",
+  "scenarios": [
+    {
+      "id": "policy-public-read",
+      "role": "bug",
+      "condition": "ACL 은 소유자만, 버킷 정책이 Principal '*' 에 s3:GetObject·s3:ListBucket 허용(PolicyStatus.IsPublic=true), 퍼블릭 액세스 차단 모두 false",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "policy-public",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "PublicRead",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": [
+                        "s3:GetObject",
+                        "s3:ListBucket"
+                      ],
+                      "Resource": [
+                        "arn:aws:s3:::b",
+                        "arn:aws:s3:::b/*"
+                      ]
+                    }
+                  ]
+                },
+                "PolicyStatus": {
+                  "IsPublic": true
+                },
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "익명 사용자가 객체 READ/LIST 를 할 수 있는 퍼블릭 버킷 — 공개 경로가 ACL 이든 정책이든 'READ(LIST) 퍼블릭 액세스 허용' 이다"
+    },
+    {
+      "id": "acl-denied",
+      "role": "collection",
+      "condition": "실제로는 AllUsers READ ACL 이 있는 버킷인데 get_bucket_acl 이 AccessDenied → Grants=[]",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "acl-denied",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "실제 ACL 은 퍼블릭 READ 이므로 취약. 수집 실패가 '권한 없음' 으로 위장돼 raw 로는 판정 불가"
+    },
+    {
+      "id": "acl-public",
+      "role": "control",
+      "condition": "AllUsers READ ACL + 퍼블릭 액세스 차단 모두 false",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "acl-public",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  },
+                  {
+                    "Grantee": {
+                      "Type": "Group",
+                      "URI": "http://acs.amazonaws.com/groups/global/AllUsers"
+                    },
+                    "Permission": "READ"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "private",
+      "role": "control",
+      "condition": "소유자 ACL 만, 정책 없음",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "private",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

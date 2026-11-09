@@ -1,0 +1,225 @@
+{
+  "finding": "F041",
+  "rule": "REME-0100500005",
+  "service": "rds",
+  "status": "reproducible",
+  "note": "rds.py:450 `if \"mysql\" or \"mariadb\" or \"oracle\" not in engine_type: flag = \"n/a\"` — 비어있지 않은 문자열 \"mysql\" 이 늘 참이라 인스턴스 경로가 실행돼도 전부 n/a. F029(DBClusters={})와 분리하려고 DBClusters 키 없는 인스턴스로 쓴다.",
+  "scenarios": [
+    {
+      "id": "mysql-no-audit-export",
+      "role": "bug",
+      "condition": "단독 mysql 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), EnabledCloudwatchLogsExports=[\"error\"]",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-mysql",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-mysql",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mysql",
+                "EngineVersion": "8.0.35",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-mysql.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:mysql",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "EnabledCloudwatchLogsExports": [
+                  "error"
+                ]
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "db-mysql"
+        ]
+      },
+      "why": "MySQL 인스턴스가 audit 로그를 내보내지 않음 → 취약. 의도된 n/a 대상(mysql·mariadb·oracle 이외 엔진)이 아니다"
+    },
+    {
+      "id": "mysql-audit-export",
+      "role": "bug",
+      "condition": "단독 mysql 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), EnabledCloudwatchLogsExports=[\"audit\"]",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-mysql",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-mysql",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mysql",
+                "EngineVersion": "8.0.35",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-mysql.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:mysql",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "EnabledCloudwatchLogsExports": [
+                  "audit"
+                ]
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "audit 로그 내보내기가 켜져 있어 양호"
+    },
+    {
+      "id": "aurora-no-export",
+      "role": "control",
+      "condition": "Aurora MySQL 클러스터, 로그 내보내기 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

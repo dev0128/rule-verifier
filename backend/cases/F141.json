@@ -1,0 +1,154 @@
+{
+  "finding": "F141",
+  "rule": "REME-0105800010",
+  "service": "ecs",
+  "status": "reproducible",
+  "note": "ecs.py:575-582 — `if not attached_volume:` 가 리스트(attached_volumes)가 아니라 루프 변수를 본다. 연결 볼륨이 없는 인스턴스(ECS Anywhere 외부 인스턴스 mi-…)가 먼저 나오면 UnboundLocalError 로 룰 전체가 죽는다.",
+  "scenarios": [
+    {
+      "id": "external-instance-first",
+      "role": "bug",
+      "condition": "클러스터에 ECS Anywhere 외부 인스턴스(mi-0123) 1개, 매칭되는 EBS 볼륨 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [],
+            "describe_clusters": [
+              {
+                "clusterName": "c1",
+                "clusterArn": "arn:aws:ecs:ap-northeast-2:111122223333:cluster/c1",
+                "status": "ACTIVE",
+                "settings": [],
+                "services": [],
+                "Tags": {},
+                "containerInstances": [
+                  {
+                    "containerInstanceArn": "arn:aws:ecs:ap-northeast-2:111122223333:container-instance/c1/1",
+                    "ec2InstanceId": "mi-0123456789abcdef0",
+                    "versionInfo": {
+                      "agentVersion": "1.89.2"
+                    },
+                    "Tags": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "ec2": {
+            "describe_volumes": []
+          }
+        }
+      },
+      "expect": {
+        "checked": 1,
+        "flag": 0
+      },
+      "why": "외부 인스턴스는 EBS 가 없어 암호화 여부를 알 수 없다 — 예외 없이 취약이 아닌 것(양호 또는 N/A)으로 처리돼야 한다"
+    },
+    {
+      "id": "ec2-encrypted",
+      "role": "control",
+      "condition": "EC2 컨테이너 인스턴스, 연결 볼륨 암호화됨",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [],
+            "describe_clusters": [
+              {
+                "clusterName": "c1",
+                "clusterArn": "arn:aws:ecs:ap-northeast-2:111122223333:cluster/c1",
+                "status": "ACTIVE",
+                "settings": [],
+                "services": [],
+                "Tags": {},
+                "containerInstances": [
+                  {
+                    "containerInstanceArn": "arn:aws:ecs:ap-northeast-2:111122223333:container-instance/c1/1",
+                    "ec2InstanceId": "i-0aaa",
+                    "versionInfo": {
+                      "agentVersion": "1.89.2"
+                    },
+                    "Tags": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "ec2": {
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-1",
+                "Encrypted": true,
+                "Attachments": [
+                  {
+                    "InstanceId": "i-0aaa",
+                    "VolumeId": "vol-1",
+                    "State": "attached"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "ec2-unencrypted",
+      "role": "control",
+      "condition": "EC2 컨테이너 인스턴스, 연결 볼륨 미암호화",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [],
+            "describe_clusters": [
+              {
+                "clusterName": "c1",
+                "clusterArn": "arn:aws:ecs:ap-northeast-2:111122223333:cluster/c1",
+                "status": "ACTIVE",
+                "settings": [],
+                "services": [],
+                "Tags": {},
+                "containerInstances": [
+                  {
+                    "containerInstanceArn": "arn:aws:ecs:ap-northeast-2:111122223333:container-instance/c1/1",
+                    "ec2InstanceId": "i-0aaa",
+                    "versionInfo": {
+                      "agentVersion": "1.89.2"
+                    },
+                    "Tags": {}
+                  }
+                ]
+              }
+            ]
+          },
+          "ec2": {
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-1",
+                "Encrypted": false,
+                "Attachments": [
+                  {
+                    "InstanceId": "i-0aaa",
+                    "VolumeId": "vol-1",
+                    "State": "attached"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

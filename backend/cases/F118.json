@@ -1,0 +1,47 @@
+{
+  "finding": "F118",
+  "rule": "REME-0106100004",
+  "service": "vpc",
+  "status": "reproducible",
+  "note": "vpc.py:214-222 — Condition 루프에서 flag 를 정해도 바로 뒤 `flag = True` 가 무조건 덮어쓴다. Condition 으로 신뢰 계정만 허용한 정책도 취약. (덧붙여 :198 의 ServiceName 필터는 'vpc' 키를 찾아 무의미, :212 는 Principal {AWS:[\"*\"]} 리스트형을 놓침)",
+  "scenarios": [
+    {
+      "id": "condition-trusted-account",
+      "role": "bug",
+      "condition": "엔드포인트 정책 Principal \"*\" Allow 이지만 Condition StringEquals aws:PrincipalAccount=111111111111, 신뢰 계정 인자 [111111111111]",
+      "args": ["111111111111"],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_endpoints": [
+        {"VpcEndpointId": "vpce-cond", "VpcEndpointType": "Gateway", "ServiceName": "com.amazonaws.ap-northeast-2.s3", "VpcId": "vpc-1",
+         "PolicyDocument": {"Version": "2008-10-17", "Statement": [
+           {"Effect": "Allow", "Principal": "*", "Action": "*", "Resource": "*",
+            "Condition": {"StringEquals": {"aws:PrincipalAccount": "111111111111"}}}]}}
+      ]}}},
+      "expect": {"verdict": "Secure", "good": 1},
+      "why": "Condition 으로 신뢰 계정의 주체만 엔드포인트를 쓸 수 있으므로 신뢰 경계가 지켜진다"
+    },
+    {
+      "id": "default-policy",
+      "role": "control",
+      "condition": "기본 엔드포인트 정책 (Principal \"*\" Allow, Condition 없음)",
+      "args": ["111111111111"],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_endpoints": [
+        {"VpcEndpointId": "vpce-open", "VpcEndpointType": "Gateway", "ServiceName": "com.amazonaws.ap-northeast-2.s3", "VpcId": "vpc-1",
+         "PolicyDocument": {"Version": "2008-10-17", "Statement": [
+           {"Effect": "Allow", "Principal": "*", "Action": "*", "Resource": "*"}]}}
+      ]}}},
+      "expect": {"verdict": "Vuln", "flag": 1}
+    },
+    {
+      "id": "specific-principal",
+      "role": "control",
+      "condition": "Principal 이 특정 계정 ARN(arn:aws:iam::111111111111:root)",
+      "args": ["111111111111"],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_endpoints": [
+        {"VpcEndpointId": "vpce-acct", "VpcEndpointType": "Gateway", "ServiceName": "com.amazonaws.ap-northeast-2.s3", "VpcId": "vpc-1",
+         "PolicyDocument": {"Version": "2008-10-17", "Statement": [
+           {"Effect": "Allow", "Principal": {"AWS": "arn:aws:iam::111111111111:root"}, "Action": "*", "Resource": "*"}]}}
+      ]}}},
+      "expect": {"verdict": "Secure", "good": 1}
+    }
+  ]
+}

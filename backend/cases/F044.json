@@ -1,0 +1,277 @@
+{
+  "finding": "F044",
+  "rule": "REME-0100500001",
+  "service": "rds",
+  "status": "reproducible",
+  "note": "rds.py:97 인스턴스 경로가 `engine_type in [\"aurora-mysql\", \"mysql\"]` 일 때만 점검하고 나머지는 n/a — 항목명(MariaDB/MySQL)과 찾는 옵션(MARIADB_AUDIT_PLUGIN)이 MariaDB 용인데 mariadb 엔진은 N/A. DBClusters={} 결함(F028)과 분리하려고 DBClusters 키 없는 인스턴스로 쓴다.",
+  "scenarios": [
+    {
+      "id": "mariadb-noaudit",
+      "role": "bug",
+      "condition": "단독 mariadb 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), 옵션 그룹에 MARIADB_AUDIT_PLUGIN 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-maria",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-maria",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mariadb",
+                "EngineVersion": "10.11.6",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-maria.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "og-maria-noaudit",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.mariadb",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [
+              {
+                "OptionGroupName": "og-maria-noaudit",
+                "EngineName": "mariadb",
+                "MajorEngineVersion": "10.11",
+                "Options": [],
+                "VpcId": "vpc-1"
+              }
+            ],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "db-maria"
+        ]
+      },
+      "why": "항목명이 MariaDB/MySQL 감사 플러그인이고 RDS MariaDB 는 MARIADB_AUDIT_PLUGIN 옵션으로 감사를 켠다 — 없으면 취약"
+    },
+    {
+      "id": "mysql-audit",
+      "role": "control",
+      "condition": "단독 mysql 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), 옵션 그룹에 MARIADB_AUDIT_PLUGIN 있음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-mysql",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-mysql",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mysql",
+                "EngineVersion": "8.0.35",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-mysql.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "og-audit",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [
+              {
+                "OptionGroupName": "og-audit",
+                "EngineName": "mysql",
+                "MajorEngineVersion": "8.0",
+                "Options": [
+                  {
+                    "OptionName": "MARIADB_AUDIT_PLUGIN",
+                    "Persistent": false,
+                    "Permanent": false,
+                    "OptionSettings": [
+                      {
+                        "Name": "SERVER_AUDIT_EVENTS",
+                        "Value": "CONNECT,QUERY"
+                      }
+                    ]
+                  }
+                ],
+                "VpcId": "vpc-1"
+              }
+            ],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "mysql-noaudit",
+      "role": "control",
+      "condition": "단독 mysql 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), 옵션 그룹에 플러그인 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-mysql",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-mysql",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mysql",
+                "EngineVersion": "8.0.35",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-mysql.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "og-noaudit",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [
+              {
+                "OptionGroupName": "og-noaudit",
+                "EngineName": "mysql",
+                "MajorEngineVersion": "8.0",
+                "Options": [],
+                "VpcId": "vpc-1"
+              }
+            ],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

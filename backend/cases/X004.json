@@ -1,0 +1,210 @@
+{
+  "finding": "X004",
+  "rule": "REME-0102000005",
+  "service": "cloudformation",
+  "status": "reproducible",
+  "note": "cloudformation.py:301-302 `if Statement[\"Action\"] == \"*\" and ...` — 인라인 정책 문이 NotAction 을 쓰면 KeyError 'Action' 으로 룰 전체가 N/A (0106 운영 예외 실측).",
+  "scenarios": [
+    {
+      "id": "deny-notaction-statement",
+      "role": "bug",
+      "condition": "stack-admin: 서비스 역할 인라인 정책 {Allow * *}, stack-guarded: 서비스 역할 인라인 정책 {Allow cloudformation:* *} + {Deny NotAction [s3:*, cloudformation:*] Resource *}",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "admin-role",
+                "Arn": "arn:aws:iam::111122223333:role/admin-role",
+                "inline_policies": [
+                  {
+                    "PolicyName": "admin-role-inline",
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": "*",
+                          "Resource": "*"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "RoleName": "guarded-role",
+                "Arn": "arn:aws:iam::111122223333:role/guarded-role",
+                "inline_policies": [
+                  {
+                    "PolicyName": "guarded-role-inline",
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": "cloudformation:*",
+                          "Resource": "*"
+                        },
+                        {
+                          "Effect": "Deny",
+                          "NotAction": [
+                            "s3:*",
+                            "cloudformation:*"
+                          ],
+                          "Resource": "*"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudformation": {
+            "list_stacks": [
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-admin/0a1b2c3d",
+                "StackName": "stack-admin",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "Stacks": [
+                  {
+                    "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-admin/0a1b2c3d",
+                    "StackName": "stack-admin",
+                    "StackStatus": "CREATE_COMPLETE",
+                    "RoleARN": "arn:aws:iam::111122223333:role/admin-role"
+                  }
+                ]
+              },
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-guarded/0a1b2c3d",
+                "StackName": "stack-guarded",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "Stacks": [
+                  {
+                    "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-guarded/0a1b2c3d",
+                    "StackName": "stack-guarded",
+                    "StackStatus": "CREATE_COMPLETE",
+                    "RoleARN": "arn:aws:iam::111122223333:role/guarded-role"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "flag_contains": [
+          "stack-admin"
+        ],
+        "flag_excludes": [
+          "stack-guarded"
+        ]
+      },
+      "why": "NotAction 은 IAM 정상 문법이라 룰이 죽으면 안 된다. *:* 를 허용한 stack-admin 만 취약, 범위를 좁힌 stack-guarded 는 양호"
+    },
+    {
+      "id": "action-only",
+      "role": "control",
+      "condition": "같은 두 스택, stack-guarded 의 역할 정책을 Action 형태로만 작성 ({Allow cloudformation:* *})",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "admin-role",
+                "Arn": "arn:aws:iam::111122223333:role/admin-role",
+                "inline_policies": [
+                  {
+                    "PolicyName": "admin-role-inline",
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": "*",
+                          "Resource": "*"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "RoleName": "guarded-role",
+                "Arn": "arn:aws:iam::111122223333:role/guarded-role",
+                "inline_policies": [
+                  {
+                    "PolicyName": "guarded-role-inline",
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": "cloudformation:*",
+                          "Resource": "*"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudformation": {
+            "list_stacks": [
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-admin/0a1b2c3d",
+                "StackName": "stack-admin",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "Stacks": [
+                  {
+                    "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-admin/0a1b2c3d",
+                    "StackName": "stack-admin",
+                    "StackStatus": "CREATE_COMPLETE",
+                    "RoleARN": "arn:aws:iam::111122223333:role/admin-role"
+                  }
+                ]
+              },
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-guarded/0a1b2c3d",
+                "StackName": "stack-guarded",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "Stacks": [
+                  {
+                    "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/stack-guarded/0a1b2c3d",
+                    "StackName": "stack-guarded",
+                    "StackStatus": "CREATE_COMPLETE",
+                    "RoleARN": "arn:aws:iam::111122223333:role/guarded-role"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "stack-admin"
+        ]
+      }
+    }
+  ]
+}

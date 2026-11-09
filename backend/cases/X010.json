@@ -1,0 +1,170 @@
+{
+  "finding": "X010",
+  "rule": "REME-0100100009",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:698 `key_data[\"MaxPasswordAge\"] > int(args_[0])` — 만료가 켜진 비밀번호 정책이면 인자를 읽는데 None 이면 TypeError, \"\"/[] 이면 IndexError.",
+  "scenarios": [
+    {
+      "id": "args-none",
+      "role": "bug",
+      "condition": "인자 None (커스텀룰 마스터 참조) — 만료 사용, MaxPasswordAge=60",
+      "args": null,
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 60,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "인자가 없으면 기본값(90일)으로 판정해야 한다. 60일 만료는 기본값 이내라 양호"
+    },
+    {
+      "id": "args-empty-str",
+      "role": "bug",
+      "condition": "인자 \"\" (거버넌스 기본 룰) — 만료 사용, MaxPasswordAge=60",
+      "args": "",
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 60,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "인자가 없으면 기본값(90일)으로 판정해야 한다. 60일 만료는 기본값 이내라 양호"
+    },
+    {
+      "id": "args-empty-list",
+      "role": "bug",
+      "condition": "인자 [] (빈 리스트) — 만료 사용, MaxPasswordAge=60",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 60,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "인자가 없으면 기본값(90일)으로 판정해야 한다. 60일 만료는 기본값 이내라 양호"
+    },
+    {
+      "id": "args-none-365",
+      "role": "bug",
+      "condition": "인자 None — 만료 사용, MaxPasswordAge=365",
+      "args": null,
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 365,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "항목명 기준 90일 — 365일 만료는 취약"
+    },
+    {
+      "id": "args-default",
+      "role": "control",
+      "condition": "기본 룰셋 인자 [\"90\"] — 만료 사용, MaxPasswordAge=60",
+      "args": [
+        "90"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 60,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

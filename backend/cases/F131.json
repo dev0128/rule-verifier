@@ -1,0 +1,306 @@
+{
+  "finding": "F131",
+  "rule": "REME-0106100003",
+  "service": "vpc",
+  "status": "reproducible",
+  "note": "Analyze/vpc.py:153, 260, 369-370, 485, 532-533 — raw[region]['ec2'] / ['networkfirewall'] 를 가드 없이 접근. 한 리전이라도 수집이 비면 룰 전체 KeyError. 같은 파일 VPC-001/002/010 은 `if not ...get('ec2'): continue` 가드가 있다.",
+  "scenarios": [
+    {
+      "id": "vpc003-missing-region",
+      "role": "bug",
+      "rule": "REME-0106100003",
+      "condition": "VPC-003: ap-northeast-2 · us-east-1 에 비기본 VPC, me-south-1 은 수집이 비어 {}",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_vpcs": [
+              {
+                "VpcId": "vpc-1",
+                "IsDefault": false
+              }
+            ]
+          }
+        },
+        "us-east-1": {
+          "ec2": {
+            "describe_vpcs": [
+              {
+                "VpcId": "vpc-2",
+                "IsDefault": false
+              }
+            ]
+          }
+        },
+        "me-south-1": {}
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "수집이 빈 리전은 건너뛰고 나머지로 판정해야 한다 — 두 리전에 비기본 VPC 가 있으므로 다중 리전 양호"
+    },
+    {
+      "id": "vpc005-missing-region",
+      "role": "bug",
+      "rule": "REME-0106100005",
+      "condition": "VPC-005: 상대 VPC 전체 CIDR 을 라우팅하는 피어링 1개, me-south-1 은 {}",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_vpc_peering_connections": [
+              {
+                "VpcPeeringConnectionId": "pcx-wide",
+                "RequesterVpcInfo": {
+                  "CidrBlock": "10.0.0.0/16",
+                  "VpcId": "vpc-a"
+                },
+                "AccepterVpcInfo": {
+                  "CidrBlock": "172.30.0.0/16",
+                  "VpcId": "vpc-b"
+                },
+                "RouteTables": [
+                  {
+                    "RouteTableId": "rtb-1",
+                    "VpcId": "vpc-a",
+                    "Routes": [
+                      {
+                        "DestinationCidrBlock": "172.30.0.0/16",
+                        "VpcPeeringConnectionId": "pcx-wide",
+                        "State": "active"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "me-south-1": {}
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "빈 리전은 건너뛰고 피어링을 판정 — 상대 VPC 전체 대역 경로이므로 취약"
+    },
+    {
+      "id": "vpc006-missing-region",
+      "role": "bug",
+      "rule": "REME-0106100006",
+      "condition": "VPC-006: 서브넷이 두 AZ 에 있는 VPC, me-south-1 은 {}",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_vpcs": [
+              {
+                "VpcId": "vpc-multi",
+                "IsDefault": false
+              }
+            ],
+            "describe_subnets": [
+              {
+                "VpcId": "vpc-multi",
+                "SubnetId": "subnet-1",
+                "AvailabilityZone": "ap-northeast-2a"
+              },
+              {
+                "VpcId": "vpc-multi",
+                "SubnetId": "subnet-2",
+                "AvailabilityZone": "ap-northeast-2c"
+              }
+            ]
+          }
+        },
+        "me-south-1": {}
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "빈 리전은 건너뛰고 판정 — 두 AZ 에 서브넷이 있으므로 양호"
+    },
+    {
+      "id": "vpc008-missing-region",
+      "role": "bug",
+      "rule": "REME-0106100008",
+      "condition": "VPC-008: 자동 공개 IP 할당이 켜진 서브넷 1개, me-south-1 은 {}",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_subnets": [
+              {
+                "VpcId": "vpc-1",
+                "SubnetId": "subnet-pub",
+                "AvailabilityZone": "ap-northeast-2a",
+                "MapPublicIpOnLaunch": true
+              }
+            ]
+          }
+        },
+        "me-south-1": {}
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "빈 리전은 건너뛰고 판정 — MapPublicIpOnLaunch=true 이므로 취약"
+    },
+    {
+      "id": "vpc009-missing-region",
+      "role": "bug",
+      "rule": "REME-0106100009",
+      "condition": "VPC-009: 네트워크 방화벽이 있는 VPC, me-south-1 은 {}",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_vpcs": [
+              {
+                "VpcId": "vpc-fw",
+                "IsDefault": false
+              }
+            ]
+          },
+          "networkfirewall": {
+            "list_firewalls": [
+              {
+                "FirewallName": "fw-1",
+                "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1",
+                "Firewall": {
+                  "FirewallName": "fw-1",
+                  "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1",
+                  "VpcId": "vpc-fw",
+                  "FirewallId": "fwid-1"
+                }
+              }
+            ]
+          }
+        },
+        "me-south-1": {}
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "빈 리전은 건너뛰고 판정 — 방화벽이 있으므로 양호"
+    },
+    {
+      "id": "vpc009-missing-networkfirewall",
+      "role": "bug",
+      "rule": "REME-0106100009",
+      "condition": "VPC-009: me-south-1 은 ec2 는 수집됐지만(VPC 없음) networkfirewall 키가 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_vpcs": [
+              {
+                "VpcId": "vpc-fw",
+                "IsDefault": false
+              }
+            ]
+          },
+          "networkfirewall": {
+            "list_firewalls": [
+              {
+                "FirewallName": "fw-1",
+                "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1",
+                "Firewall": {
+                  "FirewallName": "fw-1",
+                  "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1",
+                  "VpcId": "vpc-fw",
+                  "FirewallId": "fwid-1"
+                }
+              }
+            ]
+          }
+        },
+        "me-south-1": {
+          "ec2": {
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "networkfirewall 수집이 빠진 리전도 건너뛰고 판정해야 한다"
+    },
+    {
+      "id": "vpc008-all-regions-collected",
+      "role": "control",
+      "rule": "REME-0106100008",
+      "condition": "VPC-008: 같은 서브넷, 빈 리전 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_subnets": [
+              {
+                "VpcId": "vpc-1",
+                "SubnetId": "subnet-pub",
+                "AvailabilityZone": "ap-northeast-2a",
+                "MapPublicIpOnLaunch": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "vpc009-all-regions-collected",
+      "role": "control",
+      "rule": "REME-0106100009",
+      "condition": "VPC-009: 같은 방화벽, 빈 리전 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_vpcs": [
+              {
+                "VpcId": "vpc-fw",
+                "IsDefault": false
+              }
+            ]
+          },
+          "networkfirewall": {
+            "list_firewalls": [
+              {
+                "FirewallName": "fw-1",
+                "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1",
+                "Firewall": {
+                  "FirewallName": "fw-1",
+                  "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1",
+                  "VpcId": "vpc-fw",
+                  "FirewallId": "fwid-1"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

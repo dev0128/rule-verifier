@@ -1,0 +1,99 @@
+{
+  "finding": "F002",
+  "rule": "REME-0103600001",
+  "service": "guardduty",
+  "status": "reproducible",
+  "note": "guardduty.py:38-40 `result[\"checked_items\"] += 1` 다음에 `if not json_given[\"raw\"][region].get(service_name): continue` — guardduty 수집 결과가 없는 리전은 점검 건수만 올라가고 결과 항목은 없다. 다른 룰처럼 수집 결과 없는 리전은 세지 않는 것을 올바른 결과로 잡았다.",
+  "scenarios": [
+    {
+      "id": "region-without-guardduty-raw",
+      "role": "bug",
+      "condition": "리전 2개 — ap-northeast-2 는 활성 탐지기, us-east-1 은 guardduty 수집 결과 자체가 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "guardduty": {
+            "get_detector": [
+              {
+                "DetectorId": "d1",
+                "Status": "ENABLED"
+              }
+            ]
+          }
+        },
+        "us-east-1": {
+          "ec2": {}
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 1,
+        "good": 1,
+        "flag": 0
+      },
+      "why": "점검 건수는 판정한 항목 수(flag+good+n/a)와 같아야 한다 — 판정하지 않은 리전을 점검 건수에 넣으면 집계가 어긋난다"
+    },
+    {
+      "id": "two-regions",
+      "role": "control",
+      "condition": "리전 2개 모두 활성 탐지기",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "guardduty": {
+            "get_detector": [
+              {
+                "DetectorId": "d1",
+                "Status": "ENABLED"
+              }
+            ]
+          }
+        },
+        "us-east-1": {
+          "guardduty": {
+            "get_detector": [
+              {
+                "DetectorId": "d2",
+                "Status": "ENABLED"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 2,
+        "good": 2
+      }
+    },
+    {
+      "id": "one-region-no-detector",
+      "role": "control",
+      "condition": "리전 2개 — 한 곳은 탐지기 없음 (get_detector=[])",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "guardduty": {
+            "get_detector": [
+              {
+                "DetectorId": "d1",
+                "Status": "ENABLED"
+              }
+            ]
+          }
+        },
+        "us-east-1": {
+          "guardduty": {
+            "get_detector": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "good": 1,
+        "flag": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "finding": "F013",
+  "rule": "REME-0100100012",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "Raw/iam.py:79 list_policies 를 OnlyAttached=True 로 수집 → 어디에도 붙지 않은 SecurityAudit 은 목록에 없다. iam.py:877-879 는 목록에서 SecurityAudit 을 못 찾으면 아무 행도 남기지 않아 점검 0건(N/A). OnlyAttached 목록에 없다는 것 자체가 '미부착' 이라는 정보이므로 룰에서 고칠 수 있다(bug).",
+  "scenarios": [
+    {
+      "id": "security-audit-not-attached",
+      "role": "bug",
+      "condition": "SecurityAudit 이 어떤 주체에도 붙어 있지 않음 — OnlyAttached 목록에 다른 정책(AdministratorAccess)만 있음",
+      "args": [],
+      "raw": {"globals": {"iam": {"list_policies": [
+        {"PolicyName": "AdministratorAccess", "PolicyId": "ANPAADMIN", "Arn": "arn:aws:iam::aws:policy/AdministratorAccess", "DefaultVersionId": "v1", "AttachmentCount": 1,
+         "policies_detail": {"entities_policy": {"PolicyGroups": [], "PolicyUsers": [], "PolicyRoles": [{"RoleName": "admin-role"}]}}}
+      ]}}},
+      "expect": {"verdict": "Vuln", "flag": 1},
+      "why": "보안 감사용 역할(SecurityAudit 연결 역할)이 없는 계정이 바로 이 항목의 취약 상태다. 점검 0건 N/A 가 아니라 취약이어야 한다"
+    },
+    {
+      "id": "attached-to-role",
+      "role": "control",
+      "condition": "SecurityAudit 이 역할에 연결됨 (entities_policy.PolicyRoles 1개)",
+      "args": [],
+      "raw": {"globals": {"iam": {"list_policies": [
+        {"PolicyName": "SecurityAudit", "PolicyId": "ANPASECAUDIT", "Arn": "arn:aws:iam::aws:policy/SecurityAudit", "DefaultVersionId": "v1", "AttachmentCount": 1,
+         "policies_detail": {"entities_policy": {"PolicyGroups": [], "PolicyUsers": [], "PolicyRoles": [{"RoleName": "audit-role"}]}}}
+      ]}}},
+      "expect": {"verdict": "Secure", "good": 1}
+    },
+    {
+      "id": "attached-to-user-only",
+      "role": "control",
+      "condition": "SecurityAudit 이 사용자에게만 연결되고 역할에는 없음",
+      "args": [],
+      "raw": {"globals": {"iam": {"list_policies": [
+        {"PolicyName": "SecurityAudit", "PolicyId": "ANPASECAUDIT", "Arn": "arn:aws:iam::aws:policy/SecurityAudit", "DefaultVersionId": "v1", "AttachmentCount": 1,
+         "policies_detail": {"entities_policy": {"PolicyGroups": [], "PolicyUsers": [{"UserName": "auditor"}], "PolicyRoles": []}}}
+      ]}}},
+      "expect": {"verdict": "Vuln", "flag": 1}
+    }
+  ]
+}

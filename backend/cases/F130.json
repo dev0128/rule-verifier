@@ -1,0 +1,48 @@
+{
+  "finding": "F130",
+  "rule": "REME-0106100010",
+  "service": "vpc",
+  "status": "reproducible",
+  "note": "Raw/vpc.py:99-100 — describe_flow_logs 실패 시 get_response 가 {} 를 돌려 response['FlowLogs'] KeyError, describe_vpcs 메서드가 그 VPC 에서 중단된다. VPC 목록은 루프 전에 저장(:123)돼 남지만 실패한 VPC 와 그 뒤 VPC 에는 FlowLogs 키가 없다. 룰(Analyze/vpc.py:605)은 `key_data == []` 만 취약이라 None 을 양호로 센다. 룰이 키 없음을 N/A 로 빼는 것까지는 고칠 수 있지만(bug), 실제 Flow Log 유무는 재수집해야 안다(collection).",
+  "scenarios": [
+    {
+      "id": "flowlogs-missing-key",
+      "role": "bug",
+      "condition": "VPC 2개 — vpc-ok 는 FlowLogs 수집됨(1건), vpc-failed 는 DescribeFlowLogs 실패로 FlowLogs 키 없음",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpcs": [
+        {"VpcId": "vpc-ok", "IsDefault": false, "FlowLogs": [{"FlowLogId": "fl-1", "ResourceId": "vpc-ok", "FlowLogStatus": "ACTIVE", "TrafficType": "ALL"}]},
+        {"VpcId": "vpc-failed", "IsDefault": false}
+      ]}}},
+      "expect": {"checked": 2, "flag": 0, "good": 1, "na": 1, "na_contains": ["vpc-failed"]},
+      "why": "Flow Log 조회에 실패한 VPC 는 활성화 여부를 알 수 없으므로 양호가 아니라 N/A 로 빼야 한다"
+    },
+    {
+      "id": "flowlogs-lost-actually-none",
+      "role": "collection",
+      "condition": "실제로는 Flow Log 가 없는 VPC 인데 DescribeFlowLogs 가 실패(권한 없음)해 FlowLogs 키가 없음",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpcs": [
+        {"VpcId": "vpc-nolog", "IsDefault": false}
+      ]}}},
+      "expect": {"verdict": "Vuln", "flag": 1},
+      "why": "실제 리소스 기준으로 Flow Log 가 없으므로 취약. 수집 결과에 정보가 없어 룰만으로는 판정할 수 없다 — 수집 수정 후 재수집 필요"
+    },
+    {
+      "id": "flowlogs-empty",
+      "role": "control",
+      "condition": "FlowLogs 수집 성공, 빈 리스트",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpcs": [{"VpcId": "vpc-none", "IsDefault": false, "FlowLogs": []}]}}},
+      "expect": {"verdict": "Vuln", "flag": 1}
+    },
+    {
+      "id": "flowlogs-present",
+      "role": "control",
+      "condition": "FlowLogs 1건",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpcs": [{"VpcId": "vpc-ok", "IsDefault": false, "FlowLogs": [{"FlowLogId": "fl-1", "ResourceId": "vpc-ok", "FlowLogStatus": "ACTIVE", "TrafficType": "ALL"}]}]}}},
+      "expect": {"verdict": "Secure", "good": 1}
+    }
+  ]
+}

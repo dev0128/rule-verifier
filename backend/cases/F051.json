@@ -1,0 +1,259 @@
+{
+  "finding": "F051",
+  "rule": "REME-0101800003",
+  "service": "autoscaling",
+  "status": "reproducible",
+  "note": "Raw/Service/autoscaling.py:72-91 — ASG 최상위 LaunchTemplate 이 있을 때만 시작 템플릿 버전을 붙이고, MixedInstancesPolicy·LaunchConfiguration ASG 는 LaunchTemplate={LaunchTemplateVersions:{}}. Analyze autoscaling.py:153-155 는 NetworkInterfaces 가 없으면 취약. 템플릿 데이터는 ec2.describe_launch_templates[].LaunchTemplateVersions, 시작 구성은 autoscaling.describe_launch_configurations 에 수집돼 있어 룰에서 대조할 수 있다(bug).",
+  "scenarios": [
+    {
+      "id": "mixed-instances-policy",
+      "role": "bug",
+      "condition": "MixedInstancesPolicy ASG(EKS 관리형 노드그룹 형태) — 참조하는 시작 템플릿 lt-0b2 v1 은 AssociatePublicIpAddress=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-mip",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-mip",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "MixedInstancesPolicy": {
+                  "LaunchTemplate": {
+                    "LaunchTemplateSpecification": {
+                      "LaunchTemplateId": "lt-0b2",
+                      "LaunchTemplateName": "lt-0b2-name",
+                      "Version": "1"
+                    },
+                    "Overrides": [
+                      {
+                        "InstanceType": "m5.large"
+                      }
+                    ]
+                  },
+                  "InstancesDistribution": {
+                    "OnDemandBaseCapacity": 0,
+                    "OnDemandPercentageAboveBaseCapacity": 100
+                  }
+                },
+                "LaunchTemplate": {
+                  "LaunchTemplateVersions": {}
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          },
+          "ec2": {
+            "describe_launch_templates": [
+              {
+                "LaunchTemplateId": "lt-0b2",
+                "LaunchTemplateName": "lt-0b2-name",
+                "DefaultVersionNumber": 1,
+                "LatestVersionNumber": 1,
+                "Tags": {},
+                "LaunchTemplateVersions": [
+                  {
+                    "LaunchTemplateId": "lt-0b2",
+                    "LaunchTemplateName": "lt-0b2-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "NetworkInterfaces": [
+                        {
+                          "DeviceIndex": 0,
+                          "AssociatePublicIpAddress": false,
+                          "Groups": [
+                            "sg-1"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
+            "describe_instances": [],
+            "describe_addresses": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "실제 시작 템플릿이 공용 IP 연결을 끄고 있으므로 양호 — 템플릿을 조회하지 않았다는 이유로 취약이면 안 된다"
+    },
+    {
+      "id": "launch-configuration",
+      "role": "bug",
+      "condition": "LaunchConfiguration ASG — 시작 구성 AssociatePublicIpAddress=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-lc",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-lc",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchConfigurationName": "lc-web",
+                "LaunchTemplate": {
+                  "LaunchTemplateVersions": {}
+                }
+              }
+            ],
+            "describe_launch_configurations": [
+              {
+                "LaunchConfigurationName": "lc-web",
+                "LaunchConfigurationARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:launchConfiguration:x:launchConfigurationName/lc-web",
+                "ImageId": "ami-0abc",
+                "InstanceType": "t3.micro",
+                "SecurityGroups": [
+                  "sg-1"
+                ],
+                "UserData": "",
+                "BlockDeviceMappings": [],
+                "AssociatePublicIpAddress": false
+              }
+            ]
+          },
+          "ec2": {
+            "describe_launch_templates": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "시작 구성이 공용 IP 를 연결하지 않으므로 양호"
+    },
+    {
+      "id": "lt-public-ip-on",
+      "role": "control",
+      "condition": "LaunchTemplate ASG — 템플릿 NetworkInterfaces[0].AssociatePublicIpAddress=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-web",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-web",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "NetworkInterfaces": [
+                        {
+                          "DeviceIndex": 0,
+                          "AssociatePublicIpAddress": true,
+                          "Groups": [
+                            "sg-1"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "lt-public-ip-off",
+      "role": "control",
+      "condition": "LaunchTemplate ASG — 템플릿 NetworkInterfaces[0].AssociatePublicIpAddress=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-web",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-web",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "NetworkInterfaces": [
+                        {
+                          "DeviceIndex": 0,
+                          "AssociatePublicIpAddress": false,
+                          "Groups": [
+                            "sg-1"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

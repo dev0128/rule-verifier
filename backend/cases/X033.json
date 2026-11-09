@@ -1,0 +1,605 @@
+{
+  "finding": "X033",
+  "rule": "REME-0100900002",
+  "service": "cloudfront",
+  "status": "reproducible",
+  "note": "cloudfront.py:149-167 — 버킷 정책 Statement 를 문자열 완전 일치로 본다: Action == 's3:GetObject'(리스트면 실패), Condition.StringEquals['AWS:SourceArn'](ArnLike 등 다른 연산자면 실패), OAI 는 `oai_id in Principal.AWS`(리스트면 원소 완전 일치라 실패). :125 버킷명을 DomainName.split('.')[0] 으로 뽑아 점이 든 버킷명을 못 찾는다(CDN-010 :787 도 같음).",
+  "scenarios": [
+    {
+      "id": "oac-action-list",
+      "role": "bug",
+      "condition": "OAC 오리진, 버킷 정책이 올바르지만 Action 을 리스트 [\"s3:GetObject\"] 로 씀",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EOACLIST",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EOACLIST",
+                "DomainName": "eoaclist.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "oac-bucket",
+                      "DomainName": "oac-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": "E3OAC"
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "oac-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "oac-bucket",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "AllowCloudFrontServicePrincipal",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "cloudfront.amazonaws.com"
+                      },
+                      "Action": [
+                        "s3:GetObject"
+                      ],
+                      "Resource": "arn:aws:s3:::oac-bucket/*",
+                      "Condition": {
+                        "StringEquals": {
+                          "AWS:SourceArn": "arn:aws:cloudfront::111111111111:distribution/EOACLIST"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "OAC 가 설정되고 버킷 정책이 이 배포의 CloudFront 서비스 주체에게만 GetObject 를 허용한다 — 리스트 표기는 같은 의미"
+    },
+    {
+      "id": "oac-arnlike",
+      "role": "bug",
+      "condition": "OAC 오리진, Condition 을 ArnLike AWS:SourceArn 으로 씀",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EOACLIKE",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EOACLIKE",
+                "DomainName": "eoaclike.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "oac-bucket",
+                      "DomainName": "oac-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": "E3OAC"
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "oac-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "oac-bucket",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "AllowCloudFrontServicePrincipal",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "cloudfront.amazonaws.com"
+                      },
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::oac-bucket/*",
+                      "Condition": {
+                        "ArnLike": {
+                          "AWS:SourceArn": "arn:aws:cloudfront::111111111111:distribution/EOACLIKE"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "ArnLike 로도 이 배포 ARN 으로 제한되므로 같은 효과"
+    },
+    {
+      "id": "oai-principal-list",
+      "role": "bug",
+      "condition": "OAI 오리진, 버킷 정책 Principal.AWS 를 리스트로 씀",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EOAILIST",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EOAILIST",
+                "DomainName": "eoailist.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "oai-bucket",
+                      "DomainName": "oai-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": "origin-access-identity/cloudfront/E2OAI"
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "oai-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "oai-bucket",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "OAI",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": [
+                          "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity E2OAI"
+                        ]
+                      },
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::oai-bucket/*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "OAI 주체에게만 GetObject 를 허용하는 정책 — 리스트 표기는 같은 의미"
+    },
+    {
+      "id": "oac-dotted-bucket",
+      "role": "bug",
+      "condition": "OAC 오리진, 버킷명에 점이 있음(static.example.com), 버킷 정책은 올바름",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EOACDOT",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EOACDOT",
+                "DomainName": "eoacdot.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "static.example.com",
+                      "DomainName": "static.example.com.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": "E3OAC"
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "static.example.com",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "static.example.com",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "AllowCloudFrontServicePrincipal",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "cloudfront.amazonaws.com"
+                      },
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::static.example.com/*",
+                      "Condition": {
+                        "StringEquals": {
+                          "AWS:SourceArn": "arn:aws:cloudfront::111111111111:distribution/EOACDOT"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "버킷명은 도메인의 '.s3.' 앞 전체 — 버킷을 찾으면 정책이 올바르다"
+    },
+    {
+      "id": "cdn010-dotted-bucket",
+      "role": "bug",
+      "rule": "REME-0100900010",
+      "condition": "CDN-010: S3 오리진 버킷명에 점이 있음(static.example.com), 버킷은 존재",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EDOT10",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EDOT10",
+                "DomainName": "edot10.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "static.example.com",
+                      "DomainName": "static.example.com.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "static.example.com",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "static.example.com",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "참조한 버킷이 계정에 존재하므로 양호"
+    },
+    {
+      "id": "oac-exact",
+      "role": "control",
+      "condition": "OAC 오리진, 콘솔이 만들어 주는 정책 그대로(Action 문자열, StringEquals AWS:SourceArn)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EOACOK",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EOACOK",
+                "DomainName": "eoacok.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "oac-bucket",
+                      "DomainName": "oac-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": "E3OAC"
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "oac-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "oac-bucket",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "AllowCloudFrontServicePrincipal",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "cloudfront.amazonaws.com"
+                      },
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::oac-bucket/*",
+                      "Condition": {
+                        "StringEquals": {
+                          "AWS:SourceArn": "arn:aws:cloudfront::111111111111:distribution/EOACOK"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "oai-exact",
+      "role": "control",
+      "condition": "OAI 오리진, Principal.AWS 문자열",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EOAIOK",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EOAIOK",
+                "DomainName": "eoaiok.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "oai-bucket",
+                      "DomainName": "oai-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": "origin-access-identity/cloudfront/E2OAI"
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "oai-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "oai-bucket",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "OAI",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity E2OAI"
+                      },
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::oai-bucket/*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "no-oai-oac",
+      "role": "control",
+      "condition": "S3 오리진에 OAI · OAC 둘 다 없음",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "ENONE",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/ENONE",
+                "DomainName": "enone.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "pub-bucket",
+                      "DomainName": "pub-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "pub-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "pub-bucket",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

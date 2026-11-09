@@ -1,0 +1,334 @@
+{
+  "finding": "X028",
+  "rule": "REME-0105900003",
+  "service": "eks",
+  "status": "reproducible",
+  "note": "Analyze/eks.py:204-212 — FlowLogs 기본값이 False 이고 FlowLogs == [] 일 때만 취약. 클러스터 VPC 가 describe_vpcs 에 없거나(수집 실패) VPC 에 FlowLogs 키가 없으면(Raw/vpc.py:99-100 describe_flow_logs 실패 시 KeyError 로 이후 VPC 누락) 양호로 빠진다. raw 에 '정보 없음' 이 드러나므로 룰에서 N/A 처리 가능 → bug.",
+  "scenarios": [
+    {
+      "id": "vpc-not-collected",
+      "role": "bug",
+      "condition": "클러스터 VPC(vpc-1)가 describe_vpcs 에 없음 (VPC 수집 실패 · 빈 목록)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "na": 1,
+        "good": 0,
+        "flag": 0
+      },
+      "why": "흐름 로그 여부를 알 수 없으므로 양호가 아니라 판단 불가(N/A)여야 한다"
+    },
+    {
+      "id": "flowlogs-key-missing",
+      "role": "bug",
+      "condition": "VPC 는 있으나 FlowLogs 키 없음 (describe_flow_logs 권한 거부 → 수집 중단)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": [
+              {
+                "VpcId": "vpc-1",
+                "CidrBlock": "10.0.0.0/16",
+                "IsDefault": false,
+                "State": "available",
+                "OwnerId": "111122223333",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "na": 1,
+        "good": 0,
+        "flag": 0
+      },
+      "why": "흐름 로그 조회에 실패했으므로 판단 불가(N/A)"
+    },
+    {
+      "id": "no-flowlogs",
+      "role": "control",
+      "condition": "VPC FlowLogs=[] (흐름 로그 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": [
+              {
+                "VpcId": "vpc-1",
+                "CidrBlock": "10.0.0.0/16",
+                "IsDefault": false,
+                "State": "available",
+                "OwnerId": "111122223333",
+                "Tags": {},
+                "FlowLogs": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "flowlogs-active",
+      "role": "control",
+      "condition": "VPC 에 ACTIVE 흐름 로그 1개",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": [
+              {
+                "VpcId": "vpc-1",
+                "CidrBlock": "10.0.0.0/16",
+                "IsDefault": false,
+                "State": "available",
+                "OwnerId": "111122223333",
+                "Tags": {},
+                "FlowLogs": [
+                  {
+                    "FlowLogId": "fl-1",
+                    "FlowLogStatus": "ACTIVE",
+                    "ResourceId": "vpc-1",
+                    "TrafficType": "ALL",
+                    "LogDestinationType": "cloud-watch-logs",
+                    "LogGroupName": "vpc-flow",
+                    "Tags": {}
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

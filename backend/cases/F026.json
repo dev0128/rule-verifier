@@ -1,0 +1,231 @@
+{
+  "finding": "F026",
+  "rule": "REME-0100100013",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "(1) Raw/iam.py:138-141 get_policy_version 이 정책 하나에서 실패하면 item.update({}) 로 Document 가 없다 → iam.py:1129-1137 `{}[\"Statement\"]` KeyError 로 룰 전체 중단. (2) iam.py:1179-1203 은 정확한 액션 이름 · `서비스:*` · `*` 만 매칭 — `iam:Create*` 같은 부분 와일드카드와 Allow+NotAction 은 놓친다.",
+  "scenarios": [
+    {
+      "id": "document-missing-one-policy",
+      "role": "bug",
+      "condition": "고객 관리형 정책 2개 — 하나는 get_policy_version 실패로 Document 없음, 다른 하나는 iam:PassRole+ec2:RunInstances 허용",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_policies": [
+              {
+                "PolicyName": "version-failed",
+                "PolicyId": "ANPAVERSIONFAILED",
+                "Arn": "arn:aws:iam::111111111111:policy/version-failed",
+                "Path": "/",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "CreateDate": "2020-01-01 00:00:00+00:00"
+              },
+              {
+                "PolicyName": "passrole-ec2",
+                "PolicyId": "ANPAPASSROLEEC2",
+                "Arn": "arn:aws:iam::111111111111:policy/passrole-ec2",
+                "Path": "/",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "Document": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "iam:PassRole",
+                        "ec2:RunInstances"
+                      ],
+                      "Resource": "*"
+                    }
+                  ]
+                },
+                "VersionId": "v1",
+                "IsDefaultVersion": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "passrole-ec2"
+        ]
+      },
+      "why": "조회 실패한 정책은 판정에서 빼고(N/A) 나머지 정책은 정상 판정해야 한다 — PassRole+RunInstances 는 권한 상승 조합"
+    },
+    {
+      "id": "partial-wildcard-create",
+      "role": "bug",
+      "condition": "고객 관리형 정책 Allow Action=iam:Create* (iam:CreatePolicyVersion·CreateAccessKey·CreateLoginProfile 포함)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_policies": [
+              {
+                "PolicyName": "iam-create-star",
+                "PolicyId": "ANPAIAMCREATESTAR",
+                "Arn": "arn:aws:iam::111111111111:policy/iam-create-star",
+                "Path": "/",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "Document": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": "iam:Create*",
+                      "Resource": "*"
+                    }
+                  ]
+                },
+                "VersionId": "v1",
+                "IsDefaultVersion": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "iam:Create* 는 iam:CreatePolicyVersion 등 권한 상승 액션을 포함한다(IAM 와일드카드 매칭)"
+    },
+    {
+      "id": "allow-notaction",
+      "role": "bug",
+      "condition": "고객 관리형 정책 Allow NotAction=s3:* Resource=* (s3 외 전부 허용 → iam:* 포함)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_policies": [
+              {
+                "PolicyName": "notaction-s3",
+                "PolicyId": "ANPANOTACTIONS3",
+                "Arn": "arn:aws:iam::111111111111:policy/notaction-s3",
+                "Path": "/",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "Document": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "NotAction": "s3:*",
+                      "Resource": "*"
+                    }
+                  ]
+                },
+                "VersionId": "v1",
+                "IsDefaultVersion": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Allow + NotAction 은 나열된 것 외 모든 액션을 허용하므로 iam:* 권한 상승이 가능"
+    },
+    {
+      "id": "passrole-ec2",
+      "role": "control",
+      "condition": "고객 관리형 정책 Allow iam:PassRole + ec2:RunInstances",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_policies": [
+              {
+                "PolicyName": "passrole-ec2",
+                "PolicyId": "ANPAPASSROLEEC2",
+                "Arn": "arn:aws:iam::111111111111:policy/passrole-ec2",
+                "Path": "/",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "Document": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "iam:PassRole",
+                        "ec2:RunInstances"
+                      ],
+                      "Resource": "*"
+                    }
+                  ]
+                },
+                "VersionId": "v1",
+                "IsDefaultVersion": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "s3-read-only",
+      "role": "control",
+      "condition": "고객 관리형 정책 Allow s3:GetObject 만",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_policies": [
+              {
+                "PolicyName": "s3-read",
+                "PolicyId": "ANPAS3READ",
+                "Arn": "arn:aws:iam::111111111111:policy/s3-read",
+                "Path": "/",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "Document": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::b/*"
+                    }
+                  ]
+                },
+                "VersionId": "v1",
+                "IsDefaultVersion": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

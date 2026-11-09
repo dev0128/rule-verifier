@@ -1,0 +1,232 @@
+{
+  "finding": "F022",
+  "rule": "REME-0103900002",
+  "service": "route53",
+  "status": "reproducible",
+  "note": "route53.py:83-88 — 호스팅 영역(get_hosted_zone)과 대조하지 않고 list_query_logging_configs 가 비었는지만 계정 1행으로 본다. 영역 0개도 취약, 여러 영역 중 하나만 로깅해도 양호.",
+  "scenarios": [
+    {
+      "id": "no-zones",
+      "role": "bug",
+      "condition": "퍼블릭 호스팅 영역 0개, 쿼리 로깅 설정 0개",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_hosted_zone": [],
+            "list_query_logging_configs": [],
+            "get_domain_detail": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "checked": 0
+      },
+      "why": "점검할 호스팅 영역이 없으면 '호스팅 영역에 대한 쿼리 로깅' 은 해당 없음(N/A) — 취약이 아니다"
+    },
+    {
+      "id": "partial-logging",
+      "role": "bug",
+      "condition": "퍼블릭 호스팅 영역 3개 중 Z1 만 쿼리 로깅",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_hosted_zone": [
+              {
+                "Name": "z1.example.com.",
+                "Id": "Z1",
+                "HostedZone": {
+                  "Id": "/hostedzone/Z1",
+                  "Name": "z1.example.com.",
+                  "CallerReference": "x",
+                  "Config": {
+                    "PrivateZone": false
+                  },
+                  "ResourceRecordSetCount": 2
+                },
+                "DelegationSet": {
+                  "NameServers": [
+                    "ns-1.awsdns-01.org"
+                  ]
+                },
+                "dnssec": {},
+                "ResourceRecordSets": [],
+                "Tags": {}
+              },
+              {
+                "Name": "z2.example.com.",
+                "Id": "Z2",
+                "HostedZone": {
+                  "Id": "/hostedzone/Z2",
+                  "Name": "z2.example.com.",
+                  "CallerReference": "x",
+                  "Config": {
+                    "PrivateZone": false
+                  },
+                  "ResourceRecordSetCount": 2
+                },
+                "DelegationSet": {
+                  "NameServers": [
+                    "ns-1.awsdns-01.org"
+                  ]
+                },
+                "dnssec": {},
+                "ResourceRecordSets": [],
+                "Tags": {}
+              },
+              {
+                "Name": "z3.example.com.",
+                "Id": "Z3",
+                "HostedZone": {
+                  "Id": "/hostedzone/Z3",
+                  "Name": "z3.example.com.",
+                  "CallerReference": "x",
+                  "Config": {
+                    "PrivateZone": false
+                  },
+                  "ResourceRecordSetCount": 2
+                },
+                "DelegationSet": {
+                  "NameServers": [
+                    "ns-1.awsdns-01.org"
+                  ]
+                },
+                "dnssec": {},
+                "ResourceRecordSets": [],
+                "Tags": {}
+              }
+            ],
+            "list_query_logging_configs": [
+              {
+                "Id": "q1",
+                "HostedZoneId": "Z1",
+                "CloudWatchLogsLogGroupArn": "arn:aws:logs:us-east-1:111122223333:log-group:/aws/route53/z1.example.com"
+              }
+            ],
+            "get_domain_detail": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln"
+      },
+      "why": "Z2·Z3 은 쿼리 로깅이 없으므로 취약 영역이 존재 — 계정 결과는 취약이어야 한다"
+    },
+    {
+      "id": "all-logged",
+      "role": "control",
+      "condition": "퍼블릭 호스팅 영역 1개, 쿼리 로깅 설정됨",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_hosted_zone": [
+              {
+                "Name": "z1.example.com.",
+                "Id": "Z1",
+                "HostedZone": {
+                  "Id": "/hostedzone/Z1",
+                  "Name": "z1.example.com.",
+                  "CallerReference": "x",
+                  "Config": {
+                    "PrivateZone": false
+                  },
+                  "ResourceRecordSetCount": 2
+                },
+                "DelegationSet": {
+                  "NameServers": [
+                    "ns-1.awsdns-01.org"
+                  ]
+                },
+                "dnssec": {},
+                "ResourceRecordSets": [],
+                "Tags": {}
+              }
+            ],
+            "list_query_logging_configs": [
+              {
+                "Id": "q1",
+                "HostedZoneId": "Z1",
+                "CloudWatchLogsLogGroupArn": "arn:aws:logs:us-east-1:111122223333:log-group:/aws/route53/z1.example.com"
+              }
+            ],
+            "get_domain_detail": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure"
+      }
+    },
+    {
+      "id": "zone-not-logged",
+      "role": "control",
+      "condition": "퍼블릭 호스팅 영역 1개, 쿼리 로깅 없음",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_hosted_zone": [
+              {
+                "Name": "z1.example.com.",
+                "Id": "Z1",
+                "HostedZone": {
+                  "Id": "/hostedzone/Z1",
+                  "Name": "z1.example.com.",
+                  "CallerReference": "x",
+                  "Config": {
+                    "PrivateZone": false
+                  },
+                  "ResourceRecordSetCount": 2
+                },
+                "DelegationSet": {
+                  "NameServers": [
+                    "ns-1.awsdns-01.org"
+                  ]
+                },
+                "dnssec": {},
+                "ResourceRecordSets": [],
+                "Tags": {}
+              }
+            ],
+            "list_query_logging_configs": [],
+            "get_domain_detail": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln"
+      }
+    }
+  ]
+}

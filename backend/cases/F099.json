@@ -1,0 +1,256 @@
+{
+  "finding": "F099",
+  "rule": "REME-0101000005",
+  "service": "awslambda",
+  "status": "reproducible",
+  "note": "awslambda.py:311-312 `if Statement_i[\"Effect\"] == \"Allow\": Actions = Statement_i[\"Action\"]` — NotAction 문에서 KeyError, :308 `key_data_i[\"Document\"]` — get_policy/get_policy_version 실패로 Document 가 없는 정책에서 KeyError. 룰 전체가 죽어 같은 계정의 관리자 권한 함수까지 결과에서 사라진다.",
+  "scenarios": [
+    {
+      "id": "poweruser-notaction",
+      "role": "bug",
+      "condition": "관리자 권한(AdministratorAccess) 함수 1개 + 실행 역할에 AWS 관리형 PowerUserAccess(첫 문장 Allow + NotAction iam:*/organizations:*/account:*)가 붙은 함수 1개",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "admin-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:admin-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "admin-role",
+                  "Arn": "arn:aws:iam::111122223333:role/admin-role",
+                  "policies": [
+                    {
+                      "PolicyName": "AdministratorAccess",
+                      "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess",
+                      "Document": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Resource": "*"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/admin-role"
+              },
+              {
+                "FunctionName": "power-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:power-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "power-role",
+                  "Arn": "arn:aws:iam::111122223333:role/power-role",
+                  "policies": [
+                    {
+                      "PolicyName": "PowerUserAccess",
+                      "PolicyArn": "arn:aws:iam::aws:policy/PowerUserAccess",
+                      "Document": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "NotAction": [
+                              "iam:*",
+                              "organizations:*",
+                              "account:*"
+                            ],
+                            "Resource": "*"
+                          },
+                          {
+                            "Effect": "Allow",
+                            "Action": [
+                              "iam:CreateServiceLinkedRole",
+                              "iam:DeleteServiceLinkedRole",
+                              "iam:ListRoles",
+                              "organizations:DescribeOrganization",
+                              "account:ListRegions"
+                            ],
+                            "Resource": "*"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/power-role"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag_contains": [
+          "admin-fn"
+        ]
+      },
+      "why": "NotAction 은 IAM 정책의 정상 문법이다. 한 함수의 정책 모양 때문에 룰이 죽으면 안 되고, Action '*' 인 admin-fn 은 취약으로 나와야 한다 (power-fn 판정은 여기서 따지지 않는다)"
+    },
+    {
+      "id": "policy-without-document",
+      "role": "bug",
+      "condition": "관리자 권한 함수 1개 + 관리형 정책 문서 조회(get_policy/get_policy_version)가 실패해 Document 키가 없는 정책을 가진 함수 1개",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "admin-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:admin-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "admin-role",
+                  "Arn": "arn:aws:iam::111122223333:role/admin-role",
+                  "policies": [
+                    {
+                      "PolicyName": "AdministratorAccess",
+                      "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess",
+                      "Document": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Resource": "*"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/admin-role"
+              },
+              {
+                "FunctionName": "nodoc-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:nodoc-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "nodoc-role",
+                  "Arn": "arn:aws:iam::111122223333:role/nodoc-role",
+                  "policies": [
+                    {
+                      "PolicyName": "custom-policy",
+                      "PolicyArn": "arn:aws:iam::111122223333:policy/custom-policy"
+                    }
+                  ]
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/nodoc-role"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "admin-fn"
+        ],
+        "flag_excludes": [
+          "nodoc-fn"
+        ],
+        "na_contains": [
+          "nodoc-fn"
+        ]
+      },
+      "why": "정책 문서를 못 읽은 함수는 판정 불가(N/A)로 빼고, 나머지 함수는 정상 판정해야 한다"
+    },
+    {
+      "id": "admin-and-basic",
+      "role": "control",
+      "condition": "AdministratorAccess 함수 1개 + 기본 실행 역할(logs:* 만) 함수 1개",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "admin-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:admin-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "admin-role",
+                  "Arn": "arn:aws:iam::111122223333:role/admin-role",
+                  "policies": [
+                    {
+                      "PolicyName": "AdministratorAccess",
+                      "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess",
+                      "Document": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Resource": "*"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/admin-role"
+              },
+              {
+                "FunctionName": "basic-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:basic-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "basic-role",
+                  "Arn": "arn:aws:iam::111122223333:role/basic-role",
+                  "policies": [
+                    {
+                      "PolicyName": "AWSLambdaBasicExecutionRole",
+                      "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                      "Document": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Action": [
+                              "logs:CreateLogGroup",
+                              "logs:CreateLogStream",
+                              "logs:PutLogEvents"
+                            ],
+                            "Resource": "*"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/basic-role"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "admin-fn"
+        ],
+        "good_contains": [
+          "basic-fn"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "finding": "X048",
+  "rule": "REME-0106100009",
+  "service": "vpc",
+  "status": "reproducible",
+  "note": "Raw/networkfirewall.py:47-48 — describe_firewall 실패 시 `item.update({'Firewall': response.get('Firewall', [])})` 로 Firewall=[]. 룰(Analyze/vpc.py:547) `networkfirewall['Firewall']['VpcId']` 가 리스트 인덱싱 TypeError 로 룰 전체 N/A.",
+  "scenarios": [
+    {
+      "id": "describe-firewall-failed",
+      "role": "bug",
+      "condition": "VPC 2개(vpc-fw · vpc-plain), 방화벽 2개 — fw-1 은 describe_firewall 성공(vpc-fw), fw-2 는 실패해 Firewall=[]",
+      "args": [],
+      "raw": {"ap-northeast-2": {
+        "ec2": {"describe_vpcs": [{"VpcId": "vpc-fw", "IsDefault": false}, {"VpcId": "vpc-plain", "IsDefault": false}]},
+        "networkfirewall": {"list_firewalls": [
+          {"FirewallName": "fw-1", "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1",
+           "Firewall": {"FirewallName": "fw-1", "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1", "VpcId": "vpc-fw", "FirewallId": "fwid-1"}},
+          {"FirewallName": "fw-2", "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-2", "Firewall": []}
+        ]}
+      }},
+      "expect": {"checked": 2, "good_contains": ["vpc-fw"]},
+      "why": "조회에 실패한 방화벽 하나 때문에 룰 전체가 죽으면 안 된다 — 판정 가능한 VPC(vpc-fw 양호)는 정상 판정해야 한다. fw-2 의 VPC 를 알 수 없어 vpc-plain 의 결과는 기대에 넣지 않는다"
+    },
+    {
+      "id": "all-described",
+      "role": "control",
+      "condition": "같은 구성, fw-2 도 describe 성공(vpc-plain 이 아닌 다른 VPC 소속)",
+      "args": [],
+      "raw": {"ap-northeast-2": {
+        "ec2": {"describe_vpcs": [{"VpcId": "vpc-fw", "IsDefault": false}, {"VpcId": "vpc-plain", "IsDefault": false}]},
+        "networkfirewall": {"list_firewalls": [
+          {"FirewallName": "fw-1", "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1",
+           "Firewall": {"FirewallName": "fw-1", "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-1", "VpcId": "vpc-fw", "FirewallId": "fwid-1"}},
+          {"FirewallName": "fw-2", "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-2",
+           "Firewall": {"FirewallName": "fw-2", "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111111111111:firewall/fw-2", "VpcId": "vpc-other", "FirewallId": "fwid-2"}}
+        ]}
+      }},
+      "expect": {"verdict": "Vuln", "checked": 2, "flag": 1, "good": 1, "good_contains": ["vpc-fw"], "flag_contains": ["vpc-plain"]}
+    }
+  ]
+}

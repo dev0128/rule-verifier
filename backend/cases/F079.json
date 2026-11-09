@@ -1,0 +1,90 @@
+{
+  "finding": "F079",
+  "rule": "REME-0104000002",
+  "service": "networkfirewall",
+  "status": "reproducible",
+  "note": "networkfirewall.py:96 `result_temp_i.get(\"DeleteProtection\", False)` — list_firewalls 요약 항목(FirewallName · FirewallArn 만)의 최상위에서 읽는다. 값은 수집기가 describe_firewall 결과를 넣는 item[\"Firewall\"][\"DeleteProtection\"] 에만 있어 늘 기본값 False → 모든 방화벽 취약.",
+  "scenarios": [
+    {
+      "id": "dp-on",
+      "role": "bug",
+      "condition": "describe_firewall 결과 Firewall.DeleteProtection=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "networkfirewall": {
+            "list_firewalls": [
+              {
+                "FirewallName": "fw-a",
+                "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111122223333:firewall/fw-a",
+                "Firewall": {
+                  "FirewallName": "fw-a",
+                  "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111122223333:firewall/fw-a",
+                  "FirewallPolicyArn": "arn:aws:network-firewall:ap-northeast-2:111122223333:firewall-policy/pol",
+                  "VpcId": "vpc-1",
+                  "SubnetMappings": [
+                    {
+                      "SubnetId": "subnet-a",
+                      "IPAddressType": "IPV4"
+                    }
+                  ],
+                  "DeleteProtection": true,
+                  "SubnetChangeProtection": true,
+                  "FirewallPolicyChangeProtection": true,
+                  "FirewallId": "id-fw-a",
+                  "Tags": {}
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "삭제 방지가 켜져 있다"
+    },
+    {
+      "id": "dp-off",
+      "role": "control",
+      "condition": "Firewall.DeleteProtection=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "networkfirewall": {
+            "list_firewalls": [
+              {
+                "FirewallName": "fw-a",
+                "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111122223333:firewall/fw-a",
+                "Firewall": {
+                  "FirewallName": "fw-a",
+                  "FirewallArn": "arn:aws:network-firewall:ap-northeast-2:111122223333:firewall/fw-a",
+                  "FirewallPolicyArn": "arn:aws:network-firewall:ap-northeast-2:111122223333:firewall-policy/pol",
+                  "VpcId": "vpc-1",
+                  "SubnetMappings": [
+                    {
+                      "SubnetId": "subnet-a",
+                      "IPAddressType": "IPV4"
+                    }
+                  ],
+                  "DeleteProtection": false,
+                  "SubnetChangeProtection": true,
+                  "FirewallPolicyChangeProtection": true,
+                  "FirewallId": "id-fw-a",
+                  "Tags": {}
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+{
+  "finding": "X061",
+  "rule": "REME-0100900003",
+  "service": "cloudfront",
+  "status": "reproducible",
+  "note": "cloudfront.py:242,261 — DefaultCacheBehavior.ViewerProtocolPolicy 만 본다. CacheBehaviors.Items(경로별 추가 동작)의 allow-all 은 놓친다.",
+  "scenarios": [
+    {
+      "id": "extra-behavior-allow-all",
+      "role": "bug",
+      "condition": "기본 동작은 redirect-to-https, 추가 동작(/api/*)은 allow-all",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EEXTRA",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EEXTRA",
+                "DomainName": "eextra.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "web-bucket",
+                      "DomainName": "web-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "web-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "PathPattern": "/api/*",
+                      "TargetOriginId": "web-bucket",
+                      "ViewerProtocolPolicy": "allow-all"
+                    }
+                  ]
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "/api/* 경로는 HTTP 평문 접속을 허용하므로 배포 암호화 통신이 강제되지 않는다 — 취약"
+    },
+    {
+      "id": "default-allow-all",
+      "role": "control",
+      "condition": "기본 동작 allow-all",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EDEF",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EDEF",
+                "DomainName": "edef.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "web-bucket",
+                      "DomainName": "web-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "web-bucket",
+                  "ViewerProtocolPolicy": "allow-all"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "all-https",
+      "role": "control",
+      "condition": "기본 redirect-to-https, 추가 동작 https-only",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EOK",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EOK",
+                "DomainName": "eok.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "web-bucket",
+                      "DomainName": "web-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "web-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "PathPattern": "/api/*",
+                      "TargetOriginId": "web-bucket",
+                      "ViewerProtocolPolicy": "https-only"
+                    }
+                  ]
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

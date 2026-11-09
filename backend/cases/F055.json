@@ -1,0 +1,199 @@
+{
+  "finding": "F055",
+  "rule": "REME-0103100003",
+  "service": "sqs",
+  "status": "reproducible",
+  "note": "Analyze/sqs.py:155-156 — `Principal.get(\"AWS\") == \"*\"` 라 {AWS:[\"*\"]} 리스트형을 놓치고, `[a for a in Action if a in flaged_actions]` 는 Action 이 문자열이면 글자 단위로 돈다(\"sqs:SendMessage\" 놓침, \"*\" 가 든 문자열만 우연히 탐지). 수집 결함(F053) 수정 후 드러나므로 raw 는 수집 수정 후 모양(Policy dict).",
+  "scenarios": [
+    {
+      "id": "action-string",
+      "role": "bug",
+      "condition": "Principal \"*\" · Action \"sqs:SendMessage\"(문자열) Allow (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:str-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/str-q",
+                "QueueName": "str-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "sqs:SendMessage",
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:str-q"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "누구나 메시지를 보낼 수 있는 공개 큐 — Action 단일 문자열 표기는 리스트 1개와 같은 의미"
+    },
+    {
+      "id": "principal-aws-list",
+      "role": "bug",
+      "condition": "Principal {\"AWS\": [\"*\"]} · Action [\"sqs:*\"] Allow (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:list-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/list-q",
+                "QueueName": "list-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": [
+                          "*"
+                        ]
+                      },
+                      "Action": [
+                        "sqs:*"
+                      ],
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:list-q"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "{AWS:[\"*\"]} 는 Principal \"*\" 와 같이 모든 AWS 주체 — 공개 큐"
+    },
+    {
+      "id": "action-list",
+      "role": "control",
+      "condition": "Principal \"*\" · Action [\"sqs:SendMessage\"] Allow (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:pub-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/pub-q",
+                "QueueName": "pub-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": [
+                        "sqs:SendMessage"
+                      ],
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:pub-q"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "specific-account",
+      "role": "control",
+      "condition": "Principal {\"AWS\": \"arn:aws:iam::111111111111:root\"} · Action [\"sqs:*\"] (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:own-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/own-q",
+                "QueueName": "own-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": [
+                        "sqs:*"
+                      ],
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:own-q"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

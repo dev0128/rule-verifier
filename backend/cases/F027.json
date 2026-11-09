@@ -1,0 +1,75 @@
+{
+  "finding": "F027",
+  "rule": "REME-0100100007",
+  "service": "iam",
+  "status": "not_reproducible",
+  "note": "결함 자체는 실재한다 — iam.py:592·712 `result[\"check_value\"] = check_value.append(...)` 로 check_value 가 항상 None(IAM-007·009). 그러나 판정(verdict·건수·리소스 목록)에는 영향이 없고 이 하네스의 expect 는 check_value 를 비교하지 않아 재현 시나리오로 표현할 수 없다. 판정이 맞는지만 대조군으로 남긴다.",
+  "scenarios": [
+    {
+      "id": "strong-policy",
+      "role": "control",
+      "condition": "최소 길이 14, 기호·숫자·대소문자 모두 요구",
+      "args": [
+        "12"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 90,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "weak-policy",
+      "role": "control",
+      "condition": "최소 길이 8, 기호 미요구",
+      "args": [
+        "12"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 8,
+                "RequireSymbols": false,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 90,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

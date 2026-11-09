@@ -1,0 +1,182 @@
+{
+  "finding": "X008",
+  "rule": "REME-0100100006",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:484 `boolean_2 = (now - last_used_time).days < int(args_[0])` — 날짜가 모두 있는 활성 키가 있으면 인자를 읽는데 None 이면 TypeError, \"\"/[] 이면 IndexError.",
+  "scenarios": [
+    {
+      "id": "args-none",
+      "role": "bug",
+      "condition": "인자 None (커스텀룰 마스터 참조) — 활성 키 1, 2020-01-01 발급 · 2020-02-01 마지막 사용",
+      "args": null,
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "key-old",
+                "arn": "arn:aws:iam::111111111111:user/key-old",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "true",
+                "access_key_1_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_1_last_used_date": "2020-02-01T00:00:00+00:00",
+                "access_key_1_last_used_region": "ap-northeast-2",
+                "access_key_1_last_used_service": "s3",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "인자가 없으면 기본값(90일)으로 판정해야 한다. 수년간 교체 안 한 키는 어떤 합리적 기본값에서도 취약"
+    },
+    {
+      "id": "args-empty-str",
+      "role": "bug",
+      "condition": "인자 \"\" (거버넌스 기본 룰) — 활성 키 1, 2020-01-01 발급 · 2020-02-01 마지막 사용",
+      "args": "",
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "key-old",
+                "arn": "arn:aws:iam::111111111111:user/key-old",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "true",
+                "access_key_1_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_1_last_used_date": "2020-02-01T00:00:00+00:00",
+                "access_key_1_last_used_region": "ap-northeast-2",
+                "access_key_1_last_used_service": "s3",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "인자가 없으면 기본값(90일)으로 판정해야 한다. 수년간 교체 안 한 키는 어떤 합리적 기본값에서도 취약"
+    },
+    {
+      "id": "args-empty-list",
+      "role": "bug",
+      "condition": "인자 [] (빈 리스트) — 활성 키 1, 2020-01-01 발급 · 2020-02-01 마지막 사용",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "key-old",
+                "arn": "arn:aws:iam::111111111111:user/key-old",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "true",
+                "access_key_1_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_1_last_used_date": "2020-02-01T00:00:00+00:00",
+                "access_key_1_last_used_region": "ap-northeast-2",
+                "access_key_1_last_used_service": "s3",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "인자가 없으면 기본값(90일)으로 판정해야 한다. 수년간 교체 안 한 키는 어떤 합리적 기본값에서도 취약"
+    },
+    {
+      "id": "args-default",
+      "role": "control",
+      "condition": "기본 룰셋 인자 [\"90\"] — 활성 키 1, 2020-01-01 발급 · 2020-02-01 마지막 사용",
+      "args": [
+        "90"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "key-old",
+                "arn": "arn:aws:iam::111111111111:user/key-old",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "true",
+                "access_key_1_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_1_last_used_date": "2020-02-01T00:00:00+00:00",
+                "access_key_1_last_used_region": "ap-northeast-2",
+                "access_key_1_last_used_service": "s3",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "finding": "F052",
+  "rule": "REME-0101800004",
+  "service": "autoscaling",
+  "status": "reproducible",
+  "note": "Raw/Service/autoscaling.py:72-91 — MixedInstancesPolicy·LaunchConfiguration ASG 는 템플릿을 조회하지 않아 LaunchTemplate.LaunchTemplateVersions={} → Analyze autoscaling.py:209 UserData 기본값 '' 로 스캔해 양호. 다만 같은 raw 의 ec2.describe_launch_templates[].LaunchTemplateVersions[].LaunchTemplateData.UserData 와 autoscaling.describe_launch_configurations[].UserData 에 값이 남아 있어 룰에서 대조할 수 있으므로 collection 이 아니라 bug 로 둔다.",
+  "scenarios": [
+    {
+      "id": "mip-secret-userdata",
+      "role": "bug",
+      "condition": "MixedInstancesPolicy ASG — 참조 시작 템플릿 lt-0b2 v1 UserData 에 AWS 액세스 키·시크릿 키",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-mip",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-mip",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "MixedInstancesPolicy": {
+                  "LaunchTemplate": {
+                    "LaunchTemplateSpecification": {
+                      "LaunchTemplateId": "lt-0b2",
+                      "LaunchTemplateName": "lt-0b2-name",
+                      "Version": "1"
+                    },
+                    "Overrides": [
+                      {
+                        "InstanceType": "m5.large"
+                      }
+                    ]
+                  },
+                  "InstancesDistribution": {
+                    "OnDemandBaseCapacity": 0,
+                    "OnDemandPercentageAboveBaseCapacity": 100
+                  }
+                },
+                "LaunchTemplate": {
+                  "LaunchTemplateVersions": {}
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          },
+          "ec2": {
+            "describe_launch_templates": [
+              {
+                "LaunchTemplateId": "lt-0b2",
+                "LaunchTemplateName": "lt-0b2-name",
+                "DefaultVersionNumber": 1,
+                "LatestVersionNumber": 1,
+                "Tags": {},
+                "LaunchTemplateVersions": [
+                  {
+                    "LaunchTemplateId": "lt-0b2",
+                    "LaunchTemplateName": "lt-0b2-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "UserData": "IyEvYmluL2Jhc2gKZXhwb3J0IEFXU19BQ0NFU1NfS0VZX0lEPUFLSUFJT1NGT0ROTjdFWEFNUExFCmV4cG9ydCBBV1NfU0VDUkVUX0FDQ0VTU19LRVk9d0phbHJYVXRuRkVNSS9LN01ERU5HL2JQeFJmaUNZRVhBTVBMRUtFWQo="
+                    }
+                  }
+                ]
+              }
+            ],
+            "describe_instances": [],
+            "describe_addresses": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "ASG 가 실제로 쓰는 시작 템플릿 UserData 에 평문 자격 증명이 있으므로 취약"
+    },
+    {
+      "id": "lc-secret-userdata",
+      "role": "bug",
+      "condition": "LaunchConfiguration ASG — 시작 구성 UserData 에 AWS 액세스 키·시크릿 키",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-lc",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-lc",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchConfigurationName": "lc-web",
+                "LaunchTemplate": {
+                  "LaunchTemplateVersions": {}
+                }
+              }
+            ],
+            "describe_launch_configurations": [
+              {
+                "LaunchConfigurationName": "lc-web",
+                "LaunchConfigurationARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:launchConfiguration:x:launchConfigurationName/lc-web",
+                "ImageId": "ami-0abc",
+                "InstanceType": "t3.micro",
+                "SecurityGroups": [
+                  "sg-1"
+                ],
+                "UserData": "IyEvYmluL2Jhc2gKZXhwb3J0IEFXU19BQ0NFU1NfS0VZX0lEPUFLSUFJT1NGT0ROTjdFWEFNUExFCmV4cG9ydCBBV1NfU0VDUkVUX0FDQ0VTU19LRVk9d0phbHJYVXRuRkVNSS9LN01ERU5HL2JQeFJmaUNZRVhBTVBMRUtFWQo=",
+                "BlockDeviceMappings": []
+              }
+            ]
+          },
+          "ec2": {
+            "describe_launch_templates": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "시작 구성 UserData 에 평문 자격 증명이 있으므로 취약"
+    },
+    {
+      "id": "lt-secret-userdata",
+      "role": "control",
+      "condition": "LaunchTemplate ASG — 템플릿 UserData 에 AWS 키",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-web",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-web",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "UserData": "IyEvYmluL2Jhc2gKZXhwb3J0IEFXU19BQ0NFU1NfS0VZX0lEPUFLSUFJT1NGT0ROTjdFWEFNUExFCmV4cG9ydCBBV1NfU0VDUkVUX0FDQ0VTU19LRVk9d0phbHJYVXRuRkVNSS9LN01ERU5HL2JQeFJmaUNZRVhBTVBMRUtFWQo="
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "lt-benign-userdata",
+      "role": "control",
+      "condition": "LaunchTemplate ASG — 템플릿 UserData 에 중요정보 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-web",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-web",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "UserData": "IyEvYmluL2Jhc2gKeXVtIGluc3RhbGwgLXkgbmdpbngKc3lzdGVtY3RsIHN0YXJ0IG5naW54Cg=="
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

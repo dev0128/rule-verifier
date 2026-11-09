@@ -1,0 +1,1206 @@
+{
+  "finding": "F008",
+  "rule": "REME-0101700001",
+  "service": "athena",
+  "status": "reproducible",
+  "note": "Raw/athena.py:96 — list_work_groups 를 NextToken 없이 한 번만 부른다(all_paginator 는 주석 처리). ListWorkGroups MaxResults 최대 50 이라 51번째 이후 작업 그룹은 get_work_group 조차 수집되지 않는다. raw 에 흔적(NextToken)도 남지 않아 룰로는 못 고친다.",
+  "scenarios": [
+    {
+      "id": "51st-workgroup-lost",
+      "role": "collection",
+      "condition": "작업 그룹 51개 — 수집된 첫 50개는 모두 SSE_S3 암호화, 51번째(wg-051)는 암호화 없음이지만 첫 페이지 밖이라 수집 안 됨",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "athena": {
+            "get_work_group": [
+              {
+                "Name": "wg-001",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-001/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-002",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-002/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-003",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-003/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-004",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-004/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-005",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-005/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-006",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-006/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-007",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-007/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-008",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-008/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-009",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-009/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-010",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-010/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-011",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-011/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-012",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-012/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-013",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-013/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-014",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-014/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-015",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-015/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-016",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-016/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-017",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-017/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-018",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-018/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-019",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-019/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-020",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-020/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-021",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-021/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-022",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-022/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-023",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-023/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-024",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-024/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-025",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-025/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-026",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-026/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-027",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-027/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-028",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-028/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-029",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-029/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-030",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-030/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-031",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-031/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-032",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-032/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-033",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-033/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-034",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-034/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-035",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-035/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-036",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-036/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-037",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-037/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-038",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-038/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-039",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-039/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-040",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-040/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-041",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-041/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-042",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-042/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-043",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-043/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-044",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-044/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-045",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-045/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-046",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-046/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-047",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-047/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-048",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-048/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-049",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-049/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              },
+              {
+                "Name": "wg-050",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/wg-050/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 51,
+        "flag": 1
+      },
+      "why": "실제 리소스 기준으로 wg-051 은 쿼리 결과 암호화가 없어 취약. 수집 결과에 없으므로 룰 수정으로는 판정 불가 — 페이지네이션 수정 후 재수집 필요"
+    },
+    {
+      "id": "unencrypted",
+      "role": "control",
+      "condition": "암호화 설정 없는 작업 그룹(ResultConfiguration.EncryptionConfiguration 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "athena": {
+            "get_work_group": [
+              {
+                "Name": "plain",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/plain/"
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "encrypted",
+      "role": "control",
+      "condition": "SSE_KMS 암호화 작업 그룹",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "athena": {
+            "get_work_group": [
+              {
+                "Name": "kms",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/kms/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_KMS"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

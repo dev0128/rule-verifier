@@ -1,0 +1,39 @@
+[project]
+name = "rule-verifier"
+version = "0.1.0"
+description = "D-CLO AWS 기본 룰 검증 도구 — 컨디션(룰셋) + S3 수집 데이터로 엔진 룰을 돌려 결과를 비교한다"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # API
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "boto3==1.37.2",
+    # 엔진 룰 모듈이 import 하는 것 (k8s-engine requirements.txt 와 같은 버전)
+    "botocore==1.37.2",
+    "beautifulsoup4==4.12.3",
+    "cfn-flip==1.3.0",
+    "detect-secrets==1.4.0",
+    "psutil==5.9.5",
+    "pyyaml>=6",
+    "requests>=2.31",
+    "setuptools==75.3.2",
+]
+
+[project.scripts]
+rv = "app.cli:main"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,453 @@
+{
+  "finding": "F069",
+  "rule": "REME-0103000001",
+  "service": "sns",
+  "status": "reproducible",
+  "note": "Analyze/sns.py:58-62(001) · 179-183(003) · 245-249(004) — Effect=Allow 이고 Principal=='*' 또는 Principal.AWS=='*' 이면 Action 을 목록으로 보고 flaged_actions 와 원소 비교. Condition 을 보지 않아 SNS 기본 정책(AWS '*' + AWS:SourceOwner=자기 계정)도 공개로 판정. Action 이 문자열이면 문자 단위로 순회해 놓치고(문자 '*' 가 섞인 'sns:*' 문자열만 우연히 잡힘), ['sns:*'] 같은 서비스 와일드카드와 Principal {'AWS':['*']} 리스트도 놓친다. Allow + NotPrincipal 문은 key_data_i['Principal'] KeyError 로 룰 전체 예외.",
+  "scenarios": [
+    {
+      "id": "default-policy",
+      "role": "bug",
+      "condition": "콘솔 기본 주제 정책 — Principal AWS '*' + Condition StringEquals AWS:SourceOwner=자기 계정",
+      "rule": "REME-0103000001",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-default",
+                "TopicName": "t-default",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-default",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Sid": "__default_statement_ID",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "*"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-default",
+                        "Condition": {
+                          "StringEquals": {
+                            "AWS:SourceOwner": "111122223333"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "SourceOwner 조건으로 소유 계정만 허용하는 정책이라 공개 액세스가 아니다(SNS 기본 액세스 정책)"
+    },
+    {
+      "id": "action-string-publish",
+      "role": "bug",
+      "condition": "Principal '*' + Action 'SNS:Publish'(단일 문자열) Allow, 조건 없음",
+      "rule": "REME-0103000004",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-pub",
+                "TopicName": "t-pub",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-pub",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": "SNS:Publish",
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-pub"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "누구나 게시할 수 있다. IAM 정책 Action 은 문자열 · 리스트 둘 다 허용된다"
+    },
+    {
+      "id": "action-sns-wildcard",
+      "role": "bug",
+      "condition": "Principal '*' + Action ['sns:*'] Allow, 조건 없음",
+      "rule": "REME-0103000001",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-all",
+                "TopicName": "t-all",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-all",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": [
+                          "sns:*"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-all"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "sns:* 는 모든 SNS 작업 — 전체 공개 액세스"
+    },
+    {
+      "id": "principal-list",
+      "role": "bug",
+      "condition": "Principal {'AWS': ['*']} + Action ['SNS:Subscribe'] Allow, 조건 없음",
+      "rule": "REME-0103000003",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-sub",
+                "TopicName": "t-sub",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-sub",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": [
+                            "*"
+                          ]
+                        },
+                        "Action": [
+                          "SNS:Subscribe"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-sub"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Principal AWS 리스트 ['*'] 는 '*' 와 같은 의미 — 누구나 구독 가능"
+    },
+    {
+      "id": "allow-notprincipal",
+      "role": "bug",
+      "condition": "주제 2개 — t-np 는 Allow + NotPrincipal {AWS: 자기 계정 root} + SNS:Publish(= 그 외 모두 허용), t-ok 는 자기 계정만 허용",
+      "rule": "REME-0103000001",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-np",
+                "TopicName": "t-np",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-np",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "NotPrincipal": {
+                          "AWS": "arn:aws:iam::111122223333:root"
+                        },
+                        "Action": [
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-np"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                "TopicName": "t-ok",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::111122223333:root"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-ok"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "t-np"
+        ]
+      },
+      "why": "Allow + NotPrincipal 은 나열한 주체를 뺀 모든 주체에게 허용 — 공개 액세스. 예외 없이 판정돼야 한다"
+    },
+    {
+      "id": "public-publish-list",
+      "role": "control",
+      "condition": "Principal '*' + Action ['SNS:Publish'] Allow, 조건 없음",
+      "rule": "REME-0103000004",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-pub",
+                "TopicName": "t-pub",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-pub",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": [
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-pub"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "own-account-only",
+      "role": "control",
+      "condition": "Principal AWS 자기 계정 root 만 허용",
+      "rule": "REME-0103000001",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                "TopicName": "t-ok",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::111122223333:root"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-ok"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "finding": "X032",
+  "rule": "REME-0106200005",
+  "service": "cloudtrail",
+  "status": "not_reproducible",
+  "note": "cloudtrail.py:332-334 — InsightSelectors 응답 dict 가 비었는지만 본다. 그러나 AWS GetInsightSelectors 는 Insights 가 꺼진 trail 에 InsightNotEnabledException 을 던지고(수집기 exception 목록에 있음 → {} 저장 → 취약), 성공 응답은 Insights 가 켜진 경우뿐이라 실제 응답으로는 오판이 나지 않는다. 오판은 'InsightSelectors: []' 같은 빈 목록 성공 응답이 올 때만인데 AWS 문서상 그런 응답은 확인되지 않아 재현 불가로 둔다. (같은 함수의 HomeRegion 미필터 중복 점검은 F104 범위)",
+  "scenarios": [
+    {
+      "id": "empty-selector-list",
+      "role": "bug",
+      "condition": "(가정) get_insight_selectors 가 예외 없이 InsightSelectors=[] 를 돌려준 trail, 로깅 중",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "main",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": true,
+                "IsOrganizationTrail": false,
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "All",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                  "InsightSelectors": []
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Insights 유형이 하나도 없으면 Insights 가 켜진 것이 아니다"
+    },
+    {
+      "id": "not-enabled",
+      "role": "control",
+      "condition": "Insights 미사용 trail — InsightNotEnabledException → 수집기가 InsightSelectors={} 저장",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "main",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "All",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "enabled",
+      "role": "control",
+      "condition": "Insights 사용 trail(ApiCallRateInsight), 로깅 중",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "main",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": true,
+                "IsOrganizationTrail": false,
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "All",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                  "InsightSelectors": [
+                    {
+                      "InsightType": "ApiCallRateInsight"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

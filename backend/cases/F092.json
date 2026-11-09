@@ -1,0 +1,185 @@
+{
+  "finding": "F092",
+  "rule": "REME-0101100002",
+  "service": "acm",
+  "status": "reproducible",
+  "note": "Raw/acm.py:51 `paginator.paginate()` 에 Includes={'keyTypes': [...]} 가 없다. ListCertificates 는 Includes 없이 부르면 RSA_1024/RSA_2048 인증서만 반환(botocore acm ListCertificates Includes 문서) → EC_prime256v1·EC_secp384r1·RSA_3072+ 인증서는 raw 에 아예 없어 ACM-001~004 어느 룰로도 볼 수 없다(수집 결함). 재현은 판정 로직이 정상인 ACM-002 로 한다.",
+  "scenarios": [
+    {
+      "id": "ecdsa-pending-not-collected",
+      "role": "collection",
+      "condition": "계정에 RSA_2048 정상 인증서 1개 + EC_prime256v1 검증 대기(PENDING_VALIDATION) 인증서 1개 — 수집 raw 에는 RSA 인증서만 있음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-rsa",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-rsa",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-rsa",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1
+      },
+      "why": "실제 계정에는 검증되지 않은 ECDSA 인증서가 있으므로 취약이어야 한다. raw 에 없으니 룰 수정만으로는 못 고친다(수집에서 Includes.keyTypes 에 모든 키 타입을 넣어야 함)"
+    },
+    {
+      "id": "rsa-pending-collected",
+      "role": "control",
+      "condition": "RSA_2048 검증 대기 인증서 (수집됨)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-rsa-pending",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "PENDING_VALIDATION",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-rsa-pending",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-rsa-pending",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "PENDING_VALIDATION",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "PENDING_VALIDATION",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "rsa-issued",
+      "role": "control",
+      "condition": "RSA_2048 발급 완료 인증서",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-rsa",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-rsa",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-rsa",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

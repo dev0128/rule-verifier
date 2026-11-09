@@ -1,0 +1,83 @@
+{
+  "finding": "X059",
+  "rule": "REME-0105800009",
+  "service": "ecs",
+  "status": "reproducible",
+  "note": "ecs.py:514,518 — pidMode 를 containerDefinition 에서 찾는다. AWS TaskDefinition.pidMode 는 태스크 정의 최상위 필드(host|task)라 항상 None → 항상 양호.",
+  "scenarios": [
+    {
+      "id": "task-pidmode-host",
+      "role": "bug",
+      "condition": "태스크 정의 최상위 pidMode=host",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "host",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {},
+                "executionRole_EvaluationResults": {},
+                "pidMode": "host"
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "pidMode=host 면 컨테이너가 호스트 프로세스 네임스페이스를 공유한다 — 취약"
+    },
+    {
+      "id": "no-pidmode",
+      "role": "control",
+      "condition": "pidMode 미지정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "awsvpc",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {},
+                "executionRole_EvaluationResults": {}
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

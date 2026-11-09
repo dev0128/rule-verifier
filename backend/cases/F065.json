@@ -1,0 +1,205 @@
+{
+  "finding": "F065",
+  "rule": "REME-0101200004",
+  "service": "apigateway",
+  "status": "reproducible",
+  "note": "Analyze/apigateway.py:297 — `if not key_data['minimumCompressionSize']` 라 0 도 미설정과 같이 취약. AWS 문서상 minimumCompressionSize 는 0~10485760, null(응답에 키 없음)일 때만 압축 비활성이고 0 은 '모든 페이로드 압축'.",
+  "scenarios": [
+    {
+      "id": "compression-zero",
+      "role": "bug",
+      "condition": "REST API minimumCompressionSize=0",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": [],
+                "minimumCompressionSize": 0
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "0 은 크기와 무관하게 모든 응답을 압축하는 설정이므로 Content Encoding 활성"
+    },
+    {
+      "id": "compression-1024",
+      "role": "control",
+      "condition": "minimumCompressionSize=1024",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": [],
+                "minimumCompressionSize": 1024
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "compression-unset",
+      "role": "control",
+      "condition": "minimumCompressionSize 미설정(응답에 키 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

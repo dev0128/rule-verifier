@@ -1,0 +1,295 @@
+{
+  "finding": "X060",
+  "rule": "REME-0100700016",
+  "service": "s3",
+  "status": "reproducible",
+  "note": "s3.py:967 — 버킷 PublicAccessBlockConfiguration 의 IgnorePublicAcls·RestrictPublicBuckets 2종만 보고 BlockPublicAcls·BlockPublicPolicy 와 계정 수준(PublicAccessBlockConfiguration_Account) 설정은 보지 않는다.",
+  "scenarios": [
+    {
+      "id": "block-flags-off",
+      "role": "bug",
+      "condition": "버킷 차단 설정 IgnorePublicAcls·RestrictPublicBuckets=true, BlockPublicAcls·BlockPublicPolicy=false, 계정 수준 차단 모두 false",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "half-blocked",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": true,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": true
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "BlockPublicAcls/BlockPublicPolicy 가 꺼져 있으면 새 퍼블릭 ACL·퍼블릭 정책을 설정할 수 있다. AWS Security Hub S3.8 등 기준은 4종 모두 켜져야 '퍼블릭 액세스 차단'"
+    },
+    {
+      "id": "account-level-on",
+      "role": "bug",
+      "condition": "버킷 수준 차단 4종 false, 계정 수준 차단 4종 모두 true",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "acct-blocked",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": true,
+                "IgnorePublicAcls": true,
+                "BlockPublicPolicy": true,
+                "RestrictPublicBuckets": true,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "S3 는 버킷·계정 설정 중 더 제한적인 쪽을 적용한다 — 계정 수준 4종이 켜져 있으면 그 계정 모든 버킷의 퍼블릭 액세스가 차단된다"
+    },
+    {
+      "id": "all-on",
+      "role": "control",
+      "condition": "버킷 수준 차단 4종 모두 true",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "blocked",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": true,
+                  "IgnorePublicAcls": true,
+                  "BlockPublicPolicy": true,
+                  "RestrictPublicBuckets": true
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "all-off",
+      "role": "control",
+      "condition": "버킷·계정 수준 차단 모두 false",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "open",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "finding": "F060",
+  "rule": "REME-0101800002",
+  "service": "autoscaling",
+  "status": "reproducible",
+  "note": "autoscaling.py:100 — AvailabilityZones 개수만 본다(<=1 이면 취약). 항목명 '여러 AZ 에 걸쳐 여러 인스턴스 유형' 의 인스턴스 유형 수(MixedInstancesPolicy.LaunchTemplate.Overrides)는 보지 않는다. 카탈로그 confidence low — 판단기준 원문 확인 필요.",
+  "scenarios": [
+    {
+      "id": "multi-az-single-type",
+      "role": "bug",
+      "condition": "AZ 2개, 단일 LaunchTemplate(인스턴스 유형 m5.large 1종)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-web",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-web",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "InstanceType": "m5.large"
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "항목명대로라면 여러 AZ 이면서 여러 인스턴스 유형이어야 양호 — 유형이 1종이면 용량 부족 시 대체 유형이 없어 취약"
+    },
+    {
+      "id": "single-az",
+      "role": "control",
+      "condition": "AZ 1개",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-web",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-web",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "InstanceType": "m5.large"
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "multi-az-multi-type",
+      "role": "control",
+      "condition": "AZ 2개, MixedInstancesPolicy Overrides 로 m5.large·m5a.large·m6i.large",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-mip",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-mip",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "MixedInstancesPolicy": {
+                  "LaunchTemplate": {
+                    "LaunchTemplateSpecification": {
+                      "LaunchTemplateId": "lt-0b2",
+                      "LaunchTemplateName": "lt-0b2-name",
+                      "Version": "1"
+                    },
+                    "Overrides": [
+                      {
+                        "InstanceType": "m5.large"
+                      },
+                      {
+                        "InstanceType": "m5a.large"
+                      },
+                      {
+                        "InstanceType": "m6i.large"
+                      }
+                    ]
+                  },
+                  "InstancesDistribution": {
+                    "OnDemandBaseCapacity": 0,
+                    "OnDemandPercentageAboveBaseCapacity": 100
+                  }
+                },
+                "LaunchTemplate": {
+                  "LaunchTemplateVersions": {}
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          },
+          "ec2": {
+            "describe_launch_templates": [
+              {
+                "LaunchTemplateId": "lt-0b2",
+                "LaunchTemplateName": "lt-0b2-name",
+                "DefaultVersionNumber": 1,
+                "LatestVersionNumber": 1,
+                "Tags": {},
+                "LaunchTemplateVersions": [
+                  {
+                    "LaunchTemplateId": "lt-0b2",
+                    "LaunchTemplateName": "lt-0b2-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "InstanceType": "m5.large"
+                    }
+                  }
+                ]
+              }
+            ],
+            "describe_instances": [],
+            "describe_addresses": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

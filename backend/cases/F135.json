@@ -1,0 +1,177 @@
+{
+  "finding": "F135",
+  "rule": "REME-0100800002",
+  "service": "elb",
+  "status": "reproducible",
+  "note": "elb.py:87 — Listener.Protocol != 'HTTPS' 면 취약. TLS 로 암호화되는 SSL 리스너도 취약 처리한다(ELB-003 은 ['HTTPS','SSL'] 을 암호화로 인정).",
+  "scenarios": [
+    {
+      "id": "ssl-listener",
+      "role": "bug",
+      "condition": "Classic ELB 리스너 SSL:443 → 인스턴스 TCP:80 하나",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elb": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "clb-ssl",
+                "DNSName": "clb-ssl-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "SSL",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "TCP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": true,
+                    "S3BucketName": "elb-logs",
+                    "EmitInterval": 60
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "SSL 리스너는 클라이언트-ELB 구간을 TLS 로 암호화한다(TCP over TLS) — 암호화 통신 양호"
+    },
+    {
+      "id": "https-listener",
+      "role": "control",
+      "condition": "Classic ELB 리스너 HTTPS:443 하나",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elb": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "clb-https",
+                "DNSName": "clb-https-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": true,
+                    "S3BucketName": "elb-logs",
+                    "EmitInterval": 60
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "http-listener",
+      "role": "control",
+      "condition": "Classic ELB 리스너 HTTP:80 하나",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elb": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "clb-http",
+                "DNSName": "clb-http-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTP",
+                      "LoadBalancerPort": 80,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": true,
+                    "S3BucketName": "elb-logs",
+                    "EmitInterval": 60
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

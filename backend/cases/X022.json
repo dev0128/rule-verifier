@@ -1,0 +1,527 @@
+{
+  "finding": "X022",
+  "rule": "REME-0100500012",
+  "service": "rds",
+  "status": "reproducible",
+  "note": "rds.py:1091-1096 (neptune.py:47-52 동일) 라우팅 테이블의 `Associations[].SubnetId` 만 모은다 — 명시적 연결이 없어 VPC 의 메인 라우팅 테이블(`Main: true` 연결, SubnetId 없음)을 쓰는 서브넷은 어떤 테이블과도 매칭되지 않아 IGW 경로가 있어도 양호. raw 에 서브넷 그룹 VpcId 와 라우팅 테이블 VpcId/Main 이 있으므로 룰에서 고칠 수 있다.",
+  "scenarios": [
+    {
+      "id": "main-rtb-public",
+      "role": "bug",
+      "condition": "subnet-a 는 명시적 연결 없음, vpc-1 메인 라우팅 테이블에 0.0.0.0/0 → igw",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [
+              {
+                "DBSubnetGroupName": "dbsg-1",
+                "VpcId": "vpc-1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                  {
+                    "SubnetIdentifier": "subnet-a",
+                    "SubnetAvailabilityZone": {
+                      "Name": "ap-northeast-2a"
+                    },
+                    "SubnetStatus": "Active"
+                  }
+                ]
+              }
+            ],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          },
+          "ec2": {
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-main",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": true,
+                    "RouteTableAssociationId": "rtbassoc-rtb-main-main",
+                    "RouteTableId": "rtb-main",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-1",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "aurora-1"
+        ]
+      },
+      "why": "명시적 연결이 없는 서브넷은 VPC 메인 라우팅 테이블을 따른다 → 퍼블릭 서브넷 → 취약"
+    },
+    {
+      "id": "neptune-main-rtb-public",
+      "role": "bug",
+      "condition": "Neptune 클러스터, subnet-a 가 IGW 경로 메인 라우팅 테이블을 암묵적으로 사용 (AWS-NPT-001)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "neptune-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:neptune-1",
+                "Engine": "neptune",
+                "EngineVersion": "1.3.1.0",
+                "Status": "available",
+                "Port": 8182,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-neptune-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "neptune-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [
+              {
+                "DBSubnetGroupName": "dbsg-1",
+                "VpcId": "vpc-1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                  {
+                    "SubnetIdentifier": "subnet-a",
+                    "SubnetAvailabilityZone": {
+                      "Name": "ap-northeast-2a"
+                    },
+                    "SubnetStatus": "Active"
+                  }
+                ]
+              }
+            ],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          },
+          "ec2": {
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-main",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": true,
+                    "RouteTableAssociationId": "rtbassoc-rtb-main-main",
+                    "RouteTableId": "rtb-main",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-1",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "neptune-1"
+        ]
+      },
+      "why": "같은 이유로 퍼블릭 서브넷 → 취약",
+      "rule": "REME-0105700001",
+      "service": "neptune"
+    },
+    {
+      "id": "explicit-public",
+      "role": "control",
+      "condition": "subnet-a 가 IGW 경로 라우팅 테이블에 명시적 연결",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [
+              {
+                "DBSubnetGroupName": "dbsg-1",
+                "VpcId": "vpc-1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                  {
+                    "SubnetIdentifier": "subnet-a",
+                    "SubnetAvailabilityZone": {
+                      "Name": "ap-northeast-2a"
+                    },
+                    "SubnetStatus": "Active"
+                  }
+                ]
+              }
+            ],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          },
+          "ec2": {
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-pub",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-rtb-pub-subnet-a",
+                    "RouteTableId": "rtb-pub",
+                    "SubnetId": "subnet-a",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-1",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "main-rtb-private",
+      "role": "control",
+      "condition": "subnet-a 는 명시적 연결 없음, 메인 라우팅 테이블에 IGW 경로 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [
+              {
+                "DBSubnetGroupName": "dbsg-1",
+                "VpcId": "vpc-1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                  {
+                    "SubnetIdentifier": "subnet-a",
+                    "SubnetAvailabilityZone": {
+                      "Name": "ap-northeast-2a"
+                    },
+                    "SubnetStatus": "Active"
+                  }
+                ]
+              }
+            ],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          },
+          "ec2": {
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-main",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": true,
+                    "RouteTableAssociationId": "rtbassoc-rtb-main-main",
+                    "RouteTableId": "rtb-main",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "neptune-explicit-public",
+      "role": "control",
+      "condition": "Neptune 클러스터, subnet-a 가 퍼블릭 라우팅 테이블에 명시적 연결",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "neptune-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:neptune-1",
+                "Engine": "neptune",
+                "EngineVersion": "1.3.1.0",
+                "Status": "available",
+                "Port": 8182,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-neptune-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "neptune-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [
+              {
+                "DBSubnetGroupName": "dbsg-1",
+                "VpcId": "vpc-1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                  {
+                    "SubnetIdentifier": "subnet-a",
+                    "SubnetAvailabilityZone": {
+                      "Name": "ap-northeast-2a"
+                    },
+                    "SubnetStatus": "Active"
+                  }
+                ]
+              }
+            ],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          },
+          "ec2": {
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-pub",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-rtb-pub-subnet-a",
+                    "RouteTableId": "rtb-pub",
+                    "SubnetId": "subnet-a",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-1",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "rule": "REME-0105700001",
+      "service": "neptune"
+    }
+  ]
+}

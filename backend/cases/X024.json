@@ -1,0 +1,356 @@
+{
+  "finding": "X024",
+  "rule": "REME-0100100016",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:12-35 is_service_role — 신뢰 정책에 Service 주체를 Allow 하는 문이 하나라도 있으면 서비스 역할로 보고 IAM-016·018 대상에서 통째로 뺀다. 같은 신뢰 정책에 AWS 주체(타 계정)도 있는 역할을 놓친다.",
+  "scenarios": [
+    {
+      "id": "ro-service-and-external-stmts",
+      "role": "bug",
+      "condition": "[IAM-016] ReadOnlyAccess 역할, 신뢰 정책 문 2개 — Service ec2.amazonaws.com + AWS 외부 계정 222222222222",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "ro-mixed",
+                "RoleId": "AROAROMIXED",
+                "Arn": "arn:aws:iam::111111111111:role/ro-mixed",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "ec2.amazonaws.com"
+                      },
+                      "Action": "sts:AssumeRole"
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::222222222222:root"
+                      },
+                      "Action": "sts:AssumeRole"
+                    }
+                  ]
+                },
+                "policies": [
+                  {
+                    "PolicyName": "ReadOnlyAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "ro-mixed"
+        ]
+      },
+      "why": "서비스 주체가 함께 있어도 외부 계정이 역할을 맡을 수 있으므로 외부 계정 ReadOnlyAccess 부여에 해당"
+    },
+    {
+      "id": "ro-service-and-external-one-stmt",
+      "role": "bug",
+      "condition": "[IAM-016] ReadOnlyAccess 역할, 한 문의 Principal 에 Service 와 AWS(외부 계정)가 함께",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "ro-mixed1",
+                "RoleId": "AROAROMIXED1",
+                "Arn": "arn:aws:iam::111111111111:role/ro-mixed1",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "lambda.amazonaws.com",
+                        "AWS": "arn:aws:iam::222222222222:root"
+                      },
+                      "Action": "sts:AssumeRole"
+                    }
+                  ]
+                },
+                "policies": [
+                  {
+                    "PolicyName": "ReadOnlyAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "ro-mixed1"
+        ]
+      },
+      "why": "외부 계정 주체가 Allow 되어 있다"
+    },
+    {
+      "id": "admin-service-and-user",
+      "role": "bug",
+      "rule": "REME-0100100018",
+      "condition": "[IAM-018] AdministratorAccess 역할, 신뢰 정책 문 2개 — Service ec2.amazonaws.com + AWS 자기 계정 root",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "admin-mixed",
+                "RoleId": "AROAADMINMIXED",
+                "Arn": "arn:aws:iam::111111111111:role/admin-mixed",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "ec2.amazonaws.com"
+                      },
+                      "Action": "sts:AssumeRole"
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "sts:AssumeRole"
+                    }
+                  ]
+                },
+                "policies": [
+                  {
+                    "PolicyName": "AdministratorAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "admin-mixed"
+        ]
+      },
+      "why": "사람(계정 내 IAM 주체)도 맡을 수 있는 역할이므로 서비스 역할로 빼면 안 되고, AdministratorAccess 가 붙어 있으니 취약"
+    },
+    {
+      "id": "ro-pure-external",
+      "role": "control",
+      "condition": "[IAM-016] ReadOnlyAccess 역할, 신뢰 정책 AWS 외부 계정만",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "ro-ext",
+                "RoleId": "AROAROEXT",
+                "Arn": "arn:aws:iam::111111111111:role/ro-ext",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::222222222222:root"
+                      },
+                      "Action": "sts:AssumeRole"
+                    }
+                  ]
+                },
+                "policies": [
+                  {
+                    "PolicyName": "ReadOnlyAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "ro-pure-service",
+      "role": "control",
+      "condition": "[IAM-016] ReadOnlyAccess 역할, 신뢰 정책 Service ec2.amazonaws.com 만 (순수 서비스 역할 → 대상 제외)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "ro-svc",
+                "RoleId": "AROAROSVC",
+                "Arn": "arn:aws:iam::111111111111:role/ro-svc",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "ec2.amazonaws.com"
+                      },
+                      "Action": "sts:AssumeRole"
+                    }
+                  ]
+                },
+                "policies": [
+                  {
+                    "PolicyName": "ReadOnlyAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "checked": 0
+      }
+    },
+    {
+      "id": "admin-pure-user",
+      "role": "control",
+      "rule": "REME-0100100018",
+      "condition": "[IAM-018] AdministratorAccess 역할, 신뢰 정책 AWS 자기 계정 root 만",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "admin-user",
+                "RoleId": "AROAADMINUSER",
+                "Arn": "arn:aws:iam::111111111111:role/admin-user",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "sts:AssumeRole"
+                    }
+                  ]
+                },
+                "policies": [
+                  {
+                    "PolicyName": "AdministratorAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

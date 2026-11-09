@@ -1,0 +1,171 @@
+{
+  "finding": "F086",
+  "rule": "REME-0101100003",
+  "service": "acm",
+  "status": "reproducible",
+  "note": "acm.py:144-149 — 와일드카드를 Certificate.DomainValidationOptions[].DomainName 에서만 찾는다. IMPORTED 인증서는 DVO 가 없어(ACM 은 가져온 인증서의 도메인을 검증하지 않음) '*.example.com' 이어도 양호. Certificate.DomainName/SubjectAlternativeNames 를 봐야 한다.",
+  "scenarios": [
+    {
+      "id": "imported-wildcard",
+      "role": "bug",
+      "condition": "외부 CA 와일드카드 인증서를 import — DomainName=*.example.com, DVO 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-imp-wild",
+                "DomainName": "*.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "*.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "IMPORTED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-imp-wild",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-imp-wild",
+                  "DomainName": "*.example.com",
+                  "SubjectAlternativeNames": [
+                    "*.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "IMPORTED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "c-imp-wild"
+        ]
+      },
+      "why": "인증서 도메인에 와일드카드가 포함돼 있다 — 발급 경로(ACM/import)와 무관"
+    },
+    {
+      "id": "amazon-issued-wildcard",
+      "role": "control",
+      "condition": "ACM 발급 *.example.com (DVO 에 와일드카드 도메인)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-wild",
+                "DomainName": "*.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "*.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-wild",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-wild",
+                  "DomainName": "*.example.com",
+                  "SubjectAlternativeNames": [
+                    "*.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "*.example.com",
+                      "ValidationDomain": "example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "imported-plain",
+      "role": "control",
+      "condition": "IMPORTED www.example.com (와일드카드 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-imp-plain",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "IMPORTED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-imp-plain",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-imp-plain",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "IMPORTED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,506 @@
+{
+  "finding": "F084",
+  "rule": "REME-0100700007",
+  "service": "s3",
+  "status": "reproducible",
+  "note": "s3.py:394-401(007) / 589-596(010) — Action 을 정확한 문자열로만 비교(와일드카드 미해석)하고 Principal 은 '*' 또는 {'AWS':'*'} 만 인정. 006/008/009 도 같은 패턴.",
+  "scenarios": [
+    {
+      "id": "get-wildcard",
+      "role": "bug",
+      "condition": "Allow + Principal '*' + Action 's3:Get*'",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "get-star",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "s3:Get*",
+                      "Resource": "arn:aws:s3:::b/*"
+                    }
+                  ]
+                },
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "s3:Get* 는 s3:GetObject 를 포함 — 누구나 객체를 다운로드할 수 있다"
+    },
+    {
+      "id": "action-star",
+      "role": "bug",
+      "condition": "Allow + Principal '*' + Action '*'",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "all-star",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "*",
+                      "Resource": "arn:aws:s3:::b/*"
+                    }
+                  ]
+                },
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Action '*' 는 s3:GetObject 를 포함하는 전체 권한 — 공개 다운로드 허용"
+    },
+    {
+      "id": "principal-list",
+      "role": "bug",
+      "condition": "Allow + Principal {'AWS': ['*']} + Action 's3:GetObject'",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "aws-list",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": [
+                          "*"
+                        ]
+                      },
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::b/*"
+                    }
+                  ]
+                },
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "{'AWS':['*']} 는 {'AWS':'*'} 와 같은 '모든 보안 주체' 표기"
+    },
+    {
+      "id": "s3-010-action-star",
+      "role": "bug",
+      "rule": "REME-0100700010",
+      "condition": "(S3-010) Allow + Principal '*' + Action '*'",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "all-star-010",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "*",
+                      "Resource": "arn:aws:s3:::b/*"
+                    }
+                  ]
+                },
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Action '*' 는 s3:* 를 포함하는 모든 권한 — '객체 모든 권한' 공개"
+    },
+    {
+      "id": "exact-getobject",
+      "role": "control",
+      "condition": "Allow + Principal '*' + Action 's3:GetObject' (정확한 문자열)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "exact",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::b/*"
+                    }
+                  ]
+                },
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "account-principal",
+      "role": "control",
+      "condition": "Allow + Principal 특정 계정 role + Action 's3:GetObject'",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "scoped",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:role/reader"
+                      },
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::b/*"
+                    }
+                  ]
+                },
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

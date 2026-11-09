@@ -1,0 +1,261 @@
+{
+  "finding": "X003",
+  "rule": "REME-0105300001",
+  "service": "dlm",
+  "status": "reproducible",
+  "note": "dlm.py:55 (기본 정책 ExcludeTags 경로) · dlm.py:84 (사용자 정책 TargetTags 경로) — volume['Tags'] 를 바로 subscript. 수집기 method_exchange_tag(Module/util.py:191)는 태그 없는 볼륨에서 del item['Tags'] 가 KeyError 로 끝나 Tags 키 자체가 없다 → 룰 전체 KeyError 'Tags'.",
+  "scenarios": [
+    {
+      "id": "default-excludetags-untagged",
+      "role": "bug",
+      "condition": "기본 정책(DefaultPolicy=true, Exclusions.ExcludeTags {backup: no}) + 볼륨 2개: vol-excluded(backup=no) · vol-untagged(태그 없음 → Tags 키 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "dlm": {
+            "get_lifecycle_policy": [
+              {
+                "PolicyId": "policy-default",
+                "Description": "default policy",
+                "State": "ENABLED",
+                "StatusMessage": "ENABLED",
+                "ExecutionRoleArn": "arn:aws:iam::111111111111:role/AWSDataLifecycleManagerDefaultRole",
+                "DateCreated": "2024-01-01T00:00:00+09:00",
+                "DateModified": "2024-01-01T00:00:00+09:00",
+                "PolicyDetails": {
+                  "PolicyLanguage": "SIMPLIFIED",
+                  "PolicyType": "EBS_SNAPSHOT_MANAGEMENT",
+                  "ResourceType": "VOLUME",
+                  "CreateInterval": 1,
+                  "RetainInterval": 7,
+                  "Exclusions": {
+                    "ExcludeBootVolumes": false,
+                    "ExcludeVolumeTypes": [],
+                    "ExcludeTags": {
+                      "backup": "no"
+                    }
+                  }
+                },
+                "Tags": {},
+                "PolicyArn": "arn:aws:dlm:ap-northeast-2:111111111111:policy/policy-default",
+                "DefaultPolicy": true
+              }
+            ]
+          },
+          "ec2": {
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-excluded",
+                "Size": 20,
+                "AvailabilityZone": "ap-northeast-2a",
+                "State": "available",
+                "CreateTime": "2024-01-01T00:00:00+09:00",
+                "Encrypted": true,
+                "VolumeType": "gp3",
+                "MultiAttachEnabled": false,
+                "Attachments": [],
+                "Tags": {
+                  "backup": "no"
+                }
+              },
+              {
+                "VolumeId": "vol-untagged",
+                "Size": 20,
+                "AvailabilityZone": "ap-northeast-2a",
+                "State": "available",
+                "CreateTime": "2024-01-01T00:00:00+09:00",
+                "Encrypted": true,
+                "VolumeType": "gp3",
+                "MultiAttachEnabled": false,
+                "Attachments": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "vol-excluded"
+        ],
+        "good_contains": [
+          "vol-untagged"
+        ]
+      },
+      "why": "제외 태그가 붙은 볼륨만 기본 정책에서 빠진다(취약). 태그 없는 볼륨은 제외 대상이 아니므로 기본 정책이 스냅샷을 만든다(양호)"
+    },
+    {
+      "id": "targettags-untagged",
+      "role": "bug",
+      "condition": "사용자 정책(TargetTags {backup: daily}) + 볼륨 2개: vol-daily(backup=daily) · vol-untagged(Tags 키 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "dlm": {
+            "get_lifecycle_policy": [
+              {
+                "PolicyId": "policy-1",
+                "Description": "policy-1",
+                "State": "ENABLED",
+                "StatusMessage": "ENABLED",
+                "ExecutionRoleArn": "arn:aws:iam::111111111111:role/AWSDataLifecycleManagerDefaultRole",
+                "DateCreated": "2024-01-01T00:00:00+09:00",
+                "DateModified": "2024-01-01T00:00:00+09:00",
+                "PolicyDetails": {
+                  "PolicyType": "EBS_SNAPSHOT_MANAGEMENT",
+                  "ResourceTypes": [
+                    "VOLUME"
+                  ],
+                  "TargetTags": {
+                    "backup": "daily"
+                  },
+                  "Schedules": [
+                    {
+                      "Name": "daily",
+                      "CreateRule": {
+                        "Interval": 24,
+                        "IntervalUnit": "HOURS"
+                      },
+                      "RetainRule": {
+                        "Count": 7
+                      }
+                    }
+                  ]
+                },
+                "Tags": {},
+                "PolicyArn": "arn:aws:dlm:ap-northeast-2:111111111111:policy/policy-1",
+                "DefaultPolicy": false
+              }
+            ]
+          },
+          "ec2": {
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-daily",
+                "Size": 20,
+                "AvailabilityZone": "ap-northeast-2a",
+                "State": "available",
+                "CreateTime": "2024-01-01T00:00:00+09:00",
+                "Encrypted": true,
+                "VolumeType": "gp3",
+                "MultiAttachEnabled": false,
+                "Attachments": [],
+                "Tags": {
+                  "backup": "daily"
+                }
+              },
+              {
+                "VolumeId": "vol-untagged",
+                "Size": 20,
+                "AvailabilityZone": "ap-northeast-2a",
+                "State": "available",
+                "CreateTime": "2024-01-01T00:00:00+09:00",
+                "Encrypted": true,
+                "VolumeType": "gp3",
+                "MultiAttachEnabled": false,
+                "Attachments": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "vol-untagged"
+        ],
+        "good_contains": [
+          "vol-daily"
+        ]
+      },
+      "why": "태그 없는 볼륨은 어떤 정책 대상도 아니므로 취약, 대상 태그가 있는 볼륨은 양호 — 예외 없이 판정되어야 한다"
+    },
+    {
+      "id": "all-tagged",
+      "role": "control",
+      "condition": "기본 정책 ExcludeTags {backup: no} + 볼륨 2개 모두 태그 있음(backup=no / env=prd)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "dlm": {
+            "get_lifecycle_policy": [
+              {
+                "PolicyId": "policy-default",
+                "Description": "default policy",
+                "State": "ENABLED",
+                "StatusMessage": "ENABLED",
+                "ExecutionRoleArn": "arn:aws:iam::111111111111:role/AWSDataLifecycleManagerDefaultRole",
+                "DateCreated": "2024-01-01T00:00:00+09:00",
+                "DateModified": "2024-01-01T00:00:00+09:00",
+                "PolicyDetails": {
+                  "PolicyLanguage": "SIMPLIFIED",
+                  "PolicyType": "EBS_SNAPSHOT_MANAGEMENT",
+                  "ResourceType": "VOLUME",
+                  "CreateInterval": 1,
+                  "RetainInterval": 7,
+                  "Exclusions": {
+                    "ExcludeBootVolumes": false,
+                    "ExcludeVolumeTypes": [],
+                    "ExcludeTags": {
+                      "backup": "no"
+                    }
+                  }
+                },
+                "Tags": {},
+                "PolicyArn": "arn:aws:dlm:ap-northeast-2:111111111111:policy/policy-default",
+                "DefaultPolicy": true
+              }
+            ]
+          },
+          "ec2": {
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-excluded",
+                "Size": 20,
+                "AvailabilityZone": "ap-northeast-2a",
+                "State": "available",
+                "CreateTime": "2024-01-01T00:00:00+09:00",
+                "Encrypted": true,
+                "VolumeType": "gp3",
+                "MultiAttachEnabled": false,
+                "Attachments": [],
+                "Tags": {
+                  "backup": "no"
+                }
+              },
+              {
+                "VolumeId": "vol-prd",
+                "Size": 20,
+                "AvailabilityZone": "ap-northeast-2a",
+                "State": "available",
+                "CreateTime": "2024-01-01T00:00:00+09:00",
+                "Encrypted": true,
+                "VolumeType": "gp3",
+                "MultiAttachEnabled": false,
+                "Attachments": [],
+                "Tags": {
+                  "env": "prd"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "vol-excluded"
+        ]
+      }
+    }
+  ]
+}

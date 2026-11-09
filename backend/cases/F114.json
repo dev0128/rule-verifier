@@ -1,0 +1,304 @@
+{
+  "finding": "F114",
+  "rule": "REME-0100900008",
+  "service": "cloudfront",
+  "status": "reproducible",
+  "note": "cloudfront.py:618-624 — DomainName 에 .elb. / .execute-api. 가 하나도 없으면 N/A. EC2 퍼블릭 DNS · 자체 도메인 등 CustomOriginConfig 를 가진 다른 커스텀 오리진은 점검 대상에서 빠진다.",
+  "scenarios": [
+    {
+      "id": "ec2-http-only",
+      "role": "bug",
+      "condition": "EC2 퍼블릭 DNS 오리진(ec2-…compute.amazonaws.com) http-only",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EEC2",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EEC2",
+                "DomainName": "eec2.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "ec2",
+                      "DomainName": "ec2-3-34-1-1.ap-northeast-2.compute.amazonaws.com",
+                      "OriginPath": "",
+                      "CustomOriginConfig": {
+                        "HTTPPort": 80,
+                        "HTTPSPort": 443,
+                        "OriginProtocolPolicy": "http-only",
+                        "OriginSslProtocols": {
+                          "Quantity": 1,
+                          "Items": [
+                            "TLSv1.2"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "ec2",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "사용자 지정 오리진(CustomOriginConfig)과 평문 HTTP 로 통신하므로 취약"
+    },
+    {
+      "id": "own-domain-http-only",
+      "role": "bug",
+      "condition": "자체 도메인 오리진(origin.example.com) http-only",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EOWN",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EOWN",
+                "DomainName": "eown.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "c",
+                      "DomainName": "origin.example.com",
+                      "OriginPath": "",
+                      "CustomOriginConfig": {
+                        "HTTPPort": 80,
+                        "HTTPSPort": 443,
+                        "OriginProtocolPolicy": "http-only",
+                        "OriginSslProtocols": {
+                          "Quantity": 1,
+                          "Items": [
+                            "TLSv1.2"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "c",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "사용자 지정 오리진과 평문 HTTP 통신 — 취약"
+    },
+    {
+      "id": "alb-http-only",
+      "role": "control",
+      "condition": "ALB 오리진 http-only",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EALB",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EALB",
+                "DomainName": "ealb.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "alb",
+                      "DomainName": "my-alb-123456.ap-northeast-2.elb.amazonaws.com",
+                      "OriginPath": "",
+                      "CustomOriginConfig": {
+                        "HTTPPort": 80,
+                        "HTTPSPort": 443,
+                        "OriginProtocolPolicy": "http-only",
+                        "OriginSslProtocols": {
+                          "Quantity": 1,
+                          "Items": [
+                            "TLSv1.2"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "alb",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "alb-https-tls12",
+      "role": "control",
+      "condition": "ALB 오리진 https-only + TLSv1.2",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EALBOK",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EALBOK",
+                "DomainName": "ealbok.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "alb",
+                      "DomainName": "my-alb-123456.ap-northeast-2.elb.amazonaws.com",
+                      "OriginPath": "",
+                      "CustomOriginConfig": {
+                        "HTTPPort": 80,
+                        "HTTPSPort": 443,
+                        "OriginProtocolPolicy": "https-only",
+                        "OriginSslProtocols": {
+                          "Quantity": 1,
+                          "Items": [
+                            "TLSv1.2"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "alb",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "s3-only",
+      "role": "control",
+      "condition": "S3 오리진만 (사용자 지정 오리진 없음)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "ES3",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/ES3",
+                "DomainName": "es3.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "web-bucket",
+                      "DomainName": "web-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "web-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "na": 1
+      }
+    }
+  ]
+}

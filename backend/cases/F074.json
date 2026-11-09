@@ -1,0 +1,351 @@
+{
+  "finding": "F074",
+  "rule": "REME-0103000001",
+  "service": "sns",
+  "status": "reproducible",
+  "effect": "wrong_logic",
+  "note": "카탈로그는 'get_topic_attributes 실패 시 그 리전의 나머지 주제 수집 중단' 이라 적었으나 실제로는 아니다: Raw/sns.py 클래스는 @class_decorator(exception_handler) 라 _get_topic_attributes(39-44) 도 따로 감싸져 예외가 그 메서드에서 삼켜지고, list_topics 루프는 계속돼 실패 주제는 'Attributes' 키 없이 결과에 들어간다(ANALYZE_CORE/Util/common_util.py:17-24,40-64). 룰은 Attributes 없음을 정책 없음과 같이 다뤄 SNS-001/003/004/005 는 양호, SNS-002 는 KmsMasterKeyId None 이라 취약 — 판단 불가(N/A)여야 한다. Attributes 없음이 raw 에 드러나므로 룰에서 고칠 수 있다 → bug. effect 를 not_checked → wrong_logic 으로 바로잡는다.",
+  "scenarios": [
+    {
+      "id": "sns001-attrs-failed",
+      "role": "bug",
+      "condition": "주제 2개 — t-ok 는 자기 계정만 허용, t-denied 는 GetTopicAttributes 거부(주제 정책 Deny)로 Attributes 키 없음",
+      "rule": "REME-0103000001",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                "TopicName": "t-ok",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::111122223333:root"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-ok"
+                      }
+                    ]
+                  },
+                  "KmsMasterKeyId": "arn:aws:kms:ap-northeast-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+                }
+              },
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-denied",
+                "TopicName": "t-denied"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "na_contains": [
+          "t-denied"
+        ]
+      },
+      "why": "정책을 읽지 못한 주제는 공개 여부를 알 수 없다 — 양호가 아니라 N/A"
+    },
+    {
+      "id": "sns002-attrs-failed",
+      "role": "bug",
+      "condition": "t-denied 1개 — GetTopicAttributes 실패로 Attributes 키 없음",
+      "rule": "REME-0103000002",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-denied",
+                "TopicName": "t-denied"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "na": 1,
+        "flag": 0,
+        "good": 0
+      },
+      "why": "속성을 읽지 못했으므로 암호화 여부는 판단 불가 — 취약으로 단정하면 안 된다"
+    },
+    {
+      "id": "sns005-attrs-failed",
+      "role": "bug",
+      "condition": "t-ok(기본 정책) + t-denied(Attributes 키 없음)",
+      "rule": "REME-0103000005",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                "TopicName": "t-ok",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Sid": "__default_statement_ID",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "*"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                        "Condition": {
+                          "StringEquals": {
+                            "AWS:SourceOwner": "111122223333"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-denied",
+                "TopicName": "t-denied"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "na_contains": [
+          "t-denied"
+        ]
+      },
+      "why": "정책을 읽지 못한 주제는 N/A"
+    },
+    {
+      "id": "sns002-kms",
+      "role": "control",
+      "condition": "KMS 암호화된 주제 1개 (수집 정상)",
+      "rule": "REME-0103000002",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                "TopicName": "t-ok",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Sid": "__default_statement_ID",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "*"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                        "Condition": {
+                          "StringEquals": {
+                            "AWS:SourceOwner": "111122223333"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "KmsMasterKeyId": "arn:aws:kms:ap-northeast-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "sns001-normal",
+      "role": "control",
+      "condition": "자기 계정만 허용 주제 + 공개 게시 주제 (수집 정상)",
+      "rule": "REME-0103000001",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                "TopicName": "t-ok",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-ok",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::111122223333:root"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-ok"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-pub",
+                "TopicName": "t-pub",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t-pub",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": [
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t-pub"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "t-pub"
+        ]
+      }
+    }
+  ]
+}

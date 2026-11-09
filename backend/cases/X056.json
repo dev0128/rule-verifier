@@ -1,0 +1,534 @@
+{
+  "finding": "X056",
+  "rule": "REME-0100700002",
+  "service": "s3",
+  "status": "reproducible",
+  "note": "Raw/Service/s3.py — get_response 가 예외(AccessDenied 등) 시 {} 를 돌려주고, 각 메서드가 response.get(key, 기본값) 으로 Policy={}(:453)·bucket_encryption={}(:414)·PublicAccessBlockConfiguration 4종 False(:485-494)·OwnershipControls Disabled(:357)·Grants=[](:441) 를 채운다. raw 에 실패 흔적이 남지 않아 '미설정' 과 구분 불가 → 룰로는 고칠 수 없는 수집 결함.",
+  "scenarios": [
+    {
+      "id": "s3-002-policy-denied",
+      "role": "collection",
+      "condition": "실제로는 SSL 강제 Deny 정책이 있는 버킷인데 get_bucket_policy 가 AccessDenied → Policy={}",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "denied-bucket",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {},
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "Disabled"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "실제 버킷에는 Deny + aws:SecureTransport=false 문장이 있으므로 양호. 수집 실패가 '정책 없음' 으로 위장돼 취약으로 나온다"
+    },
+    {
+      "id": "s3-013-encryption-denied",
+      "role": "collection",
+      "rule": "REME-0100700013",
+      "condition": "SSE-S3 기본 암호화가 켜진 버킷(2023-01 이후 모든 버킷 기본값)인데 get_bucket_encryption 실패 → bucket_encryption={}",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "denied-bucket",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {},
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "Disabled"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "실제로는 SSEAlgorithm=AES256 이므로 양호"
+    },
+    {
+      "id": "s3-014-ownership-denied",
+      "role": "collection",
+      "rule": "REME-0100700014",
+      "condition": "ObjectOwnership=BucketOwnerEnforced 버킷인데 get_bucket_ownership_controls 가 AccessDenied → 기본값 Disabled",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "denied-bucket",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {},
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "Disabled"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "실제로는 ACL 이 비활성(BucketOwnerEnforced)이므로 양호"
+    },
+    {
+      "id": "s3-016-pab-denied",
+      "role": "collection",
+      "rule": "REME-0100700016",
+      "condition": "퍼블릭 액세스 차단 4종이 모두 켜진 버킷인데 get_public_access_block 이 AccessDenied → 4종 False",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "denied-bucket",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {},
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "Disabled"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "실제 차단 설정은 4종 모두 true 이므로 양호"
+    },
+    {
+      "id": "s3-002-ok",
+      "role": "control",
+      "condition": "정상 수집 — Deny + aws:SecureTransport=false 정책",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "ok-bucket",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "DenyHTTP",
+                      "Effect": "Deny",
+                      "Principal": "*",
+                      "Action": "s3:*",
+                      "Resource": [
+                        "arn:aws:s3:::b",
+                        "arn:aws:s3:::b/*"
+                      ],
+                      "Condition": {
+                        "Bool": {
+                          "aws:SecureTransport": "false"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "s3-013-ok",
+      "role": "control",
+      "rule": "REME-0100700013",
+      "condition": "정상 수집 — SSEAlgorithm=AES256",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "ok-bucket",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "s3-014-ok",
+      "role": "control",
+      "rule": "REME-0100700014",
+      "condition": "정상 수집 — ObjectOwnership=BucketOwnerEnforced",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "ok-bucket",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": false,
+                  "IgnorePublicAcls": false,
+                  "BlockPublicPolicy": false,
+                  "RestrictPublicBuckets": false
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "s3-016-ok",
+      "role": "control",
+      "rule": "REME-0100700016",
+      "condition": "정상 수집 — 퍼블릭 액세스 차단 4종 모두 true",
+      "args": [],
+      "raw": {
+        "globals": {
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "ok-bucket",
+                "CreationDate": "2024-01-01T00:00:00+00:00",
+                "LocationConstraint": "ap-northeast-2",
+                "bucket_versioning": {
+                  "Status": "Enabled",
+                  "MFADelete": null
+                },
+                "Grants": [
+                  {
+                    "Grantee": {
+                      "Type": "CanonicalUser",
+                      "ID": "abc123owner",
+                      "DisplayName": "owner"
+                    },
+                    "Permission": "FULL_CONTROL"
+                  }
+                ],
+                "Policy": {},
+                "PolicyStatus": {},
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": true,
+                  "IgnorePublicAcls": true,
+                  "BlockPublicPolicy": true,
+                  "RestrictPublicBuckets": true
+                },
+                "bucket_encryption": {
+                  "Rules": [
+                    {
+                      "ApplyServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                      },
+                      "BucketKeyEnabled": false
+                    }
+                  ]
+                },
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                }
+              }
+            ],
+            "PublicAccessBlockConfiguration_Account": [
+              {
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false,
+                "AccountID": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "finding": "F124",
+  "rule": "REME-0101300006",
+  "service": "elasticbeanstalk",
+  "status": "reproducible",
+  "note": "elasticbeanstalk.py:355 — `Health == \"Green\"` 인 환경만 Notification Endpoint 를 본다. 비Green 환경은 알림이 비어 있어도 양호.",
+  "scenarios": [
+    {
+      "id": "red-no-endpoint",
+      "role": "bug",
+      "condition": "Health=Red 환경, Notification Endpoint 빈 값",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-red",
+                "EnvironmentId": "e-env-red",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-red.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-red.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Red",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-red",
+                "HealthStatus": "Severe",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-red",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:sns:topics",
+                        "OptionName": "Notification Endpoint",
+                        "Value": ""
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Health 는 인스턴스 상태 색일 뿐 설정과 무관하다 — 상태가 Green 이 아니어도 설정이 꺼져 있으면 취약이어야 한다"
+    },
+    {
+      "id": "green-no-endpoint",
+      "role": "control",
+      "condition": "Health=Green, Notification Endpoint 빈 값",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-green",
+                "EnvironmentId": "e-env-green",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-green.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-green.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-green",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-green",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:sns:topics",
+                        "OptionName": "Notification Endpoint",
+                        "Value": ""
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "green-endpoint",
+      "role": "control",
+      "condition": "Health=Green, Notification Endpoint=ops@example.com",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-green",
+                "EnvironmentId": "e-env-green",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-green.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-green.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-green",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-green",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:sns:topics",
+                        "OptionName": "Notification Endpoint",
+                        "Value": "ops@example.com"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

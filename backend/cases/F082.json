@@ -1,0 +1,138 @@
+{
+  "finding": "F082",
+  "rule": "REME-0103200004",
+  "service": "ssm",
+  "status": "reproducible",
+  "note": "Raw/Service/ssm.py:163-165 — 응답 계획 요약의 키를 'Arn'(실제 'arn')으로 읽고 ARN 키워드도 'repliresponse-plan' 오타라, 응답 계획이 1개라도 있으면 aws_arn_to_id 에서 예외 → 메서드 데코레이터(exception_handler)가 삼켜 158행의 [] 가 그대로 남는다. Analyze ssm.py:240-242 는 ACTIVE + 응답 계획이 있어야 양호이므로 항상 취약. 엔진 기준(응답 계획 필요)으로는 raw 에서 응답 계획 정보가 사라져 룰만으로 고칠 수 없다 → collection. (웹 판단기준 '복제 세트를 사용 중이면 양호' 로 기준을 바꾸면 룰만으로도 양호가 나온다.)",
+  "scenarios": [
+    {
+      "id": "active-with-plans-collected",
+      "role": "collection",
+      "condition": "복제 세트 ACTIVE, 실제로 응답 계획 1개 존재 — 수집기 결과 list_response_plans=[](예외로 비워짐)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ssm": {
+            "describe_instance_information": [],
+            "describe_parameters": [],
+            "describe_sessions": [],
+            "list_documents": [],
+            "get_replication_set": [
+              {
+                "arn": "arn:aws:ssm-incidents::111122223333:replication-set/7ab3e1c2-0000-4000-8000-000000000001",
+                "createdBy": "arn:aws:iam::111122223333:role/admin",
+                "createdTime": "2026-01-01 00:00:00+00:00",
+                "deletionProtected": false,
+                "lastModifiedBy": "arn:aws:iam::111122223333:role/admin",
+                "lastModifiedTime": "2026-01-01 00:00:00+00:00",
+                "regionMap": {
+                  "ap-northeast-2": {
+                    "status": "ACTIVE",
+                    "sseKmsKeyId": "DefaultKey"
+                  }
+                },
+                "status": "ACTIVE",
+                "Id": "7ab3e1c2-0000-4000-8000-000000000001",
+                "tags": {}
+              }
+            ],
+            "list_response_plans": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "복제 세트가 ACTIVE 이고 응답 계획도 있는 정상 구성 — 양호여야 한다. 수집이 응답 계획을 잃어 raw 로는 구분 불가"
+    },
+    {
+      "id": "active-with-plans-fixed-shape",
+      "role": "control",
+      "condition": "복제 세트 ACTIVE, list_response_plans 에 응답 계획 1개(수집기가 고쳐졌을 때의 모양)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ssm": {
+            "describe_instance_information": [],
+            "describe_parameters": [],
+            "describe_sessions": [],
+            "list_documents": [],
+            "get_replication_set": [
+              {
+                "arn": "arn:aws:ssm-incidents::111122223333:replication-set/7ab3e1c2-0000-4000-8000-000000000001",
+                "createdBy": "arn:aws:iam::111122223333:role/admin",
+                "createdTime": "2026-01-01 00:00:00+00:00",
+                "deletionProtected": false,
+                "lastModifiedBy": "arn:aws:iam::111122223333:role/admin",
+                "lastModifiedTime": "2026-01-01 00:00:00+00:00",
+                "regionMap": {
+                  "ap-northeast-2": {
+                    "status": "ACTIVE",
+                    "sseKmsKeyId": "DefaultKey"
+                  }
+                },
+                "status": "ACTIVE",
+                "Id": "7ab3e1c2-0000-4000-8000-000000000001",
+                "tags": {}
+              }
+            ],
+            "list_response_plans": [
+              {
+                "arn": "arn:aws:ssm-incidents::111122223333:response-plan/plan1",
+                "name": "plan1",
+                "displayName": "Plan 1",
+                "Id": "plan1",
+                "tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "failed-replication-set",
+      "role": "control",
+      "condition": "복제 세트 status=FAILED, 응답 계획 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ssm": {
+            "describe_instance_information": [],
+            "describe_parameters": [],
+            "describe_sessions": [],
+            "list_documents": [],
+            "get_replication_set": [
+              {
+                "arn": "arn:aws:ssm-incidents::111122223333:replication-set/7ab3e1c2-0000-4000-8000-000000000001",
+                "createdBy": "arn:aws:iam::111122223333:role/admin",
+                "createdTime": "2026-01-01 00:00:00+00:00",
+                "deletionProtected": false,
+                "lastModifiedBy": "arn:aws:iam::111122223333:role/admin",
+                "lastModifiedTime": "2026-01-01 00:00:00+00:00",
+                "regionMap": {
+                  "ap-northeast-2": {
+                    "status": "ACTIVE",
+                    "sseKmsKeyId": "DefaultKey"
+                  }
+                },
+                "status": "FAILED",
+                "Id": "7ab3e1c2-0000-4000-8000-000000000001",
+                "tags": {}
+              }
+            ],
+            "list_response_plans": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

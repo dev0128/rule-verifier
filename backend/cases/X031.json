@@ -1,0 +1,309 @@
+{
+  "finding": "X031",
+  "rule": "REME-0106200004",
+  "service": "cloudtrail",
+  "status": "reproducible",
+  "note": "cloudtrail.py:237-241 · :370-374 — 파티션을 cn-north-1 · us-gov-east-1 만 aws-cn · aws-us-gov 로 본다. cn-northwest-1 · us-gov-west-1 의 클래식 선택기(arn:aws-cn:s3 등)는 매칭 안 돼 취약. :277 · :410 고급 선택기는 resources.type 만 봐서 resources.ARN 으로 버킷 하나만 기록해도 양호.",
+  "scenarios": [
+    {
+      "id": "cn-northwest-1",
+      "role": "bug",
+      "condition": "cn-northwest-1 trail, 클래식 선택기 WriteOnly · AWS::S3::Object arn:aws-cn:s3(전체 버킷)",
+      "args": [],
+      "raw": {
+        "cn-northwest-1": {
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "cn",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "cn-northwest-1",
+                "TrailARN": "arn:aws:cloudtrail:cn-northwest-1:111122223333:trail/cn",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:cn-northwest-1:111122223333:trail/cn",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "WriteOnly",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [
+                        {
+                          "Type": "AWS::S3::Object",
+                          "Values": [
+                            "arn:aws-cn:s3"
+                          ]
+                        }
+                      ],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "중국(aws-cn) 파티션의 전체 버킷 ARN 이다 — 모든 S3 쓰기 이벤트를 기록한다"
+    },
+    {
+      "id": "us-gov-west-1",
+      "role": "bug",
+      "condition": "CLT-006: us-gov-west-1 trail, 클래식 선택기 All · arn:aws-us-gov:s3(전체 버킷)",
+      "rule": "REME-0106200006",
+      "args": [],
+      "raw": {
+        "us-gov-west-1": {
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "gov",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "us-gov-west-1",
+                "TrailARN": "arn:aws:cloudtrail:us-gov-west-1:111122223333:trail/gov",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:us-gov-west-1:111122223333:trail/gov",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "All",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [
+                        {
+                          "Type": "AWS::S3::Object",
+                          "Values": [
+                            "arn:aws-us-gov:s3"
+                          ]
+                        }
+                      ],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "GovCloud(aws-us-gov) 파티션의 전체 버킷 ARN 이다 — 모든 S3 읽기 이벤트를 기록한다"
+    },
+    {
+      "id": "advanced-one-bucket",
+      "role": "bug",
+      "condition": "고급 선택기 S3 Object 데이터 이벤트를 resources.ARN StartsWith arn:aws:s3:::only-bucket/ 로 버킷 하나만 기록",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "one",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/one",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/one",
+                  "AdvancedEventSelectors": [
+                    {
+                      "Name": "sel0",
+                      "FieldSelectors": [
+                        {
+                          "Field": "eventCategory",
+                          "Equals": [
+                            "Management"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "Name": "sel1",
+                      "FieldSelectors": [
+                        {
+                          "Field": "eventCategory",
+                          "Equals": [
+                            "Data"
+                          ]
+                        },
+                        {
+                          "Field": "resources.type",
+                          "Equals": [
+                            "AWS::S3::Object"
+                          ]
+                        },
+                        {
+                          "Field": "resources.ARN",
+                          "StartsWith": [
+                            "arn:aws:s3:::only-bucket/"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "버킷 하나만 기록한다 — 나머지 버킷의 쓰기 이벤트는 기록되지 않는다(클래식 경로도 전체 버킷 ARN 만 양호로 본다)"
+    },
+    {
+      "id": "cn-north-1",
+      "role": "control",
+      "condition": "cn-north-1 trail, 클래식 선택기 WriteOnly · arn:aws-cn:s3",
+      "args": [],
+      "raw": {
+        "cn-north-1": {
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "cn",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "cn-north-1",
+                "TrailARN": "arn:aws:cloudtrail:cn-north-1:111122223333:trail/cn",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:cn-north-1:111122223333:trail/cn",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "WriteOnly",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [
+                        {
+                          "Type": "AWS::S3::Object",
+                          "Values": [
+                            "arn:aws-cn:s3"
+                          ]
+                        }
+                      ],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "aws-classic",
+      "role": "control",
+      "condition": "ap-northeast-2 trail, 클래식 선택기 WriteOnly · arn:aws:s3",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "main",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "WriteOnly",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [
+                        {
+                          "Type": "AWS::S3::Object",
+                          "Values": [
+                            "arn:aws:s3"
+                          ]
+                        }
+                      ],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

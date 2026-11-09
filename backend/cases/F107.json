@@ -1,0 +1,229 @@
+{
+  "finding": "F107",
+  "rule": "REME-0100600014",
+  "service": "ec2",
+  "status": "reproducible",
+  "note": "ec2.py:815-818 `if CidrIp != \"0.0.0.0/0\" and CidrIp != \"::/0\": flag = True` — '알 수 없는 IP' 기준(허용 목록 args_ 등)이 없어 0.0.0.0/0 이 아닌 IPv4 CIDR 은 사설 대역(RFC 1918)까지 전부 취약. 의도된 '수동 검토용 목록' 일 가능성도 있어 카탈로그 confidence 는 low.",
+  "scenarios": [
+    {
+      "id": "vpc-private-cidr",
+      "role": "bug",
+      "condition": "인바운드 규칙: TCP 5432 를 VPC 내부 대역 10.0.0.0/16 에만 허용",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-priv",
+                "GroupName": "sg-priv",
+                "Description": "test",
+                "OwnerId": "111122223333",
+                "VpcId": "vpc-1",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "10.0.0.0/16"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": [],
+                    "FromPort": 5432,
+                    "ToPort": 5432
+                  }
+                ],
+                "IpPermissionsEgress": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "RFC 1918 사설 대역(VPC 내부)은 인터넷에서 오는 출처를 알 수 없는 IP 가 아니다"
+    },
+    {
+      "id": "rfc1918-mixed",
+      "role": "bug",
+      "condition": "인바운드 규칙: TCP 22 를 172.16.0.0/12 · 192.168.10.0/24 (사내 사설 대역)에 허용",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-corp",
+                "GroupName": "sg-corp",
+                "Description": "test",
+                "OwnerId": "111122223333",
+                "VpcId": "vpc-1",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "172.16.0.0/12"
+                      },
+                      {
+                        "CidrIp": "192.168.10.0/24"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": [],
+                    "FromPort": 22,
+                    "ToPort": 22
+                  }
+                ],
+                "IpPermissionsEgress": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "사설 대역만 허용했으므로 출처를 알 수 없는 공인 IP 가 없다"
+    },
+    {
+      "id": "unknown-public-ip",
+      "role": "control",
+      "condition": "인바운드 규칙: TCP 22 를 공인 IP 203.0.113.10/32 에 허용 (허용 목록 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-pub",
+                "GroupName": "sg-pub",
+                "Description": "test",
+                "OwnerId": "111122223333",
+                "VpcId": "vpc-1",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "203.0.113.10/32"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": [],
+                    "FromPort": 22,
+                    "ToPort": 22
+                  }
+                ],
+                "IpPermissionsEgress": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "sg-reference-only",
+      "role": "control",
+      "condition": "인바운드 규칙: 다른 보안 그룹 참조만 (IP 대역 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-ref",
+                "GroupName": "sg-ref",
+                "Description": "test",
+                "OwnerId": "111122223333",
+                "VpcId": "vpc-1",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "tcp",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": [
+                      {
+                        "GroupId": "sg-alb",
+                        "UserId": "111122223333"
+                      }
+                    ],
+                    "FromPort": 443,
+                    "ToPort": 443
+                  }
+                ],
+                "IpPermissionsEgress": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

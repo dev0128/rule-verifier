@@ -1,0 +1,139 @@
+{
+  "finding": "F025",
+  "rule": "REME-0104100001",
+  "service": "elasticache",
+  "status": "reproducible",
+  "note": "elasticache.py:39,43 — Engine 이 redis · memcached 일 때만 포트를 본다. valkey 클러스터는 기본 포트 6379 여도 양호.",
+  "scenarios": [
+    {
+      "id": "valkey-6379",
+      "role": "bug",
+      "condition": "valkey 클러스터, 노드 포트 6379(기본)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "vk-1",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:vk-1",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "valkey",
+                "EngineVersion": "7.2",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "vk-1.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 6379
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {}
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Valkey 의 기본 포트도 6379 — 기본 포트 사용이므로 취약"
+    },
+    {
+      "id": "redis-6379",
+      "role": "control",
+      "condition": "redis 클러스터, 포트 6379",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "rd-1",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:rd-1",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "rd-1.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 6379
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {}
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "redis-6380",
+      "role": "control",
+      "condition": "redis 클러스터, 포트 6380",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "rd-1",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:rd-1",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "rd-1.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 6380
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {}
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

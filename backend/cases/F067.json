@@ -1,0 +1,204 @@
+{
+  "finding": "F067",
+  "rule": "REME-0101200008",
+  "service": "apigateway",
+  "status": "reproducible",
+  "note": "Analyze/apigateway.py:555 — `if not key_data['policy']` — 리소스 정책이 있기만 하면 양호. aws:SourceIp / aws:VpcSourceIp 조건이 있는지 보지 않는다.",
+  "scenarios": [
+    {
+      "id": "policy-without-ip-condition",
+      "role": "bug",
+      "condition": "리소스 정책: Principal '*' execute-api:Invoke Allow 만 있고 IP 조건 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": [],
+                "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": \"*\", \"Action\": \"execute-api:Invoke\", \"Resource\": \"arn:aws:execute-api:ap-northeast-2:111122223333:id-rest1/*\"}]}"
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "IP 조건이 없는 공개 Allow 정책은 IP 기반 접근 제한이 아니다"
+    },
+    {
+      "id": "policy-sourceip-deny",
+      "role": "control",
+      "condition": "리소스 정책: Allow * + aws:SourceIp 203.0.113.0/24 외 Deny (AWS 문서 IP 허용 목록 예시)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": [],
+                "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": \"*\", \"Action\": \"execute-api:Invoke\", \"Resource\": \"arn:aws:execute-api:ap-northeast-2:111122223333:id-rest1/*\"}, {\"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": \"execute-api:Invoke\", \"Resource\": \"arn:aws:execute-api:ap-northeast-2:111122223333:id-rest1/*\", \"Condition\": {\"NotIpAddress\": {\"aws:SourceIp\": [\"203.0.113.0/24\"]}}}]}"
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "no-policy",
+      "role": "control",
+      "condition": "리소스 정책 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

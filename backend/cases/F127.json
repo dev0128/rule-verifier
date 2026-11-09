@@ -1,0 +1,85 @@
+{
+  "finding": "F127",
+  "rule": "REME-0102800002",
+  "service": "waf",
+  "status": "reproducible",
+  "note": "Analyze/waf.py:73-80 — regions_list 에서 'globals' 를 빼고 순회한다. wafv2 수집기(Raw/wafv2.py:12)는 client 를 us-east-1 로 고정하고 결과를 globals 에만 넣으므로 어떤 Web ACL 도 점검되지 않아 항상 N/A.",
+  "scenarios": [
+    {
+      "id": "cf-acl-no-logging",
+      "role": "bug",
+      "condition": "globals.wafv2 에 CloudFront Web ACL 1개, LoggingConfiguration={} (로깅 미설정)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "wafv2": {
+            "list_web_acls": [
+              {
+                "Name": "CreatedByCloudFront-abc",
+                "Id": "CreatedByCloudFront-abc-id",
+                "Description": "",
+                "LockToken": "tok",
+                "ARN": "arn:aws:wafv2:us-east-1:111122223333:global/webacl/CreatedByCloudFront-abc/CreatedByCloudFront-abc-id",
+                "Scope": "CLOUDFRONT",
+                "TagList": {},
+                "WebACL": {
+                  "Name": "CreatedByCloudFront-abc",
+                  "Id": "CreatedByCloudFront-abc-id",
+                  "ARN": "arn:aws:wafv2:us-east-1:111122223333:global/webacl/CreatedByCloudFront-abc/CreatedByCloudFront-abc-id",
+                  "DefaultAction": {
+                    "Allow": {}
+                  },
+                  "Rules": []
+                },
+                "ResourceArns": [],
+                "LoggingConfiguration": {}
+              }
+            ],
+            "list_rule_groups": [],
+            "list_ip_sets": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {}
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "로깅이 설정되지 않은 Web ACL 이 있으므로 취약"
+    },
+    {
+      "id": "no-acl",
+      "role": "control",
+      "condition": "Web ACL 없음 (globals.wafv2.list_web_acls=[])",
+      "args": [],
+      "raw": {
+        "globals": {
+          "wafv2": {
+            "list_web_acls": [],
+            "list_rule_groups": [],
+            "list_ip_sets": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {}
+      },
+      "expect": {
+        "verdict": "N/A",
+        "checked": 0
+      }
+    }
+  ]
+}

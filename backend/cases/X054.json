@@ -1,0 +1,135 @@
+{
+  "finding": "X054",
+  "rule": "REME-0101800004",
+  "service": "autoscaling",
+  "status": "reproducible",
+  "note": "autoscaling.py:209-213 — b64decode · decode('utf-8') 에 예외 처리가 없다. UTF-16 으로 저장된 Windows PowerShell UserData 처럼 UTF-8 이 아닌 UserData 가 하나라도 있으면 UnicodeDecodeError 로 룰 전체가 N/A.",
+  "scenarios": [
+    {
+      "id": "utf16-userdata",
+      "role": "bug",
+      "condition": "ASG 2개 — asg-win: UserData 가 UTF-16(BOM) PowerShell 스크립트, asg-secret: UserData 에 AWS 키",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-win",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-win",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0c3",
+                  "LaunchTemplateName": "lt-0c3-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0c3",
+                    "LaunchTemplateName": "lt-0c3-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0win",
+                      "UserData": "//48AHAAbwB3AGUAcgBzAGgAZQBsAGwAPgAKAFcAcgBpAHQAZQAtAEgAbwBzAHQAIABoAGUAbABsAG8ACgA8AC8AcABvAHcAZQByAHMAaABlAGwAbAA+AAoA"
+                    }
+                  }
+                }
+              },
+              {
+                "AutoScalingGroupName": "asg-secret",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-secret",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "UserData": "IyEvYmluL2Jhc2gKZXhwb3J0IEFXU19BQ0NFU1NfS0VZX0lEPUFLSUFJT1NGT0ROTjdFWEFNUExFCmV4cG9ydCBBV1NfU0VDUkVUX0FDQ0VTU19LRVk9d0phbHJYVXRuRkVNSS9LN01ERU5HL2JQeFJmaUNZRVhBTVBMRUtFWQo="
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "asg-secret"
+        ]
+      },
+      "why": "디코딩할 수 없는 UserData 한 건 때문에 다른 ASG 판정까지 사라지면 안 된다 — asg-win 은 N/A(또는 해당 인코딩으로 읽어 판정), asg-secret 은 취약"
+    },
+    {
+      "id": "utf8-userdata",
+      "role": "control",
+      "condition": "ASG 1개 — UserData 에 AWS 키(UTF-8)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-secret",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-secret",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "UserData": "IyEvYmluL2Jhc2gKZXhwb3J0IEFXU19BQ0NFU1NfS0VZX0lEPUFLSUFJT1NGT0ROTjdFWEFNUExFCmV4cG9ydCBBV1NfU0VDUkVUX0FDQ0VTU19LRVk9d0phbHJYVXRuRkVNSS9LN01ERU5HL2JQeFJmaUNZRVhBTVBMRUtFWQo="
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

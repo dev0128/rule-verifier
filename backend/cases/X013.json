@@ -1,0 +1,218 @@
+{
+  "finding": "X013",
+  "rule": "REME-0106300016",
+  "service": "cloudwatch",
+  "status": "reproducible",
+  "note": "cloudwatch.py:1611 `elif key_data < int(args_[0])` — 인자가 None 이면 TypeError, \"\" · [] 이면 IndexError. 보존 기간이 설정된 로그 그룹이 하나라도 있으면 룰 전체 예외.",
+  "scenarios": [
+    {
+      "id": "args-null",
+      "role": "bug",
+      "condition": "인자 null(커스텀룰 마스터 참조), 로그 그룹 2개(보존 1일 · 무기한)",
+      "args": null,
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudwatch": {
+            "describe_metric_filters": [],
+            "describe_alarms": [],
+            "describe_log_groups": [
+              {
+                "logGroupName": "/app/short",
+                "creationTime": 1700000000000,
+                "metricFilterCount": 0,
+                "arn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/short:*",
+                "storedBytes": 0,
+                "logGroupClass": "STANDARD",
+                "logGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/short",
+                "tags": {},
+                "retentionInDays": 1
+              },
+              {
+                "logGroupName": "/app/forever",
+                "creationTime": 1700000000000,
+                "metricFilterCount": 0,
+                "arn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/forever:*",
+                "storedBytes": 0,
+                "logGroupClass": "STANDARD",
+                "logGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/forever",
+                "tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1
+      },
+      "why": "인자가 비어도 예외 없이 기본 기준(기본 룰셋 365일)으로 판정해야 한다 — 보존 1일은 어떤 기준으로도 짧다"
+    },
+    {
+      "id": "args-empty-string",
+      "role": "bug",
+      "condition": "인자 \"\"(거버넌스 기본 룰), 로그 그룹 2개(보존 1일 · 무기한)",
+      "args": "",
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudwatch": {
+            "describe_metric_filters": [],
+            "describe_alarms": [],
+            "describe_log_groups": [
+              {
+                "logGroupName": "/app/short",
+                "creationTime": 1700000000000,
+                "metricFilterCount": 0,
+                "arn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/short:*",
+                "storedBytes": 0,
+                "logGroupClass": "STANDARD",
+                "logGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/short",
+                "tags": {},
+                "retentionInDays": 1
+              },
+              {
+                "logGroupName": "/app/forever",
+                "creationTime": 1700000000000,
+                "metricFilterCount": 0,
+                "arn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/forever:*",
+                "storedBytes": 0,
+                "logGroupClass": "STANDARD",
+                "logGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/forever",
+                "tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1
+      },
+      "why": "인자가 비어도 예외 없이 기본 기준(기본 룰셋 365일)으로 판정해야 한다 — 보존 1일은 어떤 기준으로도 짧다"
+    },
+    {
+      "id": "args-empty-list",
+      "role": "bug",
+      "condition": "인자 [], 로그 그룹 2개(보존 1일 · 무기한)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudwatch": {
+            "describe_metric_filters": [],
+            "describe_alarms": [],
+            "describe_log_groups": [
+              {
+                "logGroupName": "/app/short",
+                "creationTime": 1700000000000,
+                "metricFilterCount": 0,
+                "arn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/short:*",
+                "storedBytes": 0,
+                "logGroupClass": "STANDARD",
+                "logGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/short",
+                "tags": {},
+                "retentionInDays": 1
+              },
+              {
+                "logGroupName": "/app/forever",
+                "creationTime": 1700000000000,
+                "metricFilterCount": 0,
+                "arn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/forever:*",
+                "storedBytes": 0,
+                "logGroupClass": "STANDARD",
+                "logGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/forever",
+                "tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1
+      },
+      "why": "인자가 비어도 예외 없이 기본 기준(기본 룰셋 365일)으로 판정해야 한다 — 보존 1일은 어떤 기준으로도 짧다"
+    },
+    {
+      "id": "args-365",
+      "role": "control",
+      "condition": "기본 룰셋 인자 [\"365\"], 로그 그룹 2개(보존 1일 · 무기한)",
+      "args": [
+        "365"
+      ],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudwatch": {
+            "describe_metric_filters": [],
+            "describe_alarms": [],
+            "describe_log_groups": [
+              {
+                "logGroupName": "/app/short",
+                "creationTime": 1700000000000,
+                "metricFilterCount": 0,
+                "arn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/short:*",
+                "storedBytes": 0,
+                "logGroupClass": "STANDARD",
+                "logGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/short",
+                "tags": {},
+                "retentionInDays": 1
+              },
+              {
+                "logGroupName": "/app/forever",
+                "creationTime": 1700000000000,
+                "metricFilterCount": 0,
+                "arn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/forever:*",
+                "storedBytes": 0,
+                "logGroupClass": "STANDARD",
+                "logGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:/app/forever",
+                "tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,182 @@
+{
+  "finding": "X006",
+  "rule": "REME-0100100001",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:70 `int(args_[0])` — root 의 password_last_used 가 날짜일 때 인자를 읽는데 None 이면 TypeError, \"\"/[] 이면 IndexError 로 룰 전체 중단(거버넌스 · 커스텀룰 마스터 참조).",
+  "scenarios": [
+    {
+      "id": "args-none",
+      "role": "bug",
+      "condition": "인자 None (커스텀룰 마스터 참조) — root 마지막 로그인 2020-01-01",
+      "args": null,
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "<root_account>",
+                "arn": "arn:aws:iam::111111111111:root",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "true",
+                "password_last_used": "2020-01-01T00:00:00+00:00",
+                "password_last_changed": "2019-01-01T00:00:00+00:00",
+                "password_next_rotation": "N/A",
+                "mfa_active": "true",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "인자가 없으면 기본값(기본 룰셋 7일)으로 판정해야 한다. 마지막 root 사용이 수년 전이므로 어떤 합리적 기본값에서도 양호"
+    },
+    {
+      "id": "args-empty-str",
+      "role": "bug",
+      "condition": "인자 \"\" (거버넌스 기본 룰) — root 마지막 로그인 2020-01-01",
+      "args": "",
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "<root_account>",
+                "arn": "arn:aws:iam::111111111111:root",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "true",
+                "password_last_used": "2020-01-01T00:00:00+00:00",
+                "password_last_changed": "2019-01-01T00:00:00+00:00",
+                "password_next_rotation": "N/A",
+                "mfa_active": "true",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "인자가 없으면 기본값(기본 룰셋 7일)으로 판정해야 한다. 마지막 root 사용이 수년 전이므로 어떤 합리적 기본값에서도 양호"
+    },
+    {
+      "id": "args-empty-list",
+      "role": "bug",
+      "condition": "인자 [] (빈 리스트) — root 마지막 로그인 2020-01-01",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "<root_account>",
+                "arn": "arn:aws:iam::111111111111:root",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "true",
+                "password_last_used": "2020-01-01T00:00:00+00:00",
+                "password_last_changed": "2019-01-01T00:00:00+00:00",
+                "password_next_rotation": "N/A",
+                "mfa_active": "true",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "인자가 없으면 기본값(기본 룰셋 7일)으로 판정해야 한다. 마지막 root 사용이 수년 전이므로 어떤 합리적 기본값에서도 양호"
+    },
+    {
+      "id": "args-default",
+      "role": "control",
+      "condition": "기본 룰셋 인자 [\"7\"] — root 마지막 로그인 2020-01-01",
+      "args": [
+        "7"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "<root_account>",
+                "arn": "arn:aws:iam::111111111111:root",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "true",
+                "password_last_used": "2020-01-01T00:00:00+00:00",
+                "password_last_changed": "2019-01-01T00:00:00+00:00",
+                "password_next_rotation": "N/A",
+                "mfa_active": "true",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

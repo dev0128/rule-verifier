@@ -1,0 +1,222 @@
+{
+  "finding": "F043",
+  "rule": "REME-0100500015",
+  "service": "rds",
+  "status": "reproducible",
+  "note": "rds.py:1490 `if \"postgres\" or \"mysql\" in engine_type: continue` — 늘 참이라 인스턴스 경로가 모든 엔진에서 건너뛴다(점검 0건). mysql/postgres 제외가 의도였을 가능성을 피하려고 oracle-ee 로 쓰고, F037(DBClusters={})과 분리하려고 DBClusters 키 없는 인스턴스로 쓴다.",
+  "scenarios": [
+    {
+      "id": "oracle-no-em",
+      "role": "bug",
+      "condition": "단독 oracle-ee 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), MonitoringInterval=0",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-ora",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-ora",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "oracle-ee",
+                "EngineVersion": "19.0.0.0.ru-2024-01.rur-2024-01.r1",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-ora.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 1521,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:oracle-ee",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.oracle-ee",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "db-ora"
+        ]
+      },
+      "why": "향상된 모니터링 미설정 → 취약"
+    },
+    {
+      "id": "oracle-em",
+      "role": "bug",
+      "condition": "단독 oracle-ee 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), MonitoringInterval=60 + EnhancedMonitoringResourceArn",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-ora",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-ora",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "oracle-ee",
+                "EngineVersion": "19.0.0.0.ru-2024-01.rur-2024-01.r1",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-ora.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 1521,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 60,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:oracle-ee",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.oracle-ee",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "MonitoringRoleArn": "arn:aws:iam::111122223333:role/rds-monitoring-role",
+                "EnhancedMonitoringResourceArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:RDSOSMetrics:log-stream:db-ORA"
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "향상된 모니터링 활성 → 양호"
+    },
+    {
+      "id": "cluster-no-em",
+      "role": "control",
+      "condition": "Aurora 클러스터 MonitoringInterval=0",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {},
+                "MonitoringInterval": 0
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

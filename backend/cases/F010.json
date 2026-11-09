@@ -1,0 +1,231 @@
+{
+  "finding": "F010",
+  "rule": "REME-0104400003",
+  "service": "efs",
+  "status": "reproducible",
+  "note": "Raw/Service/efs.py:52 `item['Policy'] = response` — describe_file_system_policy 응답 전체({FileSystemId, Policy:{...}})를 넣는데 Analyze efs.py:138-141 은 그 dict 에서 바로 Statement 를 찾는다 → 정책이 있어도 항상 양호. 정책 문서는 Policy.Policy 에 남아 있어 룰에서 고칠 수 있다(bug). 덤으로 Principal {AWS:['*']}(리스트)도 '*' 비교에서 빠진다.",
+  "scenarios": [
+    {
+      "id": "principal-star",
+      "role": "bug",
+      "condition": "파일 시스템 정책 Principal {AWS: '*'}, Effect=Allow — 수집 모양(Policy={FileSystemId, Policy:{Statement}})",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "efs": {
+            "describe_file_systems": [
+              {
+                "OwnerId": "111122223333",
+                "CreationToken": "tok",
+                "FileSystemId": "fs-0123456789abcdef0",
+                "FileSystemArn": "arn:aws:elasticfilesystem:ap-northeast-2:111122223333:file-system/fs-0123456789abcdef0",
+                "LifeCycleState": "available",
+                "Name": "shared",
+                "NumberOfMountTargets": 1,
+                "PerformanceMode": "generalPurpose",
+                "Encrypted": true,
+                "Tags": {},
+                "Policy": {
+                  "FileSystemId": "fs-0123456789abcdef0",
+                  "Policy": {
+                    "Version": "2012-10-17",
+                    "Id": "p1",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "*"
+                        },
+                        "Action": [
+                          "elasticfilesystem:ClientMount",
+                          "elasticfilesystem:ClientWrite"
+                        ],
+                        "Resource": "arn:aws:elasticfilesystem:ap-northeast-2:111122223333:file-system/fs-0123456789abcdef0"
+                      }
+                    ]
+                  }
+                },
+                "BackupPolicy": {
+                  "Status": "ENABLED"
+                },
+                "MountTargets": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Principal '*' Allow 는 모든 주체에 마운트·쓰기를 허용하는 퍼블릭 정책 — 취약"
+    },
+    {
+      "id": "principal-star-list",
+      "role": "bug",
+      "condition": "Principal {AWS: ['*']}(리스트), Effect=Allow — 수집 모양",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "efs": {
+            "describe_file_systems": [
+              {
+                "OwnerId": "111122223333",
+                "CreationToken": "tok",
+                "FileSystemId": "fs-0123456789abcdef0",
+                "FileSystemArn": "arn:aws:elasticfilesystem:ap-northeast-2:111122223333:file-system/fs-0123456789abcdef0",
+                "LifeCycleState": "available",
+                "Name": "shared",
+                "NumberOfMountTargets": 1,
+                "PerformanceMode": "generalPurpose",
+                "Encrypted": true,
+                "Tags": {},
+                "Policy": {
+                  "FileSystemId": "fs-0123456789abcdef0",
+                  "Policy": {
+                    "Version": "2012-10-17",
+                    "Id": "p1",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": [
+                            "*"
+                          ]
+                        },
+                        "Action": [
+                          "elasticfilesystem:ClientMount",
+                          "elasticfilesystem:ClientWrite"
+                        ],
+                        "Resource": "arn:aws:elasticfilesystem:ap-northeast-2:111122223333:file-system/fs-0123456789abcdef0"
+                      }
+                    ]
+                  }
+                },
+                "BackupPolicy": {
+                  "Status": "ENABLED"
+                },
+                "MountTargets": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "IAM 정책에서 ['*'] 는 '*' 와 같다 — 퍼블릭 정책이므로 취약"
+    },
+    {
+      "id": "account-principal",
+      "role": "control",
+      "condition": "Principal {AWS: 'arn:aws:iam::111122223333:root'}, Effect=Allow — 수집 모양",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "efs": {
+            "describe_file_systems": [
+              {
+                "OwnerId": "111122223333",
+                "CreationToken": "tok",
+                "FileSystemId": "fs-0123456789abcdef0",
+                "FileSystemArn": "arn:aws:elasticfilesystem:ap-northeast-2:111122223333:file-system/fs-0123456789abcdef0",
+                "LifeCycleState": "available",
+                "Name": "shared",
+                "NumberOfMountTargets": 1,
+                "PerformanceMode": "generalPurpose",
+                "Encrypted": true,
+                "Tags": {},
+                "Policy": {
+                  "FileSystemId": "fs-0123456789abcdef0",
+                  "Policy": {
+                    "Version": "2012-10-17",
+                    "Id": "p1",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::111122223333:root"
+                        },
+                        "Action": [
+                          "elasticfilesystem:ClientMount",
+                          "elasticfilesystem:ClientWrite"
+                        ],
+                        "Resource": "arn:aws:elasticfilesystem:ap-northeast-2:111122223333:file-system/fs-0123456789abcdef0"
+                      }
+                    ]
+                  }
+                },
+                "BackupPolicy": {
+                  "Status": "ENABLED"
+                },
+                "MountTargets": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "policy-document-shape",
+      "role": "control",
+      "condition": "(룰 로직 확인용) Policy 에 정책 문서를 바로 넣은 모양, Principal {AWS: '*'} Allow — 수집기가 실제로 만들지 않는 모양",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "efs": {
+            "describe_file_systems": [
+              {
+                "OwnerId": "111122223333",
+                "CreationToken": "tok",
+                "FileSystemId": "fs-0123456789abcdef0",
+                "FileSystemArn": "arn:aws:elasticfilesystem:ap-northeast-2:111122223333:file-system/fs-0123456789abcdef0",
+                "LifeCycleState": "available",
+                "Name": "shared",
+                "NumberOfMountTargets": 1,
+                "PerformanceMode": "generalPurpose",
+                "Encrypted": true,
+                "Tags": {},
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p1",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "*"
+                      },
+                      "Action": [
+                        "elasticfilesystem:ClientMount",
+                        "elasticfilesystem:ClientWrite"
+                      ],
+                      "Resource": "arn:aws:elasticfilesystem:ap-northeast-2:111122223333:file-system/fs-0123456789abcdef0"
+                    }
+                  ]
+                },
+                "BackupPolicy": {
+                  "Status": "ENABLED"
+                },
+                "MountTargets": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Statement 를 바로 볼 수 있으면 룰이 '*' Allow 를 잡는다 — 비교 로직 자체는 동작함을 확인"
+    }
+  ]
+}

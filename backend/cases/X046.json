@@ -1,0 +1,868 @@
+{
+  "finding": "X046",
+  "rule": "REME-0101600001",
+  "service": "appmesh",
+  "status": "reproducible",
+  "note": "Raw/Service/appmesh.py:57-71 — _describe_virtual_gateway 루프 안에서 method/method_key 를 'describe_virtual_gateway'/'virtualGateway' 로 덮어써, 두 번째 메시의 paginate 에서 page['virtualGateway'] KeyError → 메서드 중단(virtualService/Node/Router 도 같은 패턴). 두 번째 메시부터 virtualGateway 키가 없고, AMH-001~004 룰은 result_temp_i['virtualGateway'] 를 subscript 해 KeyError 로 룰 전체 예외. 예외는 룰에서 막을 수 있으므로 bug, 게이트웨이 정보 유실은 collection.",
+  "scenarios": [
+    {
+      "id": "amh-001-second-mesh-missing",
+      "role": "bug",
+      "condition": "메시 2개: ① gw 1개(로깅·상태확인·TLS 모두 설정) ② 수집기 _describe_virtual_gateway 가 두 번째 메시에서 KeyError 로 중단돼 virtualGateway 등 하위 키가 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "mesh-a",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "mesh-a",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              },
+              {
+                "meshName": "mesh-b",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-b",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 2,
+        "good": 1,
+        "na": 1,
+        "good_contains": [
+          "mesh-a"
+        ],
+        "na_contains": [
+          "mesh-b"
+        ]
+      },
+      "why": "하위 리소스 수집에 실패한 메시는 N/A 로 빼고 나머지 메시는 정상 판정해야 한다 — 한 메시 때문에 룰 전체가 예외로 끝나면 안 된다"
+    },
+    {
+      "id": "amh-002-second-mesh-missing",
+      "role": "bug",
+      "condition": "(AMH-002) 메시 2개: ① gw 1개(로깅·상태확인·TLS 모두 설정) ② 수집기 _describe_virtual_gateway 가 두 번째 메시에서 KeyError 로 중단돼 virtualGateway 등 하위 키가 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "mesh-a",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "mesh-a",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              },
+              {
+                "meshName": "mesh-b",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-b",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 2,
+        "good": 1,
+        "na": 1,
+        "good_contains": [
+          "mesh-a"
+        ],
+        "na_contains": [
+          "mesh-b"
+        ]
+      },
+      "why": "하위 리소스 수집에 실패한 메시는 N/A 로 빼고 나머지 메시는 정상 판정해야 한다 — 한 메시 때문에 룰 전체가 예외로 끝나면 안 된다",
+      "rule": "REME-0101600002"
+    },
+    {
+      "id": "amh-003-second-mesh-missing",
+      "role": "bug",
+      "condition": "(AMH-003) 메시 2개: ① gw 1개(로깅·상태확인·TLS 모두 설정) ② 수집기 _describe_virtual_gateway 가 두 번째 메시에서 KeyError 로 중단돼 virtualGateway 등 하위 키가 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "mesh-a",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "mesh-a",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              },
+              {
+                "meshName": "mesh-b",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-b",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 2,
+        "good": 1,
+        "na": 1,
+        "good_contains": [
+          "mesh-a"
+        ],
+        "na_contains": [
+          "mesh-b"
+        ]
+      },
+      "why": "하위 리소스 수집에 실패한 메시는 N/A 로 빼고 나머지 메시는 정상 판정해야 한다 — 한 메시 때문에 룰 전체가 예외로 끝나면 안 된다",
+      "rule": "REME-0101600003"
+    },
+    {
+      "id": "amh-004-second-mesh-missing",
+      "role": "bug",
+      "condition": "(AMH-004) 메시 2개: ① gw 1개(로깅·상태확인·TLS 모두 설정) ② 수집기 _describe_virtual_gateway 가 두 번째 메시에서 KeyError 로 중단돼 virtualGateway 등 하위 키가 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "mesh-a",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "mesh-a",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              },
+              {
+                "meshName": "mesh-b",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-b",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 2,
+        "good": 1,
+        "na": 1,
+        "good_contains": [
+          "mesh-a"
+        ],
+        "na_contains": [
+          "mesh-b"
+        ]
+      },
+      "why": "하위 리소스 수집에 실패한 메시는 N/A 로 빼고 나머지 메시는 정상 판정해야 한다 — 한 메시 때문에 룰 전체가 예외로 끝나면 안 된다",
+      "rule": "REME-0101600004"
+    },
+    {
+      "id": "second-mesh-real-gw",
+      "role": "collection",
+      "condition": "메시 2개: ① gw 로깅 설정 ② 실제로는 액세스 로깅이 없는 gw 가 있으나 수집 중단으로 virtualGateway 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "mesh-a",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "mesh-a",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              },
+              {
+                "meshName": "mesh-b",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-b",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "mesh-b"
+        ]
+      },
+      "why": "② 메시의 게이트웨이는 실제로 액세스 로깅이 꺼져 있으므로 취약. 수집기가 두 번째 메시부터 게이트웨이를 조회하지 못해 raw 로는 알 수 없다"
+    },
+    {
+      "id": "single-mesh",
+      "role": "control",
+      "condition": "메시 1개, gw 1개(액세스 로깅 설정) — 수집 정상",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "mesh-a",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "mesh-a",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "single-mesh-002",
+      "role": "control",
+      "rule": "REME-0101600002",
+      "condition": "(AMH-002) 메시 1개, gw 리스너 healthCheck 설정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "mesh-a",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "mesh-a",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/mesh-a/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

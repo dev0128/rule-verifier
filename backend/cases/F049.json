@@ -1,0 +1,463 @@
+{
+  "finding": "F049",
+  "rule": "REME-0105900004",
+  "service": "eks",
+  "status": "reproducible",
+  "note": "Raw/eks.py:116,132 — simulate_principal_policy 실패 시 get_response 가 {} 를 돌려 response['EvaluationResults'] KeyError → 그 클러스터는 {} 로 남고 메서드가 중단돼 이후 클러스터엔 키 자체가 없다. Analyze/eks.py:266 key_data[...]['EvalDecision'] 가 {} 에서 KeyError, None 에서 TypeError → 룰 전체 예외(계정 결과 소실). raw 에 '수집 실패' 흔적({} · 키 없음)이 남으므로 룰에서 그 클러스터만 N/A 로 뺄 수 있다 → bug. 또 explicitDeny 도 != 'implicitDeny' 라 취약으로 잡는다.",
+  "scenarios": [
+    {
+      "id": "simulate-failed-empty",
+      "role": "bug",
+      "condition": "클러스터 2개 — c-ok 는 eks:* implicitDeny, c-fail 은 simulate 실패로 clusterRole_EvaluationResults={}",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c-ok",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c-ok",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              },
+              {
+                "name": "c-fail",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c-fail",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {},
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "good_contains": [
+          "c-ok"
+        ],
+        "na_contains": [
+          "c-fail"
+        ]
+      },
+      "why": "권한 시뮬레이션에 실패한 클러스터만 판단 불가(N/A)이고, 나머지 클러스터는 정상 판정돼야 한다"
+    },
+    {
+      "id": "simulate-failed-key-missing",
+      "role": "bug",
+      "condition": "c-ok 정상 + c-after 는 앞 클러스터 실패로 메서드가 중단돼 clusterRole_EvaluationResults 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c-ok",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c-ok",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              },
+              {
+                "name": "c-after",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c-after",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "na_contains": [
+          "c-after"
+        ]
+      },
+      "why": "수집되지 않은 클러스터는 N/A, 나머지는 정상 판정"
+    },
+    {
+      "id": "explicit-deny",
+      "role": "bug",
+      "condition": "클러스터 역할에 eks:* 가 명시적으로 거부됨 (EvalDecision=explicitDeny)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "explicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "explicitDeny 는 eks:* 가 거부된 상태 — 과도한 권한이 없다(IAM SimulatePrincipalPolicy: allowed 만 허용)"
+    },
+    {
+      "id": "allowed",
+      "role": "control",
+      "condition": "클러스터 역할에 eks:* 허용 (EvalDecision=allowed)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "allowed"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "implicit-deny",
+      "role": "control",
+      "condition": "eks:* 미허용 (EvalDecision=implicitDeny)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c-ok",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c-ok",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "finding": "F143",
+  "rule": "REME-0105800003",
+  "service": "ecs",
+  "status": "reproducible",
+  "note": "ecs.py:181-186 — EvalDecision != 'implicitDeny' 이면 취약. 명시적 거부(explicitDeny)도 과도한 권한으로 본다.",
+  "scenarios": [
+    {
+      "id": "explicit-deny",
+      "role": "bug",
+      "condition": "태스크 역할의 ecs:* simulate 결과 EvalDecision=explicitDeny",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "awsvpc",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {
+                  "EvalActionName": "ecs:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "explicitDeny"
+                },
+                "executionRole_EvaluationResults": {},
+                "taskRoleArn": "arn:aws:iam::111122223333:role/ecsTaskRole"
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "explicitDeny 는 정책이 ecs:* 를 명시적으로 거부한 것 — 권한이 없으므로 과도한 권한이 아니다"
+    },
+    {
+      "id": "allowed",
+      "role": "control",
+      "condition": "태스크 역할의 ecs:* EvalDecision=allowed",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "awsvpc",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {
+                  "EvalActionName": "ecs:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "allowed"
+                },
+                "executionRole_EvaluationResults": {},
+                "taskRoleArn": "arn:aws:iam::111122223333:role/ecsTaskRole"
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "implicit-deny",
+      "role": "control",
+      "condition": "태스크 역할의 ecs:* EvalDecision=implicitDeny",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "awsvpc",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {
+                  "EvalActionName": "ecs:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "executionRole_EvaluationResults": {},
+                "taskRoleArn": "arn:aws:iam::111122223333:role/ecsTaskRole"
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

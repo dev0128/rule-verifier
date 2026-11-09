@@ -1,0 +1,257 @@
+{
+  "finding": "X018",
+  "rule": "REME-0101200007",
+  "service": "apigateway",
+  "status": "reproducible",
+  "note": "Analyze/apigateway.py:500-503 — 모든 메서드에서 authorizationType=NONE 이면 취약. CORS 를 켜면 콘솔이 만드는 OPTIONS 프리플라이트 메서드(MOCK 통합, authorizationType=NONE)까지 포함돼, 실제 메서드를 Cognito/IAM 으로 보호해도 취약.",
+  "scenarios": [
+    {
+      "id": "cors-options-only-none",
+      "role": "bug",
+      "condition": "GET /items 는 COGNITO_USER_POOLS 인증, CORS 프리플라이트 OPTIONS /items 는 NONE",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": [
+                  {
+                    "id": "res-items",
+                    "parentId": "root1",
+                    "pathPart": "items",
+                    "path": "/items",
+                    "resourceMethods": {
+                      "GET": {
+                        "httpMethod": "GET",
+                        "authorizationType": "COGNITO_USER_POOLS",
+                        "apiKeyRequired": false,
+                        "authorizerId": "auth1"
+                      },
+                      "OPTIONS": {
+                        "httpMethod": "OPTIONS",
+                        "authorizationType": "NONE",
+                        "apiKeyRequired": false
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "브라우저 CORS 프리플라이트(OPTIONS)는 자격 증명 없이 보내지는 요청이라 인증을 걸 수 없다. 실제 API 메서드는 토큰 인증으로 보호되므로 양호"
+    },
+    {
+      "id": "get-none",
+      "role": "control",
+      "condition": "GET /items NONE + OPTIONS /items NONE",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": [
+                  {
+                    "id": "res-items",
+                    "parentId": "root1",
+                    "pathPart": "items",
+                    "path": "/items",
+                    "resourceMethods": {
+                      "GET": {
+                        "httpMethod": "GET",
+                        "authorizationType": "NONE",
+                        "apiKeyRequired": false
+                      },
+                      "OPTIONS": {
+                        "httpMethod": "OPTIONS",
+                        "authorizationType": "NONE",
+                        "apiKeyRequired": false
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "get-cognito-no-cors",
+      "role": "control",
+      "condition": "GET /items COGNITO_USER_POOLS, OPTIONS 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": [
+                  {
+                    "id": "res-items",
+                    "parentId": "root1",
+                    "pathPart": "items",
+                    "path": "/items",
+                    "resourceMethods": {
+                      "GET": {
+                        "httpMethod": "GET",
+                        "authorizationType": "COGNITO_USER_POOLS",
+                        "apiKeyRequired": false,
+                        "authorizerId": "auth1"
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "finding": "F004",
+  "rule": "REME-0102000002",
+  "service": "cloudformation",
+  "status": "reproducible",
+  "note": "cloudformation.py:133-135 `if statement.get(\"Effect\") == \"Allow\" and \"Update:*\" in statement.get(\"Action\"): flag = True` — Deny 문 존재 여부를 보지 않는다. 스택 정책은 기본 거부라 업데이트를 하려면 Allow 문이 반드시 필요하고 보호는 Deny 로 하므로, AWS 문서 권장 형태가 항상 취약이 된다.",
+  "scenarios": [
+    {
+      "id": "doc-example-allow-plus-deny",
+      "role": "bug",
+      "condition": "AWS 문서 예시 스택 정책: {Allow Update:* Resource *} + {Deny Update:* Resource LogicalResourceId/ProductionDatabase}",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudformation": {
+            "list_stacks": [
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/prod-stack/0a1b2c3d",
+                "StackName": "prod-stack",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "StackPolicyBody": {
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": "Update:*",
+                      "Principal": "*",
+                      "Resource": "*"
+                    },
+                    {
+                      "Effect": "Deny",
+                      "Action": "Update:*",
+                      "Principal": "*",
+                      "Resource": "LogicalResourceId/ProductionDatabase"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "스택 정책으로 중요 리소스(ProductionDatabase)의 업데이트를 막고 있다 — 스택 정책을 사용 중이므로 양호 (AWS CFN 사용자 가이드 'Prevent updates to stack resources' 예시)"
+    },
+    {
+      "id": "no-policy",
+      "role": "control",
+      "condition": "스택 정책 없음 (StackPolicyBody={})",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudformation": {
+            "list_stacks": [
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/s1/0a1b2c3d",
+                "StackName": "s1",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "StackPolicyBody": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "allow-all-only",
+      "role": "control",
+      "condition": "스택 정책이 {Allow Update:* Resource *} 하나뿐 (보호하는 Deny 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "cloudformation": {
+            "list_stacks": [
+              {
+                "StackId": "arn:aws:cloudformation:ap-northeast-2:111122223333:stack/s1/0a1b2c3d",
+                "StackName": "s1",
+                "StackStatus": "CREATE_COMPLETE",
+                "CreationTime": "2026-01-01T00:00:00.000Z",
+                "StackPolicyBody": {
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": "Update:*",
+                      "Principal": "*",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "모든 리소스 업데이트를 허용만 하므로 정책이 없는 것과 같다"
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "finding": "F096",
+  "rule": "REME-0105000003",
+  "service": "kms",
+  "status": "reproducible",
+  "note": "Raw/kms.py:_get_key_policy `if response.get(\"Policy\"): item[\"Policy\"] = ...` — get_key_policy 가 AccessDenied 면(키 정책이 진단 역할에 kms:GetKeyPolicy 를 안 줌) Policy 키를 만들지 않는다 → kms.py:158 `result_temp_i[\"Policy\"]` KeyError 로 룰 전체 중단.",
+  "scenarios": [
+    {
+      "id": "one-key-policy-missing",
+      "role": "bug",
+      "condition": "고객 관리형 활성 키 2개 — 하나는 get_key_policy 실패로 Policy 키 없음, 하나는 Principal \"*\" 퍼블릭 정책",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-nopolicy",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-nopolicy",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-nopolicy",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-nopolicy",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                }
+              },
+              {
+                "KeyId": "k-public",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-public",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-public",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-public",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    },
+                    {
+                      "Sid": "public",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "kms:Decrypt",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "k-public"
+        ]
+      },
+      "why": "정책을 못 읽은 키는 N/A 로 빼고 나머지 키는 정상 판정 — 퍼블릭 정책 키는 취약"
+    },
+    {
+      "id": "all-policies-present",
+      "role": "control",
+      "condition": "같은 두 키, 둘 다 정책 조회 성공 (하나는 기본 정책)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-default",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-default",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-default",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-default",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "key-default-1",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              },
+              {
+                "KeyId": "k-public",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-public",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-public",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-public",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    },
+                    {
+                      "Sid": "public",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "kms:Decrypt",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1
+      }
+    }
+  ]
+}

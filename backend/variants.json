@@ -1,0 +1,16 @@
+[
+  {
+    "id": "baseline",
+    "label": "현재 운영 엔진",
+    "engine_ref": "ops-2026.10.28.1",
+    "overlay": null,
+    "description": "운영 반영 태그 그대로. 룰 코드는 dev(7c527f46)와 같다."
+  },
+  {
+    "id": "improved",
+    "label": "개선안",
+    "engine_ref": "ops-2026.10.28.1",
+    "overlay": "improved",
+    "description": "운영 엔진 + backend/overlays/improved 의 수정 룰. 엔진에 반영되면 engine_ref 를 그 커밋으로 바꾸고 오버레이에서 뺀다."
+  }
+]

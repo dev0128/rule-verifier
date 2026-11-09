@@ -1,0 +1,173 @@
+{
+  "finding": "X030",
+  "rule": "REME-0106300018",
+  "service": "cloudwatch",
+  "status": "reproducible",
+  "note": "cloudwatch.py:1698-1713 — globals.iam.list_roles 의 모든 역할을 점검 대상으로 세고, 이름이 CloudWatch-CrossAccountSharingRole 이 아닌 역할은 전부 양호 행으로 남긴다. 판정 대상은 '계정의 CloudWatch 교차 계정 공유' 하나이므로 계정 1건(CWH-001~015 처럼)으로 판정해야 한다.",
+  "scenarios": [
+    {
+      "id": "unrelated-roles",
+      "role": "bug",
+      "condition": "공유 역할 없음, CloudWatch 와 무관한 역할 3개(app-role · lambda-exec · ci-deploy)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "Path": "/",
+                "RoleName": "app-role",
+                "RoleId": "AROAAPP-ROLE",
+                "Arn": "arn:aws:iam::111122223333:role/app-role",
+                "CreateDate": "2026-01-01T00:00:00Z",
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": []
+                },
+                "MaxSessionDuration": 3600
+              },
+              {
+                "Path": "/",
+                "RoleName": "lambda-exec",
+                "RoleId": "AROALAMBDA-EXE",
+                "Arn": "arn:aws:iam::111122223333:role/lambda-exec",
+                "CreateDate": "2026-01-01T00:00:00Z",
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": []
+                },
+                "MaxSessionDuration": 3600
+              },
+              {
+                "Path": "/",
+                "RoleName": "ci-deploy",
+                "RoleId": "AROACI-DEPLOY",
+                "Arn": "arn:aws:iam::111122223333:role/ci-deploy",
+                "CreateDate": "2026-01-01T00:00:00Z",
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": []
+                },
+                "MaxSessionDuration": 3600
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 1,
+        "good": 1
+      },
+      "why": "교차 계정 공유가 설정되지 않은 계정 — 계정 단위 양호 1건이어야 하고 무관한 역할이 점검 대상으로 세어지면 안 된다"
+    },
+    {
+      "id": "shared-plus-unrelated",
+      "role": "bug",
+      "condition": "CloudWatch-CrossAccountSharingRole + 무관한 역할 2개",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "Path": "/",
+                "RoleName": "CloudWatch-CrossAccountSharingRole",
+                "RoleId": "AROACLOUDWATCH",
+                "Arn": "arn:aws:iam::111122223333:role/CloudWatch-CrossAccountSharingRole",
+                "CreateDate": "2026-01-01T00:00:00Z",
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": []
+                },
+                "MaxSessionDuration": 3600
+              },
+              {
+                "Path": "/",
+                "RoleName": "app-role",
+                "RoleId": "AROAAPP-ROLE",
+                "Arn": "arn:aws:iam::111122223333:role/app-role",
+                "CreateDate": "2026-01-01T00:00:00Z",
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": []
+                },
+                "MaxSessionDuration": 3600
+              },
+              {
+                "Path": "/",
+                "RoleName": "ci-deploy",
+                "RoleId": "AROACI-DEPLOY",
+                "Arn": "arn:aws:iam::111122223333:role/ci-deploy",
+                "CreateDate": "2026-01-01T00:00:00Z",
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": []
+                },
+                "MaxSessionDuration": 3600
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 1,
+        "flag": 1
+      },
+      "why": "공유 역할이 있어 계정 단위 취약 1건 — 무관한 역할은 양호 행으로 나오면 안 된다"
+    },
+    {
+      "id": "shared-only",
+      "role": "control",
+      "condition": "CloudWatch-CrossAccountSharingRole 역할 하나만",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "Path": "/",
+                "RoleName": "CloudWatch-CrossAccountSharingRole",
+                "RoleId": "AROACLOUDWATCH",
+                "Arn": "arn:aws:iam::111122223333:role/CloudWatch-CrossAccountSharingRole",
+                "CreateDate": "2026-01-01T00:00:00Z",
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": []
+                },
+                "MaxSessionDuration": 3600
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 1,
+        "flag": 1
+      }
+    }
+  ]
+}

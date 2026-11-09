@@ -1,0 +1,61 @@
+{
+  "finding": "F119",
+  "rule": "REME-0106100001",
+  "service": "vpc",
+  "status": "reproducible",
+  "note": "vpc.py:45 — `CidrBlock == \"0.0.0.0/0\" and RuleAction == \"allow\"` 만 본다. Protocol(-1 = 전체)·PortRange 를 보지 않아 특정 포트만 연 규칙도 취약, Ipv6CidrBlock ::/0 전체 허용은 보지 않아 놓친다.",
+  "scenarios": [
+    {
+      "id": "tcp443-only",
+      "role": "bug",
+      "condition": "인바운드 0.0.0.0/0 TCP 443 만 allow, 나머지는 기본 deny(*)",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_network_acls": [
+        {"NetworkAclId": "acl-443", "VpcId": "vpc-1", "IsDefault": false, "Entries": [
+          {"RuleNumber": 100, "Protocol": "6", "PortRange": {"From": 443, "To": 443}, "RuleAction": "allow", "Egress": false, "CidrBlock": "0.0.0.0/0"},
+          {"RuleNumber": 32767, "Protocol": "-1", "RuleAction": "deny", "Egress": false, "CidrBlock": "0.0.0.0/0"},
+          {"RuleNumber": 32767, "Protocol": "-1", "RuleAction": "deny", "Egress": true, "CidrBlock": "0.0.0.0/0"}]}
+      ]}}},
+      "expect": {"verdict": "Secure", "good": 1},
+      "why": "항목명은 '모든 인/아웃바운드 트래픽 허용 제한' — 443 포트만 연 규칙은 모든 트래픽 허용이 아니다"
+    },
+    {
+      "id": "ipv6-all",
+      "role": "bug",
+      "condition": "인바운드 ::/0 전체 프로토콜(-1) allow (IPv4 규칙은 기본 deny 뿐)",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_network_acls": [
+        {"NetworkAclId": "acl-v6", "VpcId": "vpc-1", "IsDefault": false, "Entries": [
+          {"RuleNumber": 101, "Protocol": "-1", "RuleAction": "allow", "Egress": false, "Ipv6CidrBlock": "::/0"},
+          {"RuleNumber": 32767, "Protocol": "-1", "RuleAction": "deny", "Egress": false, "CidrBlock": "0.0.0.0/0"},
+          {"RuleNumber": 32768, "Protocol": "-1", "RuleAction": "deny", "Egress": false, "Ipv6CidrBlock": "::/0"}]}
+      ]}}},
+      "expect": {"verdict": "Vuln", "flag": 1},
+      "why": "IPv6 전체 주소에서 모든 트래픽을 허용하므로 '모든 트래픽 허용' 에 해당한다"
+    },
+    {
+      "id": "all-traffic",
+      "role": "control",
+      "condition": "인바운드 0.0.0.0/0 전체 프로토콜(-1) allow — AWS 기본 NACL 규칙 100",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_network_acls": [
+        {"NetworkAclId": "acl-all", "VpcId": "vpc-1", "IsDefault": true, "Entries": [
+          {"RuleNumber": 100, "Protocol": "-1", "RuleAction": "allow", "Egress": false, "CidrBlock": "0.0.0.0/0"},
+          {"RuleNumber": 32767, "Protocol": "-1", "RuleAction": "deny", "Egress": false, "CidrBlock": "0.0.0.0/0"}]}
+      ]}}},
+      "expect": {"verdict": "Vuln", "flag": 1}
+    },
+    {
+      "id": "internal-only",
+      "role": "control",
+      "condition": "10.0.0.0/8 에서만 전체 허용",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_network_acls": [
+        {"NetworkAclId": "acl-int", "VpcId": "vpc-1", "IsDefault": false, "Entries": [
+          {"RuleNumber": 100, "Protocol": "-1", "RuleAction": "allow", "Egress": false, "CidrBlock": "10.0.0.0/8"},
+          {"RuleNumber": 32767, "Protocol": "-1", "RuleAction": "deny", "Egress": false, "CidrBlock": "0.0.0.0/0"}]}
+      ]}}},
+      "expect": {"verdict": "Secure", "good": 1}
+    }
+  ]
+}

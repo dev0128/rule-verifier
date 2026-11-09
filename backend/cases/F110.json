@@ -1,0 +1,226 @@
+{
+  "finding": "F110",
+  "rule": "REME-0105000002",
+  "service": "kms",
+  "status": "reproducible",
+  "note": "Raw/kms.py:_describe_key `item[\"KeyMetadata\"] = response.get(\"KeyMetadata\", {})` — describe_key 가 AccessDenied 면 {} → kms.py:98-108 KeyState None 이 'Enabled'/'PendingDeletion' 이 아니라 flag=True 그대로 취약. 상태를 모른다는 것은 raw 에서 알 수 있으므로(빈 KeyMetadata) 룰에서 N/A 로 뺄 수 있다(bug).",
+  "scenarios": [
+    {
+      "id": "describe-key-failed",
+      "role": "bug",
+      "condition": "키 2개 — 하나는 describe_key 실패로 KeyMetadata={}, 하나는 Enabled",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-unknown",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-unknown",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {}
+              },
+              {
+                "KeyId": "k-enabled",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-enabled",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-enabled",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-enabled",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "key-default-1",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "flag_excludes": [
+          "k-unknown"
+        ]
+      },
+      "why": "상태를 조회하지 못한 키를 '미사용' 으로 단정할 수 없다 — N/A 로 빼고 나머지는 정상 판정"
+    },
+    {
+      "id": "disabled-key",
+      "role": "control",
+      "condition": "Disabled 키",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-disabled",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-disabled",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-disabled",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-disabled",
+                  "Enabled": false,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Disabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "key-default-1",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "enabled-and-pending-deletion",
+      "role": "control",
+      "condition": "Enabled 키 + PendingDeletion 키",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-enabled",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-enabled",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-enabled",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-enabled",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "key-default-1",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              },
+              {
+                "KeyId": "k-deleting",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-deleting",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-deleting",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-deleting",
+                  "Enabled": false,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "PendingDeletion",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "key-default-1",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 2
+      }
+    }
+  ]
+}

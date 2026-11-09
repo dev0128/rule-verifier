@@ -1,0 +1,116 @@
+{
+  "finding": "F106",
+  "rule": "REME-0100600007",
+  "service": "ec2",
+  "status": "reproducible",
+  "note": "ec2.py:425-437 — VolumeId 가 일치하는 스냅샷이 하나라도 있으면 flag=False. StartTime 도 args_ 도 보지 않아 '최신' 여부를 판정하지 않는다.",
+  "scenarios": [
+    {
+      "id": "only-old-snapshot",
+      "role": "bug",
+      "condition": "볼륨 vol-1 의 스냅샷은 2020-03-01 에 한 번 뜬 것 하나뿐",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-1",
+                "AvailabilityZone": "ap-northeast-2a",
+                "Size": 8,
+                "VolumeType": "gp3",
+                "State": "in-use",
+                "CreateTime": "2019-05-01T00:00:00+00:00",
+                "Encrypted": true
+              }
+            ],
+            "describe_snapshots": [
+              {
+                "SnapshotId": "snap-old",
+                "VolumeId": "vol-1",
+                "StartTime": "2020-03-01T00:00:00.000Z",
+                "State": "completed",
+                "Progress": "100%",
+                "OwnerId": "111122223333",
+                "VolumeSize": 8,
+                "Encrypted": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "6년 넘은 스냅샷은 '최신' 스냅샷이 아니다 — 어떤 합리적 백업 주기 기준으로도 취약"
+    },
+    {
+      "id": "no-snapshot",
+      "role": "control",
+      "condition": "볼륨 vol-1 에 스냅샷 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-1",
+                "AvailabilityZone": "ap-northeast-2a",
+                "Size": 8,
+                "VolumeType": "gp3",
+                "State": "in-use",
+                "CreateTime": "2019-05-01T00:00:00+00:00",
+                "Encrypted": true
+              }
+            ],
+            "describe_snapshots": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "other-volume-snapshot",
+      "role": "control",
+      "condition": "다른 볼륨(vol-2)의 스냅샷만 있음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-1",
+                "AvailabilityZone": "ap-northeast-2a",
+                "Size": 8,
+                "VolumeType": "gp3",
+                "State": "in-use",
+                "CreateTime": "2019-05-01T00:00:00+00:00",
+                "Encrypted": true
+              }
+            ],
+            "describe_snapshots": [
+              {
+                "SnapshotId": "snap-x",
+                "VolumeId": "vol-2",
+                "StartTime": "2020-03-01T00:00:00.000Z",
+                "State": "completed",
+                "Progress": "100%",
+                "OwnerId": "111122223333",
+                "VolumeSize": 8,
+                "Encrypted": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

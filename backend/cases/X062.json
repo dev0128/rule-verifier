@@ -1,0 +1,346 @@
+{
+  "finding": "X062",
+  "rule": "REME-0103300001",
+  "service": "sagemaker",
+  "status": "reproducible",
+  "note": "sagemaker.py:39-42 — SubnetId 유무와 DirectInternetAccess 만 본다. 노트북 서브넷의 라우트 테이블(vpc.describe_subnets[].RouteTables, describe_route_tables)에 0.0.0.0/0 → NAT 경로가 있어도 양호. 판단기준(웹 MLO-002: private subnet 내에 있으며 인터넷 연결을 차단하는가) 기준 미탐(위키 0107 고객 노트북 2건).",
+  "scenarios": [
+    {
+      "id": "nat-egress",
+      "role": "bug",
+      "condition": "VPC 노트북, DirectInternetAccess=Disabled, 서브넷 라우트 0.0.0.0/0 → NAT 게이트웨이",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sagemaker": {
+            "describe_notebook_instance": [
+              {
+                "NotebookInstanceArn": "arn:aws:sagemaker:ap-northeast-2:111122223333:notebook-instance/nb1",
+                "NotebookInstanceName": "nb1",
+                "NotebookInstanceStatus": "InService",
+                "InstanceType": "ml.t3.medium",
+                "RoleArn": "arn:aws:iam::111122223333:role/sm",
+                "SecurityGroups": [
+                  "sg-1"
+                ],
+                "DirectInternetAccess": "Disabled",
+                "RootAccess": "Disabled",
+                "NetworkInterfaceId": "eni-1",
+                "Tags": {},
+                "SubnetId": "subnet-0priv"
+              }
+            ],
+            "list_domains": []
+          },
+          "vpc": {
+            "describe_subnets": [
+              {
+                "SubnetId": "subnet-0priv",
+                "VpcId": "vpc-1",
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "ap-northeast-2a",
+                "MapPublicIpOnLaunch": false,
+                "Tags": {},
+                "RouteTables": [
+                  {
+                    "RouteTableId": "rtb-0priv",
+                    "VpcId": "vpc-1",
+                    "OwnerId": "111122223333",
+                    "Associations": [
+                      {
+                        "Main": false,
+                        "RouteTableAssociationId": "rtbassoc-1",
+                        "RouteTableId": "rtb-0priv",
+                        "SubnetId": "subnet-0priv",
+                        "AssociationState": {
+                          "State": "associated"
+                        }
+                      }
+                    ],
+                    "Routes": [
+                      {
+                        "DestinationCidrBlock": "10.0.0.0/16",
+                        "GatewayId": "local",
+                        "Origin": "CreateRouteTable",
+                        "State": "active"
+                      },
+                      {
+                        "DestinationCidrBlock": "0.0.0.0/0",
+                        "NatGatewayId": "nat-0abc",
+                        "Origin": "CreateRoute",
+                        "State": "active"
+                      }
+                    ],
+                    "Tags": {}
+                  }
+                ]
+              }
+            ],
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-0priv",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-1",
+                    "RouteTableId": "rtb-0priv",
+                    "SubnetId": "subnet-0priv",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "NatGatewayId": "nat-0abc",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_nat_gateways": [
+              {
+                "NatGatewayId": "nat-0abc",
+                "SubnetId": "subnet-0pub",
+                "VpcId": "vpc-1",
+                "State": "available"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "판단기준은 인터넷 연결 차단 — NAT 경로로 인터넷에 나갈 수 있으므로 차단되지 않았다(취약)"
+    },
+    {
+      "id": "isolated-subnet",
+      "role": "control",
+      "condition": "VPC 노트북, DirectInternetAccess=Disabled, 서브넷 라우트는 local 뿐",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sagemaker": {
+            "describe_notebook_instance": [
+              {
+                "NotebookInstanceArn": "arn:aws:sagemaker:ap-northeast-2:111122223333:notebook-instance/nb1",
+                "NotebookInstanceName": "nb1",
+                "NotebookInstanceStatus": "InService",
+                "InstanceType": "ml.t3.medium",
+                "RoleArn": "arn:aws:iam::111122223333:role/sm",
+                "SecurityGroups": [
+                  "sg-1"
+                ],
+                "DirectInternetAccess": "Disabled",
+                "RootAccess": "Disabled",
+                "NetworkInterfaceId": "eni-1",
+                "Tags": {},
+                "SubnetId": "subnet-0priv"
+              }
+            ],
+            "list_domains": []
+          },
+          "vpc": {
+            "describe_subnets": [
+              {
+                "SubnetId": "subnet-0priv",
+                "VpcId": "vpc-1",
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "ap-northeast-2a",
+                "MapPublicIpOnLaunch": false,
+                "Tags": {},
+                "RouteTables": [
+                  {
+                    "RouteTableId": "rtb-0priv",
+                    "VpcId": "vpc-1",
+                    "OwnerId": "111122223333",
+                    "Associations": [
+                      {
+                        "Main": false,
+                        "RouteTableAssociationId": "rtbassoc-1",
+                        "RouteTableId": "rtb-0priv",
+                        "SubnetId": "subnet-0priv",
+                        "AssociationState": {
+                          "State": "associated"
+                        }
+                      }
+                    ],
+                    "Routes": [
+                      {
+                        "DestinationCidrBlock": "10.0.0.0/16",
+                        "GatewayId": "local",
+                        "Origin": "CreateRouteTable",
+                        "State": "active"
+                      }
+                    ],
+                    "Tags": {}
+                  }
+                ]
+              }
+            ],
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-0priv",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-1",
+                    "RouteTableId": "rtb-0priv",
+                    "SubnetId": "subnet-0priv",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_nat_gateways": [
+              {
+                "NatGatewayId": "nat-0abc",
+                "SubnetId": "subnet-0pub",
+                "VpcId": "vpc-1",
+                "State": "available"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "direct-access-enabled",
+      "role": "control",
+      "condition": "DirectInternetAccess=Enabled",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sagemaker": {
+            "describe_notebook_instance": [
+              {
+                "NotebookInstanceArn": "arn:aws:sagemaker:ap-northeast-2:111122223333:notebook-instance/nb1",
+                "NotebookInstanceName": "nb1",
+                "NotebookInstanceStatus": "InService",
+                "InstanceType": "ml.t3.medium",
+                "RoleArn": "arn:aws:iam::111122223333:role/sm",
+                "SecurityGroups": [
+                  "sg-1"
+                ],
+                "DirectInternetAccess": "Enabled",
+                "RootAccess": "Disabled",
+                "NetworkInterfaceId": "eni-1",
+                "Tags": {},
+                "SubnetId": "subnet-0priv"
+              }
+            ],
+            "list_domains": []
+          },
+          "vpc": {
+            "describe_subnets": [
+              {
+                "SubnetId": "subnet-0priv",
+                "VpcId": "vpc-1",
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "ap-northeast-2a",
+                "MapPublicIpOnLaunch": false,
+                "Tags": {},
+                "RouteTables": [
+                  {
+                    "RouteTableId": "rtb-0priv",
+                    "VpcId": "vpc-1",
+                    "OwnerId": "111122223333",
+                    "Associations": [
+                      {
+                        "Main": false,
+                        "RouteTableAssociationId": "rtbassoc-1",
+                        "RouteTableId": "rtb-0priv",
+                        "SubnetId": "subnet-0priv",
+                        "AssociationState": {
+                          "State": "associated"
+                        }
+                      }
+                    ],
+                    "Routes": [
+                      {
+                        "DestinationCidrBlock": "10.0.0.0/16",
+                        "GatewayId": "local",
+                        "Origin": "CreateRouteTable",
+                        "State": "active"
+                      }
+                    ],
+                    "Tags": {}
+                  }
+                ]
+              }
+            ],
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-0priv",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-1",
+                    "RouteTableId": "rtb-0priv",
+                    "SubnetId": "subnet-0priv",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_nat_gateways": [
+              {
+                "NatGatewayId": "nat-0abc",
+                "SubnetId": "subnet-0pub",
+                "VpcId": "vpc-1",
+                "State": "available"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

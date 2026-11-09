@@ -1,0 +1,257 @@
+{
+  "finding": "F071",
+  "rule": "REME-0101600004",
+  "service": "appmesh",
+  "status": "reproducible",
+  "note": "appmesh.py:200-201 — egressFilter 는 메시 속성(describe_mesh → mesh.spec.egressFilter)인데 virtualGateway[].spec 에서 찾는다 → 항상 None → 절대 취약이 안 나온다.",
+  "scenarios": [
+    {
+      "id": "allow-all-with-gw",
+      "role": "bug",
+      "condition": "메시 spec.egressFilter.type=ALLOW_ALL, 가상 게이트웨이 1개",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "m1",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m1",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "ALLOW_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "m1",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m1/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "ALLOW_ALL 이면 메시 안 서비스가 임의의 외부 엔드포인트로 나갈 수 있다 — 외부 트래픽 미제한(기본값은 DROP_ALL)"
+    },
+    {
+      "id": "allow-all-no-gw",
+      "role": "bug",
+      "condition": "메시 egressFilter=ALLOW_ALL, 가상 게이트웨이 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "m2",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m2",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "ALLOW_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "egressFilter 는 메시 단위 설정이라 게이트웨이 유무와 상관없이 외부 트래픽이 허용된다"
+    },
+    {
+      "id": "drop-all",
+      "role": "control",
+      "condition": "메시 egressFilter=DROP_ALL, 가상 게이트웨이 1개",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "m3",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m3",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "m3",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m3/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

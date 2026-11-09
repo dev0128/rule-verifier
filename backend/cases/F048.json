@@ -1,0 +1,221 @@
+{
+  "finding": "F048",
+  "rule": "REME-0105900001",
+  "service": "eks",
+  "status": "reproducible",
+  "note": "Analyze/eks.py:35-37 — endpointPublicAccess==True 만 보고 publicAccessCidrs 를 보지 않는다. 퍼블릭 엔드포인트를 특정 CIDR 로 제한한 클러스터도 취약.",
+  "scenarios": [
+    {
+      "id": "public-restricted-cidr",
+      "role": "bug",
+      "condition": "퍼블릭 엔드포인트 켜짐 + publicAccessCidrs=[203.0.113.10/32] 로 제한",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": true,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "203.0.113.10/32"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "항목은 'API 서버 퍼블릭 엑세스 제한 여부' — 퍼블릭 접근을 허용 CIDR 로 제한했으므로 제한된 상태다(EKS publicAccessCidrs 는 퍼블릭 엔드포인트 접근 허용 대역)"
+    },
+    {
+      "id": "public-open",
+      "role": "control",
+      "condition": "퍼블릭 엔드포인트 켜짐 + publicAccessCidrs=[0.0.0.0/0] (기본값)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": true,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "private-only",
+      "role": "control",
+      "condition": "퍼블릭 엔드포인트 꺼짐 (publicAccessCidrs 는 AWS 가 기본값 0.0.0.0/0 으로 돌려줌)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

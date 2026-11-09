@@ -1,0 +1,106 @@
+{
+  "finding": "X063",
+  "rule": "REME-0101000010",
+  "service": "awslambda",
+  "status": "reproducible",
+  "note": "awslambda.py:622-646 기본 목록에 사용자 지정 런타임은 `provided`(Amazon Linux 1)만 있다. provided.al2 는 Amazon Linux 2 지원 종료(2026-06-30)에 맞춰 Lambda 지원 중단 대상이라 오래된 런타임인데 양호. provided.al2023 은 웹 권고값('사용자 지정 실행환경 사용 금지') 기준이면 취약이지만 항목명('오래된 버전') 기준이면 현재 지원 런타임이라 기준이 갈려 기대값을 두지 않았다.",
+  "scenarios": [
+    {
+      "id": "provided-al2",
+      "role": "bug",
+      "condition": "Runtime=provided.al2 (Amazon Linux 2 기반 OS 전용 런타임)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "provided.al2",
+                "PackageType": "Zip"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "provided.al2 는 Amazon Linux 2 지원 종료와 함께 Lambda 지원 중단 대상(2026-06-30)이고, 사용자 지정 런타임이기도 하다 — 어느 기준으로도 취약"
+    },
+    {
+      "id": "provided-al1",
+      "role": "control",
+      "condition": "Runtime=provided (Amazon Linux 1)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "provided",
+                "PackageType": "Zip"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "python312",
+      "role": "control",
+      "condition": "Runtime=python3.12",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "container-image",
+      "role": "control",
+      "condition": "컨테이너 이미지 함수 (PackageType=Image, Runtime 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "img-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:img-fn",
+                "PackageType": "Image"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "flag": 0,
+        "good": 0
+      }
+    }
+  ]
+}

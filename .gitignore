@@ -1,0 +1,11 @@
+# 고객 환경 데이터(S3 에서 받은 raw · 룰셋 · 운영 결과)와 실행 결과, 엔진 소스 캐시 — 절대 커밋하지 않는다
+data/
+
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+frontend/node_modules/
+frontend/dist/
+*.part

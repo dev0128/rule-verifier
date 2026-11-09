@@ -1,0 +1,272 @@
+{
+  "finding": "F006",
+  "rule": "REME-0101900001",
+  "service": "backup",
+  "status": "reproducible",
+  "effect": "crash",
+  "note": "Raw/backup.py:59-65 `get_backup_plan` 은 get_response 없이 client 를 직접 부르고 메서드 전체가 exception_handler 하나로 감싸져, 한 플랜 조회가 실패하면 그 플랜과 뒤 플랜에 Rules 키가 없다(:67-76 _describe_backup_vault 도 같은 지점에서 KeyError 로 멈춤). 룰 backup.py:43/97 `for Rules in result_temp_i.get(\"Rules\")` 가 None 을 돌다 TypeError — BAK-001/002 결과 전부 소실. Rules 가 없는 플랜은 raw 에서 구분되므로 룰에서 N/A 로 고칠 수 있다(bug 역할). effect 정정: 카탈로그는 wrong_logic 이지만 실제 결과는 룰 예외(TypeError)로 BAK-001/002 결과 전부 소실 → crash.",
+  "scenarios": [
+    {
+      "id": "bak001-plan-without-rules",
+      "role": "bug",
+      "condition": "[BAK-001] plan-a 는 정상 수집(수명 주기 없음), plan-b 는 GetBackupPlan 실패로 Rules 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "backup": {
+            "list_backup_plans": [
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-a-id",
+                "BackupPlanId": "plan-a-id",
+                "BackupPlanName": "plan-a",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z",
+                "Rules": [
+                  {
+                    "RuleName": "daily",
+                    "TargetBackupVaultName": "vault-1",
+                    "ScheduleExpression": "cron(0 5 ? * * *)",
+                    "RuleId": "daily-rid",
+                    "backup_vault": {
+                      "BackupVaultName": "vault-1",
+                      "BackupVaultArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-vault:vault-1",
+                      "NumberOfRecoveryPoints": 3,
+                      "Locked": true,
+                      "MinRetentionDays": 7,
+                      "MaxRetentionDays": 365
+                    }
+                  }
+                ]
+              },
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-b-id",
+                "BackupPlanId": "plan-b-id",
+                "BackupPlanName": "plan-b",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "plan-a"
+        ],
+        "na_contains": [
+          "plan-b"
+        ]
+      },
+      "why": "규칙을 못 읽은 plan-b 는 판정 불가(N/A)로 빼고, 수명 주기(콜드 스토리지 전환)가 없는 plan-a 는 취약"
+    },
+    {
+      "id": "bak002-plan-without-rules",
+      "role": "bug",
+      "condition": "[BAK-002] plan-a 는 정상 수집(볼트 잠금 없음), plan-b 는 GetBackupPlan 실패로 Rules 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "backup": {
+            "list_backup_plans": [
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-a-id",
+                "BackupPlanId": "plan-a-id",
+                "BackupPlanName": "plan-a",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z",
+                "Rules": [
+                  {
+                    "RuleName": "daily",
+                    "TargetBackupVaultName": "vault-1",
+                    "ScheduleExpression": "cron(0 5 ? * * *)",
+                    "RuleId": "daily-rid",
+                    "Lifecycle": {
+                      "MoveToColdStorageAfterDays": 30,
+                      "DeleteAfterDays": 120
+                    },
+                    "backup_vault": {
+                      "BackupVaultName": "vault-1",
+                      "BackupVaultArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-vault:vault-1",
+                      "NumberOfRecoveryPoints": 3,
+                      "Locked": false
+                    }
+                  }
+                ]
+              },
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-b-id",
+                "BackupPlanId": "plan-b-id",
+                "BackupPlanName": "plan-b",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "plan-a"
+        ],
+        "na_contains": [
+          "plan-b"
+        ]
+      },
+      "why": "규칙을 못 읽은 plan-b 는 N/A, 볼트 잠금(Vault Lock)이 없는 plan-a 는 취약",
+      "rule": "REME-0101900002"
+    },
+    {
+      "id": "bak001-normal",
+      "role": "control",
+      "condition": "[BAK-001] 플랜 2개 정상 수집 — plan-a 수명 주기 없음, plan-c 수명 주기 있음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "backup": {
+            "list_backup_plans": [
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-a-id",
+                "BackupPlanId": "plan-a-id",
+                "BackupPlanName": "plan-a",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z",
+                "Rules": [
+                  {
+                    "RuleName": "daily",
+                    "TargetBackupVaultName": "vault-1",
+                    "ScheduleExpression": "cron(0 5 ? * * *)",
+                    "RuleId": "daily-rid",
+                    "backup_vault": {
+                      "BackupVaultName": "vault-1",
+                      "BackupVaultArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-vault:vault-1",
+                      "NumberOfRecoveryPoints": 3,
+                      "Locked": true,
+                      "MinRetentionDays": 7,
+                      "MaxRetentionDays": 365
+                    }
+                  }
+                ]
+              },
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-c-id",
+                "BackupPlanId": "plan-c-id",
+                "BackupPlanName": "plan-c",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z",
+                "Rules": [
+                  {
+                    "RuleName": "daily",
+                    "TargetBackupVaultName": "vault-1",
+                    "ScheduleExpression": "cron(0 5 ? * * *)",
+                    "RuleId": "daily-rid",
+                    "Lifecycle": {
+                      "MoveToColdStorageAfterDays": 30,
+                      "DeleteAfterDays": 120
+                    },
+                    "backup_vault": {
+                      "BackupVaultName": "vault-1",
+                      "BackupVaultArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-vault:vault-1",
+                      "NumberOfRecoveryPoints": 3,
+                      "Locked": true,
+                      "MinRetentionDays": 7,
+                      "MaxRetentionDays": 365
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "plan-a"
+        ]
+      }
+    },
+    {
+      "id": "bak002-normal",
+      "role": "control",
+      "condition": "[BAK-002] 플랜 2개 정상 수집 — plan-a 볼트 잠금 없음, plan-c 볼트 잠금",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "backup": {
+            "list_backup_plans": [
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-a-id",
+                "BackupPlanId": "plan-a-id",
+                "BackupPlanName": "plan-a",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z",
+                "Rules": [
+                  {
+                    "RuleName": "daily",
+                    "TargetBackupVaultName": "vault-1",
+                    "ScheduleExpression": "cron(0 5 ? * * *)",
+                    "RuleId": "daily-rid",
+                    "Lifecycle": {
+                      "MoveToColdStorageAfterDays": 30,
+                      "DeleteAfterDays": 120
+                    },
+                    "backup_vault": {
+                      "BackupVaultName": "vault-1",
+                      "BackupVaultArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-vault:vault-1",
+                      "NumberOfRecoveryPoints": 3,
+                      "Locked": false
+                    }
+                  }
+                ]
+              },
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-c-id",
+                "BackupPlanId": "plan-c-id",
+                "BackupPlanName": "plan-c",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z",
+                "Rules": [
+                  {
+                    "RuleName": "daily",
+                    "TargetBackupVaultName": "vault-1",
+                    "ScheduleExpression": "cron(0 5 ? * * *)",
+                    "RuleId": "daily-rid",
+                    "Lifecycle": {
+                      "MoveToColdStorageAfterDays": 30,
+                      "DeleteAfterDays": 120
+                    },
+                    "backup_vault": {
+                      "BackupVaultName": "vault-1",
+                      "BackupVaultArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-vault:vault-1",
+                      "NumberOfRecoveryPoints": 3,
+                      "Locked": true,
+                      "MinRetentionDays": 7,
+                      "MaxRetentionDays": 365
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "plan-a"
+        ]
+      },
+      "rule": "REME-0101900002"
+    }
+  ]
+}

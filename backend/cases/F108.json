@@ -1,0 +1,158 @@
+{
+  "finding": "F108",
+  "rule": "REME-0101000012",
+  "service": "awslambda",
+  "status": "reproducible",
+  "note": "Raw/awslambda.py:115 `next(os.walk(tmp_dir_name))[2]` — zip 최상위 파일만 스캔해 하위 폴더 코드의 비밀은 raw 에 흔적이 없다(수집 결함). :109-110 requests.get/ZipFile 실패 시 예외가 메서드 밖으로 나가 그 함수와 뒤 함수들에 DetectedCodesSecretsFindings 가 없고, 룰 awslambda.py:800 `result_temp_i[\"DetectedCodesSecretsFindings\"]` KeyError 로 룰 전체가 죽는다(룰에서 고칠 수 있는 부분).",
+  "scenarios": [
+    {
+      "id": "secret-in-subfolder",
+      "role": "collection",
+      "condition": "비밀(하드코딩된 비밀번호)이 src/config.py 에 있는 배포 패키지 — 수집기는 최상위 handler.py 만 스캔해 'Not Found Findings'",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Code": {
+                  "handler.py": ""
+                },
+                "DetectedCodesSecretsFindings": [
+                  {
+                    "handler.py": "Not Found Findings"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "함수 코드(하위 폴더 포함)에 하드코딩된 비밀이 있으므로 취약이어야 한다"
+    },
+    {
+      "id": "zip-download-failed",
+      "role": "bug",
+      "condition": "f1 은 정상 수집(비밀 발견), f2 는 코드 zip 다운로드/압축 해제 실패로 수집 중단 — f2 · f3 에 DetectedCodesSecretsFindings 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Code": {
+                  "handler.py": ""
+                },
+                "DetectedCodesSecretsFindings": [
+                  {
+                    "handler.py": "Secret Keyword on line 3"
+                  }
+                ]
+              },
+              {
+                "FunctionName": "f2",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f2",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Code": {}
+              },
+              {
+                "FunctionName": "f3",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f3",
+                "Runtime": "python3.12",
+                "PackageType": "Zip"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "f1"
+        ],
+        "na_contains": [
+          "f2"
+        ]
+      },
+      "why": "수집 못 한 함수는 판정 불가(N/A)로 빼고, 비밀이 발견된 f1 은 취약으로 나와야 한다"
+    },
+    {
+      "id": "found",
+      "role": "control",
+      "condition": "최상위 파일에서 비밀 발견",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Code": {
+                  "handler.py": ""
+                },
+                "DetectedCodesSecretsFindings": [
+                  {
+                    "handler.py": "Secret Keyword on line 3"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "not-found",
+      "role": "control",
+      "condition": "비밀 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Code": {
+                  "handler.py": ""
+                },
+                "DetectedCodesSecretsFindings": [
+                  {
+                    "handler.py": "Not Found Findings"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

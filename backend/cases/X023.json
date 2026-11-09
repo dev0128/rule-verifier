@@ -1,0 +1,218 @@
+{
+  "finding": "X023",
+  "rule": "REME-0100100005",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:297-305·322-330 — 사용자 루프 안에서 key_value 를 access_key_1/2 필드로 덮어쓰고 다음 사용자 전에 되돌리지 않는다. 두 번째 사용자부터 '비밀번호' 단계(iam.py:281-294)가 access_key_2 필드로 돌아 '활성·미사용·발급 N일 초과 키2' 를 취약으로 잡는다 → 같은 상태의 두 사용자가 순서에 따라 양호/취약으로 갈린다. 미사용 키를 취약으로 보는 것이 맞으므로(F014) 올바른 결과는 둘 다 취약.",
+  "scenarios": [
+    {
+      "id": "two-identical-users-unused-key2",
+      "role": "bug",
+      "condition": "같은 상태의 사용자 2명 — 각각 활성 액세스 키 2 를 2020-01-01 발급 후 한 번도 안 씀, 비밀번호·키1 없음",
+      "args": [
+        "90"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "user-a",
+                "arn": "arn:aws:iam::111111111111:user/user-a",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "true",
+                "access_key_2_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              },
+              {
+                "user": "user-b",
+                "arn": "arn:aws:iam::111111111111:user/user-b",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "true",
+                "access_key_2_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 2,
+        "flag_contains": [
+          "user-a",
+          "user-b"
+        ]
+      },
+      "why": "같은 자격증명 상태면 같은 판정이어야 한다. 90일 넘게 한 번도 안 쓴 활성 키는 '사용하지 않은 자격증명' 이므로 둘 다 취약"
+    },
+    {
+      "id": "two-identical-users-key1-used-2020",
+      "role": "control",
+      "condition": "같은 상태의 사용자 2명 — 각각 활성 키 1 을 2020-02-01 에 마지막으로 사용",
+      "args": [
+        "90"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "user-a",
+                "arn": "arn:aws:iam::111111111111:user/user-a",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "true",
+                "access_key_1_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_1_last_used_date": "2020-02-01T00:00:00+00:00",
+                "access_key_1_last_used_region": "ap-northeast-2",
+                "access_key_1_last_used_service": "s3",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              },
+              {
+                "user": "user-b",
+                "arn": "arn:aws:iam::111111111111:user/user-b",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "true",
+                "access_key_1_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_1_last_used_date": "2020-02-01T00:00:00+00:00",
+                "access_key_1_last_used_region": "ap-northeast-2",
+                "access_key_1_last_used_service": "s3",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 2
+      }
+    },
+    {
+      "id": "two-users-no-credentials",
+      "role": "control",
+      "condition": "자격증명이 없는 사용자 2명",
+      "args": [
+        "90"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "user-a",
+                "arn": "arn:aws:iam::111111111111:user/user-a",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              },
+              {
+                "user": "user-b",
+                "arn": "arn:aws:iam::111111111111:user/user-b",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 2
+      }
+    }
+  ]
+}

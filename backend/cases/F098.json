@@ -1,0 +1,173 @@
+{
+  "finding": "F098",
+  "rule": "REME-0100600013",
+  "service": "ec2",
+  "status": "reproducible",
+  "note": "ec2.py:758-760 `for IpRange in key_data_i[\"IpRanges\"]: if IpRange[\"CidrIp\"] == \"0.0.0.0/0\" or IpRange[\"CidrIp\"] == \"::/0\"` — IPv6 대역은 AWS 응답에서 Ipv6Ranges[].CidrIpv6 로 오므로 '::/0' 비교는 절대 참이 될 수 없다. IpPermissionsEgress(아웃바운드)도 보지 않는다.",
+  "scenarios": [
+    {
+      "id": "ipv6-all-inbound",
+      "role": "bug",
+      "condition": "인바운드 규칙: 모든 프로토콜(IpProtocol -1)을 Ipv6Ranges ::/0 에 허용 (IPv4 규칙 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-v6",
+                "GroupName": "sg-v6",
+                "Description": "test",
+                "OwnerId": "111122223333",
+                "VpcId": "vpc-1",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [
+                      {
+                        "CidrIpv6": "::/0"
+                      }
+                    ],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ],
+                "IpPermissionsEgress": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "::/0 은 IPv6 전체 인터넷이다 — 모든 인바운드 트래픽 허용이므로 취약"
+    },
+    {
+      "id": "egress-all-only",
+      "role": "bug",
+      "condition": "인바운드 규칙 없음, 아웃바운드 규칙: 모든 프로토콜을 0.0.0.0/0 · ::/0 에 허용",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-out",
+                "GroupName": "sg-out",
+                "Description": "test",
+                "OwnerId": "111122223333",
+                "VpcId": "vpc-1",
+                "IpPermissions": [],
+                "IpPermissionsEgress": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [
+                      {
+                        "CidrIpv6": "::/0"
+                      }
+                    ],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "항목명이 '모든 인/아웃바운드 트래픽 허용 제한' 이다 — 아웃바운드 전체 허용도 점검 대상이며 제한되지 않았으므로 취약"
+    },
+    {
+      "id": "ipv4-all-inbound",
+      "role": "control",
+      "condition": "인바운드 규칙: 모든 프로토콜을 0.0.0.0/0 에 허용",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-v4",
+                "GroupName": "sg-v4",
+                "Description": "test",
+                "OwnerId": "111122223333",
+                "VpcId": "vpc-1",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ],
+                "IpPermissionsEgress": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "private-only",
+      "role": "control",
+      "condition": "인바운드 규칙: TCP 443 을 10.0.0.0/16 에만 허용, 아웃바운드 규칙 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-priv",
+                "GroupName": "sg-priv",
+                "Description": "test",
+                "OwnerId": "111122223333",
+                "VpcId": "vpc-1",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "10.0.0.0/16"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": [],
+                    "FromPort": 443,
+                    "ToPort": 443
+                  }
+                ],
+                "IpPermissionsEgress": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

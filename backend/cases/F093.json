@@ -1,0 +1,72 @@
+{
+  "finding": "F093",
+  "rule": "REME-0101000009",
+  "service": "awslambda",
+  "status": "reproducible",
+  "note": "awslambda.py:543 flag=True 로 시작, 일치 trail 을 찾으면 flag=False 로 바꾸는 코드가 주석 처리(:587-590)되어 있고 :591 `if connected_ is None` 은 connected_=[] 라 항상 거짓 — 모든 함수가 항상 취약.",
+  "scenarios": [
+    {
+      "id": "all-lambda-data-events",
+      "role": "bug",
+      "condition": "CloudTrail 트레일이 모든 Lambda 함수 데이터 이벤트를 기록 (EventSelectors DataResources Type=AWS::Lambda::Function, Values=['arn:aws:lambda'])",
+      "args": [],
+      "raw": {"ap-northeast-2": {
+        "lambda": {"list_functions": [{"FunctionName": "f1", "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"}]},
+        "cloudtrail": {"describe_trails": [{"Name": "trail-1", "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/trail-1",
+          "EventSelectors": {"TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/trail-1", "EventSelectors": [{"ReadWriteType": "All", "IncludeManagementEvents": true, "DataResources": [{"Type": "AWS::Lambda::Function", "Values": ["arn:aws:lambda"]}]}]}}]}
+      }},
+      "expect": {"verdict": "Secure", "checked": 1, "good": 1, "flag": 0},
+      "why": "'arn:aws:lambda' 는 계정의 모든 Lambda 함수 Invoke 데이터 이벤트를 기록하는 값이므로 함수 API 호출이 CloudTrail 에 로깅된다 → 양호"
+    },
+    {
+      "id": "function-arn-data-event",
+      "role": "bug",
+      "condition": "트레일 데이터 이벤트에 해당 함수 ARN 을 직접 지정",
+      "args": [],
+      "raw": {"ap-northeast-2": {
+        "lambda": {"list_functions": [{"FunctionName": "f1", "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"}]},
+        "cloudtrail": {"describe_trails": [{"Name": "trail-1", "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/trail-1",
+          "EventSelectors": {"EventSelectors": [{"ReadWriteType": "All", "IncludeManagementEvents": true, "DataResources": [{"Type": "AWS::Lambda::Function", "Values": ["arn:aws:lambda:ap-northeast-2:111122223333:function:f1"]}]}]}}]}
+      }},
+      "expect": {"verdict": "Secure", "good": 1},
+      "why": "해당 함수 ARN 의 데이터 이벤트가 기록되므로 양호"
+    },
+    {
+      "id": "advanced-selector",
+      "role": "bug",
+      "condition": "고급 이벤트 선택기로 resources.type=AWS::Lambda::Function 데이터 이벤트 기록",
+      "args": [],
+      "raw": {"ap-northeast-2": {
+        "lambda": {"list_functions": [{"FunctionName": "f1", "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"}]},
+        "cloudtrail": {"describe_trails": [{"Name": "trail-1", "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/trail-1",
+          "EventSelectors": {"AdvancedEventSelectors": [{"Name": "lambda", "FieldSelectors": [{"Field": "eventCategory", "Equals": ["Data"]}, {"Field": "resources.type", "Equals": ["AWS::Lambda::Function"]}]}]}}]}
+      }},
+      "expect": {"verdict": "Secure", "good": 1},
+      "why": "고급 이벤트 선택기로 모든 Lambda 데이터 이벤트를 기록하므로 양호"
+    },
+    {
+      "id": "management-only",
+      "role": "control",
+      "condition": "트레일은 있으나 관리 이벤트만 기록 (DataResources 없음)",
+      "args": [],
+      "raw": {"ap-northeast-2": {
+        "lambda": {"list_functions": [{"FunctionName": "f1", "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"}]},
+        "cloudtrail": {"describe_trails": [{"Name": "trail-1", "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/trail-1",
+          "EventSelectors": {"EventSelectors": [{"ReadWriteType": "All", "IncludeManagementEvents": true, "DataResources": []}]}}]}
+      }},
+      "expect": {"verdict": "Vuln", "checked": 1, "flag": 1},
+      "why": "Lambda 데이터 이벤트(Invoke)가 기록되지 않으므로 취약"
+    },
+    {
+      "id": "no-trail",
+      "role": "control",
+      "condition": "트레일 없음",
+      "args": [],
+      "raw": {"ap-northeast-2": {
+        "lambda": {"list_functions": [{"FunctionName": "f1", "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"}]},
+        "cloudtrail": {"describe_trails": []}
+      }},
+      "expect": {"verdict": "Vuln", "flag": 1}
+    }
+  ]
+}

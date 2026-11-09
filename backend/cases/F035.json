@@ -1,0 +1,255 @@
+{
+  "finding": "F035",
+  "rule": "REME-0100500013",
+  "service": "rds",
+  "status": "reproducible",
+  "note": "Raw/Service/rds.py:94 `item[\"DBClusters\"] = {}` 를 모든 인스턴스에 넣는데 Analyze/Service/rds.py:1259 의 인스턴스 경로는 `get(\"DBClusters\") == None` 일 때만 점검한다({} == None 은 거짓) → 단독 인스턴스 점검 0건. 인스턴스 정보는 raw 에 그대로 있으므로 룰에서 고칠 수 있다(bug).",
+  "scenarios": [
+    {
+      "id": "standalone-pg-no-ssl",
+      "role": "bug",
+      "condition": "단독(비클러스터) postgres 인스턴스 — 수집기 모양대로 DBClusters={}, 파라미터 그룹 rds.force_ssl=0 (in-sync)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-pg",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-pg",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "postgres",
+                "EngineVersion": "14.10",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-pg.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 5432,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:postgres",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "pg-nossl",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "DBClusters": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [
+              {
+                "DBParameterGroupName": "pg-nossl",
+                "DBParameterGroupFamily": "postgres14",
+                "Parameters": [
+                  {
+                    "ParameterName": "rds.force_ssl",
+                    "ParameterValue": "0",
+                    "Source": "user"
+                  }
+                ]
+              }
+            ],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "db-pg"
+        ]
+      },
+      "why": "PostgreSQL 이 SSL 을 강제하지 않음 → 취약"
+    },
+    {
+      "id": "aurora-pg-no-ssl",
+      "role": "control",
+      "condition": "Aurora PostgreSQL 클러스터, rds.force_ssl=0",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-pg",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-pg",
+                "Engine": "aurora-postgresql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-pg",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-pg-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [
+              {
+                "DBClusterParameterGroupName": "cpg-aurora-pg",
+                "DBParameterGroupFamily": "aurora-postgresql14",
+                "Parameters": [
+                  {
+                    "ParameterName": "rds.force_ssl",
+                    "ParameterValue": "0",
+                    "Source": "user"
+                  }
+                ]
+              }
+            ],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "standalone-nokey",
+      "role": "control",
+      "condition": "단독 postgres 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), rds.force_ssl=0",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-pg",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-pg",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "postgres",
+                "EngineVersion": "14.10",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-pg.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 5432,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:postgres",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "pg-nossl",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [
+              {
+                "DBParameterGroupName": "pg-nossl",
+                "DBParameterGroupFamily": "postgres14",
+                "Parameters": [
+                  {
+                    "ParameterName": "rds.force_ssl",
+                    "ParameterValue": "0",
+                    "Source": "user"
+                  }
+                ]
+              }
+            ],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

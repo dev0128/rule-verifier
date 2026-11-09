@@ -1,0 +1,278 @@
+{
+  "finding": "F123",
+  "rule": "REME-0101300005",
+  "service": "elasticbeanstalk",
+  "status": "reproducible",
+  "note": "elasticbeanstalk.py:292-295 — `Health == \"Green\"` 인 환경만 보고, AccessLogsS3Enabled 옵션이 없는 환경(SingleInstance · 로드밸런서 없음)은 flag=False 그대로라 N/A 가 아니라 양호.",
+  "scenarios": [
+    {
+      "id": "red-access-off",
+      "role": "bug",
+      "condition": "Health=Red, 로드밸런서(ALB) 환경, AccessLogsS3Enabled=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-red",
+                "EnvironmentId": "e-env-red",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-red.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-red.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Red",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-red",
+                "HealthStatus": "Severe",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-red",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "LoadBalancerType",
+                        "Value": "application"
+                      },
+                      {
+                        "Namespace": "aws:elbv2:loadbalancer",
+                        "OptionName": "AccessLogsS3Enabled",
+                        "Value": "false"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Health 는 인스턴스 상태 색일 뿐 설정과 무관하다 — 상태가 Green 이 아니어도 설정이 꺼져 있으면 취약이어야 한다"
+    },
+    {
+      "id": "single-instance",
+      "role": "bug",
+      "condition": "Health=Green, EnvironmentType=SingleInstance(로드밸런서 없음) — AccessLogsS3Enabled 옵션 자체가 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-single",
+                "EnvironmentId": "e-env-single",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-single.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-single.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-single",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-single",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "SingleInstance"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "flag": 0,
+        "good": 0
+      },
+      "why": "로드밸런서가 없어 액세스 로그 점검 대상이 아니다 — 양호가 아니라 N/A 여야 한다"
+    },
+    {
+      "id": "green-access-off",
+      "role": "control",
+      "condition": "Health=Green, ALB 환경, AccessLogsS3Enabled=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-green",
+                "EnvironmentId": "e-env-green",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-green.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-green.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-green",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-green",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "LoadBalancerType",
+                        "Value": "application"
+                      },
+                      {
+                        "Namespace": "aws:elbv2:loadbalancer",
+                        "OptionName": "AccessLogsS3Enabled",
+                        "Value": "false"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "green-access-on",
+      "role": "control",
+      "condition": "Health=Green, ALB 환경, AccessLogsS3Enabled=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-green",
+                "EnvironmentId": "e-env-green",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-green.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-green.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-green",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-green",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "LoadBalancerType",
+                        "Value": "application"
+                      },
+                      {
+                        "Namespace": "aws:elbv2:loadbalancer",
+                        "OptionName": "AccessLogsS3Enabled",
+                        "Value": "true"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

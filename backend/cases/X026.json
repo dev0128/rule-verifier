@@ -1,0 +1,86 @@
+{
+  "finding": "X026",
+  "rule": "REME-0105800004",
+  "service": "ecs",
+  "status": "reproducible",
+  "note": "ecs.py:249 — `\"root\" in user` 부분 문자열 비교라 'nonroot' 같은 사용자 이름도 root 로 본다. 이 분기는 host 모드 + privileged=True 일 때만 탄다.",
+  "scenarios": [
+    {
+      "id": "nonroot-user",
+      "role": "bug",
+      "condition": "networkMode=host, privileged=true, user='nonroot'",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "host",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "privileged": true,
+                    "user": "nonroot",
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {},
+                "executionRole_EvaluationResults": {}
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "사용자 이름 'nonroot' 는 root 가 아니다 — root 실행 여부는 이름/UID 가 정확히 root·0 인지로 본다"
+    },
+    {
+      "id": "app-user",
+      "role": "control",
+      "condition": "networkMode=host, privileged=true, user='appuser'",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "host",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "privileged": true,
+                    "user": "appuser",
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {},
+                "executionRole_EvaluationResults": {}
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

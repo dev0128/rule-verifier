@@ -1,0 +1,311 @@
+{
+  "finding": "F023",
+  "rule": "REME-0104100002",
+  "service": "elasticache",
+  "status": "reproducible",
+  "effect": "false_negative",
+  "note": "elasticache.py:114,117 — EngineVersion 을 문자열로 비교(\"1.6.6\" < \"1.6.22\" 가 거짓)하고 기본 버전 목록 [0] 과 비교, 목록이 비면 IndexError. 수집(Raw/elasticache.py:80) 은 memcached · redis 기본 버전만 받아 valkey 는 비교 기준 자체가 raw 에 없다. 관찰된 결과는 구버전 양호(놓침) · 예외라 effect 를 false_negative 로 바로잡는다.",
+  "scenarios": [
+    {
+      "id": "memcached-1.6.6",
+      "role": "bug",
+      "condition": "memcached 1.6.6 클러스터, 기본 버전 1.6.22",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "mc-old",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:mc-old",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "memcached",
+                "EngineVersion": "1.6.6",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "mc-old.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 11211
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {}
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": [],
+            "describe_cache_engine_versions": [
+              {
+                "Engine": "memcached",
+                "EngineVersion": "1.6.22",
+                "CacheParameterGroupFamily": "memcached1.6",
+                "CacheEngineDescription": "memcached",
+                "CacheEngineVersionDescription": "memcached version 1.6.22",
+                "AccountID": "111122223333"
+              },
+              {
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheParameterGroupFamily": "redis7",
+                "CacheEngineDescription": "redis",
+                "CacheEngineVersionDescription": "redis version 7.1",
+                "AccountID": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "1.6.6 은 1.6.22 보다 오래된 버전이다(숫자 비교)"
+    },
+    {
+      "id": "redis-versions-missing",
+      "role": "bug",
+      "condition": "redis 7.1 클러스터, redis 기본 버전 조회 실패로 목록에 memcached 만 있음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "rd-1",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:rd-1",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "rd-1.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 6379
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {}
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": [],
+            "describe_cache_engine_versions": [
+              {
+                "Engine": "memcached",
+                "EngineVersion": "1.6.22",
+                "CacheParameterGroupFamily": "memcached1.6",
+                "CacheEngineDescription": "memcached",
+                "CacheEngineVersionDescription": "memcached version 1.6.22",
+                "AccountID": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "flag": 0,
+        "good": 0
+      },
+      "why": "비교 기준이 없으면 판정 불가(N/A) — 룰 전체가 예외로 죽으면 안 된다"
+    },
+    {
+      "id": "valkey-old",
+      "role": "collection",
+      "condition": "valkey 7.2 클러스터 — 수집기가 valkey 버전 목록을 받지 않음(memcached · redis 만)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "vk-1",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:vk-1",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "valkey",
+                "EngineVersion": "7.2",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "vk-1.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 6379
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {}
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": [],
+            "describe_cache_engine_versions": [
+              {
+                "Engine": "memcached",
+                "EngineVersion": "1.6.22",
+                "CacheParameterGroupFamily": "memcached1.6",
+                "CacheEngineDescription": "memcached",
+                "CacheEngineVersionDescription": "memcached version 1.6.22",
+                "AccountID": "111122223333"
+              },
+              {
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheParameterGroupFamily": "redis7",
+                "CacheEngineDescription": "redis",
+                "CacheEngineVersionDescription": "redis version 7.1",
+                "AccountID": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "ElastiCache valkey 는 8.x 가 나와 있어 7.2 는 최신이 아니다 — 수집에 valkey 기본 버전이 없어 룰만으로는 판정할 수 없다"
+    },
+    {
+      "id": "memcached-1.6.17",
+      "role": "control",
+      "condition": "memcached 1.6.17 클러스터, 기본 버전 1.6.22",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "mc-mid",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:mc-mid",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "memcached",
+                "EngineVersion": "1.6.17",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "mc-mid.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 11211
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {}
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": [],
+            "describe_cache_engine_versions": [
+              {
+                "Engine": "memcached",
+                "EngineVersion": "1.6.22",
+                "CacheParameterGroupFamily": "memcached1.6",
+                "CacheEngineDescription": "memcached",
+                "CacheEngineVersionDescription": "memcached version 1.6.22",
+                "AccountID": "111122223333"
+              },
+              {
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheParameterGroupFamily": "redis7",
+                "CacheEngineDescription": "redis",
+                "CacheEngineVersionDescription": "redis version 7.1",
+                "AccountID": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "redis-latest",
+      "role": "control",
+      "condition": "redis 7.1 클러스터, 기본 버전 7.1",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "rd-1",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:rd-1",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "rd-1.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 6379
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {}
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": [],
+            "describe_cache_engine_versions": [
+              {
+                "Engine": "memcached",
+                "EngineVersion": "1.6.22",
+                "CacheParameterGroupFamily": "memcached1.6",
+                "CacheEngineDescription": "memcached",
+                "CacheEngineVersionDescription": "memcached version 1.6.22",
+                "AccountID": "111122223333"
+              },
+              {
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheParameterGroupFamily": "redis7",
+                "CacheEngineDescription": "redis",
+                "CacheEngineVersionDescription": "redis version 7.1",
+                "AccountID": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

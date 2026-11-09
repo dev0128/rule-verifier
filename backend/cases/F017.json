@@ -1,0 +1,155 @@
+{
+  "finding": "F017",
+  "rule": "REME-0100100019",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "(1) iam.py:1765 `_select_value.remove(\"accessAdvisor\")` — accessAdvisor 수집이 중간에 끊기면 ValueError 로 룰 전체 중단(IAM-011 과 같은 원인, 판정 정보는 raw 에 남아 있어 bug). (2) iam.py:1774-1784 PasswordLastUsed 만 보고 LoginProfile(콘솔 비밀번호 존재)을 보지 않아, 비밀번호를 이미 지운 사용자도 취약.",
+  "scenarios": [
+    {
+      "id": "advisor-missing-second-user",
+      "role": "bug",
+      "condition": "사용자 2명 — a: 콘솔 비밀번호 있음, 2020-01-01 마지막 로그인(accessAdvisor 있음) / b: 콘솔 비밀번호 없음, accessAdvisor 수집 중단으로 키 없음",
+      "args": [
+        "30"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_users": [
+              {
+                "UserName": "user-a",
+                "UserId": "AIDAUSERA",
+                "Arn": "arn:aws:iam::111111111111:user/user-a",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                },
+                "PasswordLastUsed": "2020-01-01 00:00:00+00:00",
+                "LoginProfile": {
+                  "UserName": "user-a",
+                  "CreateDate": "2020-01-01 00:00:00+00:00",
+                  "PasswordResetRequired": false
+                }
+              },
+              {
+                "UserName": "user-b",
+                "UserId": "AIDAUSERB",
+                "Arn": "arn:aws:iam::111111111111:user/user-b",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {},
+                "LoginProfile": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "user-a"
+        ]
+      },
+      "why": "accessAdvisor 는 판정과 무관한 표시용 키다. 30일 넘게 로그인하지 않은 콘솔 사용자 a 는 취약으로 나와야 한다"
+    },
+    {
+      "id": "login-profile-deleted",
+      "role": "bug",
+      "condition": "콘솔 비밀번호(LoginProfile)를 이미 삭제한 사용자 — list_users 의 PasswordLastUsed 는 2020-01-01 로 남아 있음",
+      "args": [
+        "30"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_users": [
+              {
+                "UserName": "user-c",
+                "UserId": "AIDAUSERC",
+                "Arn": "arn:aws:iam::111111111111:user/user-c",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                },
+                "PasswordLastUsed": "2020-01-01 00:00:00+00:00",
+                "LoginProfile": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "flag": 0,
+        "flag_excludes": [
+          "user-c"
+        ]
+      },
+      "why": "콘솔 액세스가 이미 비활성화(LoginProfile 없음)되어 있으므로 '콘솔 액세스 비활성화 여부' 는 충족 — 취약이면 안 된다(양호 또는 대상 제외)"
+    },
+    {
+      "id": "console-unused",
+      "role": "control",
+      "condition": "콘솔 비밀번호 있음, 2020-01-01 마지막 로그인, accessAdvisor 있음",
+      "args": [
+        "30"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_users": [
+              {
+                "UserName": "user-a",
+                "UserId": "AIDAUSERA",
+                "Arn": "arn:aws:iam::111111111111:user/user-a",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                },
+                "PasswordLastUsed": "2020-01-01 00:00:00+00:00",
+                "LoginProfile": {
+                  "UserName": "user-a",
+                  "CreateDate": "2020-01-01 00:00:00+00:00",
+                  "PasswordResetRequired": false
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "user-a"
+        ]
+      }
+    }
+  ]
+}

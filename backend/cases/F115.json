@@ -1,0 +1,71 @@
+{
+  "finding": "F115",
+  "rule": "REME-0106100005",
+  "service": "vpc",
+  "status": "reproducible",
+  "note": "vpc.py:277-284 — 피어링과 무관한 경로(local, IGW/NAT 의 0.0.0.0/0)까지 모두 모아 비교한다. route.VpcPeeringConnectionId == 이 피어링 인 경로만 봐야 한다. 수집기는 route.vpc-peering-connection-id 필터로 라우팅 테이블을 가져오므로 그 테이블에는 항상 local 경로가 있다.",
+  "scenarios": [
+    {
+      "id": "narrow-route-with-local",
+      "role": "bug",
+      "condition": "피어링(요청 10.0.0.0/16 ↔ 수락 172.30.0.0/16) 경로는 172.30.1.0/24 만, 같은 테이블에 자기 VPC local 경로(10.0.0.0/16)",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_peering_connections": [
+        {"VpcPeeringConnectionId": "pcx-narrow",
+         "RequesterVpcInfo": {"CidrBlock": "10.0.0.0/16", "VpcId": "vpc-a"},
+         "AccepterVpcInfo": {"CidrBlock": "172.30.0.0/16", "VpcId": "vpc-b"},
+         "RouteTables": [{"RouteTableId": "rtb-1", "VpcId": "vpc-a", "Routes": [
+           {"DestinationCidrBlock": "10.0.0.0/16", "GatewayId": "local", "State": "active"},
+           {"DestinationCidrBlock": "172.30.1.0/24", "VpcPeeringConnectionId": "pcx-narrow", "State": "active"}]}]}
+      ]}}},
+      "expect": {"verdict": "Secure", "good": 1},
+      "why": "피어링 경로를 필요한 /24 로 좁혔으므로 '불필요한 경로' 가 없다. local 경로는 VPC 자체 경로로 피어링과 무관하다"
+    },
+    {
+      "id": "narrow-route-with-igw-default",
+      "role": "bug",
+      "condition": "피어링 경로는 172.30.1.0/24 만, 같은 테이블에 local + 0.0.0.0/0 → IGW",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_peering_connections": [
+        {"VpcPeeringConnectionId": "pcx-igw",
+         "RequesterVpcInfo": {"CidrBlock": "10.0.0.0/16", "VpcId": "vpc-a"},
+         "AccepterVpcInfo": {"CidrBlock": "172.30.0.0/16", "VpcId": "vpc-b"},
+         "RouteTables": [{"RouteTableId": "rtb-2", "VpcId": "vpc-a", "Routes": [
+           {"DestinationCidrBlock": "10.0.0.0/16", "GatewayId": "local", "State": "active"},
+           {"DestinationCidrBlock": "0.0.0.0/0", "GatewayId": "igw-1", "State": "active"},
+           {"DestinationCidrBlock": "172.30.1.0/24", "VpcPeeringConnectionId": "pcx-igw", "State": "active"}]}]}
+      ]}}},
+      "expect": {"verdict": "Secure", "good": 1},
+      "why": "0.0.0.0/0 은 인터넷 게이트웨이로 가는 경로이지 피어링 경로가 아니다"
+    },
+    {
+      "id": "whole-cidr-via-peering",
+      "role": "control",
+      "condition": "피어링으로 상대 VPC 전체 CIDR(172.30.0.0/16)을 라우팅",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_peering_connections": [
+        {"VpcPeeringConnectionId": "pcx-wide",
+         "RequesterVpcInfo": {"CidrBlock": "10.0.0.0/16", "VpcId": "vpc-a"},
+         "AccepterVpcInfo": {"CidrBlock": "172.30.0.0/16", "VpcId": "vpc-b"},
+         "RouteTables": [{"RouteTableId": "rtb-3", "VpcId": "vpc-a", "Routes": [
+           {"DestinationCidrBlock": "10.0.0.0/16", "GatewayId": "local", "State": "active"},
+           {"DestinationCidrBlock": "172.30.0.0/16", "VpcPeeringConnectionId": "pcx-wide", "State": "active"}]}]}
+      ]}}},
+      "expect": {"verdict": "Vuln", "flag": 1},
+      "why": "상대 VPC 전체 대역을 피어링으로 연 것은 판단기준상 취약"
+    },
+    {
+      "id": "no-route-table",
+      "role": "control",
+      "condition": "라우팅 테이블에 이 피어링 경로가 없음 (RouteTables 빈 리스트)",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_peering_connections": [
+        {"VpcPeeringConnectionId": "pcx-none",
+         "RequesterVpcInfo": {"CidrBlock": "10.0.0.0/16", "VpcId": "vpc-a"},
+         "AccepterVpcInfo": {"CidrBlock": "172.30.0.0/16", "VpcId": "vpc-b"},
+         "RouteTables": []}
+      ]}}},
+      "expect": {"verdict": "Secure", "good": 1}
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+{
+  "finding": "F057",
+  "rule": "REME-0102900002",
+  "service": "ses",
+  "status": "reproducible",
+  "note": "Analyze/ses.py:99-103 — `'arn' in Principal.get('AWS', '')` 만 본다. Effect · 계정 ID 비교가 없어 자기 계정 ARN · Deny 문도 취약, Principal.AWS 리스트('arn' in list 는 원소 일치 비교)와 12자리 계정 ID 형식은 놓친다. 자기 계정은 정책 Resource(SES 자격 증명 ARN)의 계정으로 알 수 있다.",
+  "scenarios": [
+    {
+      "id": "other-accounts-list",
+      "role": "bug",
+      "condition": "Principal AWS = 타 계정 ARN 리스트 [999999999999 root]",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "example.com",
+                "Policies": [
+                  {
+                    "PolicyName": "send-auth",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": [
+                            "arn:aws:iam::999999999999:root"
+                          ]
+                        },
+                        "Action": [
+                          "ses:SendEmail",
+                          "ses:SendRawEmail"
+                        ],
+                        "Resource": "arn:aws:ses:ap-northeast-2:111122223333:identity/example.com"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "타 계정에 발송 권한을 위임 — 교차 계정 액세스"
+    },
+    {
+      "id": "other-account-id",
+      "role": "bug",
+      "condition": "Principal AWS = 타 계정 ID '999999999999'",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "example.com",
+                "Policies": [
+                  {
+                    "PolicyName": "send-auth",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "999999999999"
+                        },
+                        "Action": [
+                          "ses:SendEmail",
+                          "ses:SendRawEmail"
+                        ],
+                        "Resource": "arn:aws:ses:ap-northeast-2:111122223333:identity/example.com"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "계정 ID 형식도 그 계정 root 와 같다 — 교차 계정 액세스"
+    },
+    {
+      "id": "own-account-arn",
+      "role": "bug",
+      "condition": "Principal AWS = 자기 계정 role ARN (Resource 의 계정과 같음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "example.com",
+                "Policies": [
+                  {
+                    "PolicyName": "send-auth",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::111122223333:role/mailer"
+                        },
+                        "Action": [
+                          "ses:SendEmail",
+                          "ses:SendRawEmail"
+                        ],
+                        "Resource": "arn:aws:ses:ap-northeast-2:111122223333:identity/example.com"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "자격 증명 소유 계정(111122223333) 주체는 교차 계정이 아니다"
+    },
+    {
+      "id": "deny-other-account",
+      "role": "bug",
+      "condition": "Effect=Deny, Principal AWS = 타 계정 root ARN",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "example.com",
+                "Policies": [
+                  {
+                    "PolicyName": "send-auth",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Deny",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::999999999999:root"
+                        },
+                        "Action": [
+                          "ses:SendEmail",
+                          "ses:SendRawEmail"
+                        ],
+                        "Resource": "arn:aws:ses:ap-northeast-2:111122223333:identity/example.com"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "Deny 는 액세스를 막는 문 — 교차 계정 허용이 아니다"
+    },
+    {
+      "id": "other-account-arn",
+      "role": "control",
+      "condition": "Allow, Principal AWS = 타 계정 root ARN 문자열",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "example.com",
+                "Policies": [
+                  {
+                    "PolicyName": "send-auth",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::999999999999:root"
+                        },
+                        "Action": [
+                          "ses:SendEmail",
+                          "ses:SendRawEmail"
+                        ],
+                        "Resource": "arn:aws:ses:ap-northeast-2:111122223333:identity/example.com"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "no-policy",
+      "role": "control",
+      "condition": "자격 증명에 정책 없음 (Policies=[])",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "example.com",
+                "Policies": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

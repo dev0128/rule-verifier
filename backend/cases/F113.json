@@ -1,0 +1,215 @@
+{
+  "finding": "F113",
+  "rule": "REME-0100900010",
+  "service": "cloudfront",
+  "status": "reproducible",
+  "note": "cloudfront.py:800 — `len(exist_bucket) > 0` 이면 양호. S3 오리진 중 하나라도 존재하면 나머지가 삭제된 버킷이어도 놓친다(len(exist_bucket) == len(item_names) 여야 함).",
+  "scenarios": [
+    {
+      "id": "one-missing-of-two",
+      "role": "bug",
+      "condition": "S3 오리진 2개(오리진 그룹 장애조치) — live-bucket 은 존재, deleted-bucket 은 계정에 없음",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EGRP",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EGRP",
+                "DomainName": "egrp.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 2,
+                  "Items": [
+                    {
+                      "Id": "live-bucket",
+                      "DomainName": "live-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    },
+                    {
+                      "Id": "deleted-bucket",
+                      "DomainName": "deleted-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "live-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "live-bucket",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "존재하지 않는 S3 버킷을 오리진으로 참조하므로 버킷 하이재킹 위험 — 취약"
+    },
+    {
+      "id": "only-missing",
+      "role": "control",
+      "condition": "S3 오리진 1개, 버킷 없음",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EMISS",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EMISS",
+                "DomainName": "emiss.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "deleted-bucket",
+                      "DomainName": "deleted-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "deleted-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "live-bucket",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "all-exist",
+      "role": "control",
+      "condition": "S3 오리진 2개 모두 존재",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EOK",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EOK",
+                "DomainName": "eok.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 2,
+                  "Items": [
+                    {
+                      "Id": "live-bucket",
+                      "DomainName": "live-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    },
+                    {
+                      "Id": "live-bucket-2",
+                      "DomainName": "live-bucket-2.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "live-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          },
+          "s3": {
+            "list_buckets": [
+              {
+                "Name": "live-bucket",
+                "Policy": {}
+              },
+              {
+                "Name": "live-bucket-2",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

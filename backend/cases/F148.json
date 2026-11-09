@@ -1,0 +1,326 @@
+{
+  "finding": "F148",
+  "rule": "REME-0104300004",
+  "service": "dynamodb",
+  "status": "reproducible",
+  "note": "dynamodb.py:201 `SSEDescription.get(\"SSEType\") == \"KMS\"` 만 본다 — AWS 관리형 키(aws/dynamodb)도 SSEType=KMS 라 양호. KMSMasterKeyArn 을 같은 실행의 kms raw(list_keys[].KeyMetadata.KeyManager)와 맞추면 AWS/CUSTOMER 를 구분할 수 있다. 주의: 마스터의 설명 문구는 'AWS 관리형 키 및 고객 관리형 키 사용 권장' 이라 엔진과 맞고, 항목명·판단기준(KMS-CMK)과는 어긋난다 — 이 케이스는 항목명 기준.",
+  "scenarios": [
+    {
+      "id": "aws-managed-key",
+      "role": "bug",
+      "condition": "테이블 암호화 = AWS 관리형 키 aws/dynamodb (SSEType=KMS, KeyManager=AWS)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "dynamodb": {
+            "describe_table": [
+              {
+                "TableName": "t-awskey",
+                "TableArn": "arn:aws:dynamodb:ap-northeast-2:111122223333:table/t-awskey",
+                "TableStatus": "ACTIVE",
+                "TableId": "id-t-awskey",
+                "ItemCount": 0,
+                "TableSizeBytes": 0,
+                "BillingModeSummary": {
+                  "BillingMode": "PAY_PER_REQUEST"
+                },
+                "KeySchema": [
+                  {
+                    "AttributeName": "pk",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "BackupSummaries": [],
+                "KinesisDataStreamDestinations": [],
+                "ContributorInsightsStatus": {
+                  "TableName": "t-awskey",
+                  "ContributorInsightsStatus": "DISABLED"
+                },
+                "Tags": {},
+                "SSEDescription": {
+                  "Status": "ENABLED",
+                  "SSEType": "KMS",
+                  "KMSMasterKeyArn": "arn:aws:kms:ap-northeast-2:111122223333:key/11111111-aaaa-4aaa-8aaa-111111111111"
+                },
+                "ContinuousBackupsDescription": {
+                  "ContinuousBackupsStatus": "ENABLED",
+                  "PointInTimeRecoveryDescription": {
+                    "PointInTimeRecoveryStatus": "DISABLED"
+                  }
+                }
+              }
+            ]
+          },
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "11111111-aaaa-4aaa-8aaa-111111111111",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111122223333:key/11111111-aaaa-4aaa-8aaa-111111111111",
+                "KeyMetadata": {
+                  "AWSAccountId": "111122223333",
+                  "KeyId": "11111111-aaaa-4aaa-8aaa-111111111111",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111122223333:key/11111111-aaaa-4aaa-8aaa-111111111111",
+                  "Enabled": true,
+                  "KeyState": "Enabled",
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyManager": "AWS",
+                  "Origin": "AWS_KMS",
+                  "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                  "KeySpec": "SYMMETRIC_DEFAULT"
+                },
+                "Aliases": [
+                  {
+                    "AliasName": "alias/aws/dynamodb",
+                    "AliasArn": "arn:aws:kms:ap-northeast-2:111122223333:alias/aws/dynamodb",
+                    "TargetKeyId": "11111111-aaaa-4aaa-8aaa-111111111111"
+                  }
+                ],
+                "Tags": {}
+              },
+              {
+                "KeyId": "22222222-bbbb-4bbb-8bbb-222222222222",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111122223333:key/22222222-bbbb-4bbb-8bbb-222222222222",
+                "KeyMetadata": {
+                  "AWSAccountId": "111122223333",
+                  "KeyId": "22222222-bbbb-4bbb-8bbb-222222222222",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111122223333:key/22222222-bbbb-4bbb-8bbb-222222222222",
+                  "Enabled": true,
+                  "KeyState": "Enabled",
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyManager": "CUSTOMER",
+                  "Origin": "AWS_KMS",
+                  "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                  "KeySpec": "SYMMETRIC_DEFAULT"
+                },
+                "Aliases": [
+                  {
+                    "AliasName": "alias/ddb-cmk",
+                    "AliasArn": "arn:aws:kms:ap-northeast-2:111122223333:alias/ddb-cmk",
+                    "TargetKeyId": "22222222-bbbb-4bbb-8bbb-222222222222"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "list_grants": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "t-awskey"
+        ]
+      },
+      "why": "항목명이 KMS-CMK(고객 관리형 키)이므로 AWS 관리형 키는 취약"
+    },
+    {
+      "id": "customer-managed-key",
+      "role": "control",
+      "condition": "테이블 암호화 = 고객 관리형 키 (KeyManager=CUSTOMER)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "dynamodb": {
+            "describe_table": [
+              {
+                "TableName": "t-cmk",
+                "TableArn": "arn:aws:dynamodb:ap-northeast-2:111122223333:table/t-cmk",
+                "TableStatus": "ACTIVE",
+                "TableId": "id-t-cmk",
+                "ItemCount": 0,
+                "TableSizeBytes": 0,
+                "BillingModeSummary": {
+                  "BillingMode": "PAY_PER_REQUEST"
+                },
+                "KeySchema": [
+                  {
+                    "AttributeName": "pk",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "BackupSummaries": [],
+                "KinesisDataStreamDestinations": [],
+                "ContributorInsightsStatus": {
+                  "TableName": "t-cmk",
+                  "ContributorInsightsStatus": "DISABLED"
+                },
+                "Tags": {},
+                "SSEDescription": {
+                  "Status": "ENABLED",
+                  "SSEType": "KMS",
+                  "KMSMasterKeyArn": "arn:aws:kms:ap-northeast-2:111122223333:key/22222222-bbbb-4bbb-8bbb-222222222222"
+                },
+                "ContinuousBackupsDescription": {
+                  "ContinuousBackupsStatus": "ENABLED",
+                  "PointInTimeRecoveryDescription": {
+                    "PointInTimeRecoveryStatus": "DISABLED"
+                  }
+                }
+              }
+            ]
+          },
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "11111111-aaaa-4aaa-8aaa-111111111111",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111122223333:key/11111111-aaaa-4aaa-8aaa-111111111111",
+                "KeyMetadata": {
+                  "AWSAccountId": "111122223333",
+                  "KeyId": "11111111-aaaa-4aaa-8aaa-111111111111",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111122223333:key/11111111-aaaa-4aaa-8aaa-111111111111",
+                  "Enabled": true,
+                  "KeyState": "Enabled",
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyManager": "AWS",
+                  "Origin": "AWS_KMS",
+                  "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                  "KeySpec": "SYMMETRIC_DEFAULT"
+                },
+                "Aliases": [
+                  {
+                    "AliasName": "alias/aws/dynamodb",
+                    "AliasArn": "arn:aws:kms:ap-northeast-2:111122223333:alias/aws/dynamodb",
+                    "TargetKeyId": "11111111-aaaa-4aaa-8aaa-111111111111"
+                  }
+                ],
+                "Tags": {}
+              },
+              {
+                "KeyId": "22222222-bbbb-4bbb-8bbb-222222222222",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111122223333:key/22222222-bbbb-4bbb-8bbb-222222222222",
+                "KeyMetadata": {
+                  "AWSAccountId": "111122223333",
+                  "KeyId": "22222222-bbbb-4bbb-8bbb-222222222222",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111122223333:key/22222222-bbbb-4bbb-8bbb-222222222222",
+                  "Enabled": true,
+                  "KeyState": "Enabled",
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyManager": "CUSTOMER",
+                  "Origin": "AWS_KMS",
+                  "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                  "KeySpec": "SYMMETRIC_DEFAULT"
+                },
+                "Aliases": [
+                  {
+                    "AliasName": "alias/ddb-cmk",
+                    "AliasArn": "arn:aws:kms:ap-northeast-2:111122223333:alias/ddb-cmk",
+                    "TargetKeyId": "22222222-bbbb-4bbb-8bbb-222222222222"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "list_grants": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "aws-owned-key",
+      "role": "control",
+      "condition": "AWS 소유 키(기본값, SSEDescription 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "dynamodb": {
+            "describe_table": [
+              {
+                "TableName": "t-owned",
+                "TableArn": "arn:aws:dynamodb:ap-northeast-2:111122223333:table/t-owned",
+                "TableStatus": "ACTIVE",
+                "TableId": "id-t-owned",
+                "ItemCount": 0,
+                "TableSizeBytes": 0,
+                "BillingModeSummary": {
+                  "BillingMode": "PAY_PER_REQUEST"
+                },
+                "KeySchema": [
+                  {
+                    "AttributeName": "pk",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "BackupSummaries": [],
+                "KinesisDataStreamDestinations": [],
+                "ContributorInsightsStatus": {
+                  "TableName": "t-owned",
+                  "ContributorInsightsStatus": "DISABLED"
+                },
+                "Tags": {},
+                "ContinuousBackupsDescription": {
+                  "ContinuousBackupsStatus": "ENABLED",
+                  "PointInTimeRecoveryDescription": {
+                    "PointInTimeRecoveryStatus": "DISABLED"
+                  }
+                }
+              }
+            ]
+          },
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "11111111-aaaa-4aaa-8aaa-111111111111",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111122223333:key/11111111-aaaa-4aaa-8aaa-111111111111",
+                "KeyMetadata": {
+                  "AWSAccountId": "111122223333",
+                  "KeyId": "11111111-aaaa-4aaa-8aaa-111111111111",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111122223333:key/11111111-aaaa-4aaa-8aaa-111111111111",
+                  "Enabled": true,
+                  "KeyState": "Enabled",
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyManager": "AWS",
+                  "Origin": "AWS_KMS",
+                  "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                  "KeySpec": "SYMMETRIC_DEFAULT"
+                },
+                "Aliases": [
+                  {
+                    "AliasName": "alias/aws/dynamodb",
+                    "AliasArn": "arn:aws:kms:ap-northeast-2:111122223333:alias/aws/dynamodb",
+                    "TargetKeyId": "11111111-aaaa-4aaa-8aaa-111111111111"
+                  }
+                ],
+                "Tags": {}
+              },
+              {
+                "KeyId": "22222222-bbbb-4bbb-8bbb-222222222222",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111122223333:key/22222222-bbbb-4bbb-8bbb-222222222222",
+                "KeyMetadata": {
+                  "AWSAccountId": "111122223333",
+                  "KeyId": "22222222-bbbb-4bbb-8bbb-222222222222",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111122223333:key/22222222-bbbb-4bbb-8bbb-222222222222",
+                  "Enabled": true,
+                  "KeyState": "Enabled",
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyManager": "CUSTOMER",
+                  "Origin": "AWS_KMS",
+                  "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                  "KeySpec": "SYMMETRIC_DEFAULT"
+                },
+                "Aliases": [
+                  {
+                    "AliasName": "alias/ddb-cmk",
+                    "AliasArn": "arn:aws:kms:ap-northeast-2:111122223333:alias/ddb-cmk",
+                    "TargetKeyId": "22222222-bbbb-4bbb-8bbb-222222222222"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "list_grants": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,571 @@
+{
+  "finding": "F039",
+  "rule": "REME-0105700001",
+  "service": "neptune",
+  "status": "reproducible",
+  "note": "neptune.py:47-60 — 서브넷마다 모든 라우트 테이블의 SubnetId 를 모은 뒤, 루프 변수에 남은 '마지막' 라우트 테이블(result_temp3_i)의 Routes 를 본다 → 서브넷이 실제로 연결된 테이블이 아니라 목록 순서로 결과가 정해져 미탐·오탐이 모두 난다. 단독 인스턴스 경로(neptune.py:80, Raw/rds.py:93 DBClusters={} 로 항상 사문화)는 Neptune 인스턴스가 늘 클러스터에 속해 클러스터 경로로 점검되므로 올바른 결과에는 영향이 없다 — 재현은 라우팅 테이블 결함으로 한다.",
+  "scenarios": [
+    {
+      "id": "public-subnet-not-last-table",
+      "role": "bug",
+      "condition": "클러스터 서브넷 subnet-pub 은 rtb-public(0.0.0.0/0→igw) 에 연결, 목록 마지막은 subnet-priv 의 rtb-private(igw 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "npt-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster:npt-1",
+                "Engine": "neptune",
+                "EngineVersion": "1.3.1.0",
+                "Status": "available",
+                "DBSubnetGroup": "npt-subnets",
+                "MultiAZ": false,
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "npt-1-i1",
+                    "IsClusterWriter": true
+                  }
+                ]
+              }
+            ],
+            "describe_db_subnet_groups": [
+              {
+                "DBSubnetGroupName": "npt-subnets",
+                "VpcId": "vpc-1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                  {
+                    "SubnetIdentifier": "subnet-pub",
+                    "SubnetStatus": "Active",
+                    "SubnetAvailabilityZone": {
+                      "Name": "ap-northeast-2a"
+                    }
+                  }
+                ]
+              }
+            ],
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "npt-1-i1",
+                "Engine": "neptune",
+                "DBClusterIdentifier": "npt-1",
+                "DBInstanceStatus": "available",
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "npt-subnets",
+                  "VpcId": "vpc-1",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-pub"
+                    }
+                  ]
+                },
+                "PubliclyAccessible": false,
+                "DBClusters": {
+                  "DBClusterIdentifier": "npt-1",
+                  "Engine": "neptune"
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-public",
+                "VpcId": "vpc-1",
+                "OwnerId": "111111111111",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-subnet-pub",
+                    "RouteTableId": "rtb-public",
+                    "SubnetId": "subnet-pub",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-0abc",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "Tags": []
+              },
+              {
+                "RouteTableId": "rtb-private",
+                "VpcId": "vpc-1",
+                "OwnerId": "111111111111",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-subnet-priv",
+                    "RouteTableId": "rtb-private",
+                    "SubnetId": "subnet-priv",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  },
+                  {
+                    "Main": true,
+                    "RouteTableAssociationId": "rtbassoc-main",
+                    "RouteTableId": "rtb-private",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  }
+                ],
+                "Tags": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "npt-1"
+        ]
+      },
+      "why": "클러스터 서브넷의 라우트 테이블에 0.0.0.0/0 → IGW 경로가 있으므로 퍼블릭 서브넷 사용 — 취약"
+    },
+    {
+      "id": "private-subnet-public-last-table",
+      "role": "bug",
+      "condition": "클러스터 서브넷 subnet-priv 는 rtb-private(igw 없음)에 연결, 목록 마지막은 subnet-pub 의 rtb-public(igw)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "npt-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster:npt-1",
+                "Engine": "neptune",
+                "EngineVersion": "1.3.1.0",
+                "Status": "available",
+                "DBSubnetGroup": "npt-subnets",
+                "MultiAZ": false,
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "npt-1-i1",
+                    "IsClusterWriter": true
+                  }
+                ]
+              }
+            ],
+            "describe_db_subnet_groups": [
+              {
+                "DBSubnetGroupName": "npt-subnets",
+                "VpcId": "vpc-1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                  {
+                    "SubnetIdentifier": "subnet-priv",
+                    "SubnetStatus": "Active",
+                    "SubnetAvailabilityZone": {
+                      "Name": "ap-northeast-2a"
+                    }
+                  }
+                ]
+              }
+            ],
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "npt-1-i1",
+                "Engine": "neptune",
+                "DBClusterIdentifier": "npt-1",
+                "DBInstanceStatus": "available",
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "npt-subnets",
+                  "VpcId": "vpc-1",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-priv"
+                    }
+                  ]
+                },
+                "PubliclyAccessible": false,
+                "DBClusters": {
+                  "DBClusterIdentifier": "npt-1",
+                  "Engine": "neptune"
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-private",
+                "VpcId": "vpc-1",
+                "OwnerId": "111111111111",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-subnet-priv",
+                    "RouteTableId": "rtb-private",
+                    "SubnetId": "subnet-priv",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  },
+                  {
+                    "Main": true,
+                    "RouteTableAssociationId": "rtbassoc-main",
+                    "RouteTableId": "rtb-private",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  }
+                ],
+                "Tags": []
+              },
+              {
+                "RouteTableId": "rtb-public",
+                "VpcId": "vpc-1",
+                "OwnerId": "111111111111",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-subnet-pub",
+                    "RouteTableId": "rtb-public",
+                    "SubnetId": "subnet-pub",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-0abc",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "Tags": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "클러스터 서브넷의 라우트 테이블에는 IGW 경로가 없으므로 프라이빗 — 양호"
+    },
+    {
+      "id": "public-subnet-last-table",
+      "role": "control",
+      "condition": "클러스터 서브넷 subnet-pub, rtb-public 이 목록 마지막",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "npt-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster:npt-1",
+                "Engine": "neptune",
+                "EngineVersion": "1.3.1.0",
+                "Status": "available",
+                "DBSubnetGroup": "npt-subnets",
+                "MultiAZ": false,
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "npt-1-i1",
+                    "IsClusterWriter": true
+                  }
+                ]
+              }
+            ],
+            "describe_db_subnet_groups": [
+              {
+                "DBSubnetGroupName": "npt-subnets",
+                "VpcId": "vpc-1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                  {
+                    "SubnetIdentifier": "subnet-pub",
+                    "SubnetStatus": "Active",
+                    "SubnetAvailabilityZone": {
+                      "Name": "ap-northeast-2a"
+                    }
+                  }
+                ]
+              }
+            ],
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "npt-1-i1",
+                "Engine": "neptune",
+                "DBClusterIdentifier": "npt-1",
+                "DBInstanceStatus": "available",
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "npt-subnets",
+                  "VpcId": "vpc-1",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-pub"
+                    }
+                  ]
+                },
+                "PubliclyAccessible": false,
+                "DBClusters": {
+                  "DBClusterIdentifier": "npt-1",
+                  "Engine": "neptune"
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-private",
+                "VpcId": "vpc-1",
+                "OwnerId": "111111111111",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-subnet-priv",
+                    "RouteTableId": "rtb-private",
+                    "SubnetId": "subnet-priv",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  },
+                  {
+                    "Main": true,
+                    "RouteTableAssociationId": "rtbassoc-main",
+                    "RouteTableId": "rtb-private",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  }
+                ],
+                "Tags": []
+              },
+              {
+                "RouteTableId": "rtb-public",
+                "VpcId": "vpc-1",
+                "OwnerId": "111111111111",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-subnet-pub",
+                    "RouteTableId": "rtb-public",
+                    "SubnetId": "subnet-pub",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-0abc",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "Tags": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "private-subnet-last-table",
+      "role": "control",
+      "condition": "클러스터 서브넷 subnet-priv, rtb-private 이 목록 마지막",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "npt-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster:npt-1",
+                "Engine": "neptune",
+                "EngineVersion": "1.3.1.0",
+                "Status": "available",
+                "DBSubnetGroup": "npt-subnets",
+                "MultiAZ": false,
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "npt-1-i1",
+                    "IsClusterWriter": true
+                  }
+                ]
+              }
+            ],
+            "describe_db_subnet_groups": [
+              {
+                "DBSubnetGroupName": "npt-subnets",
+                "VpcId": "vpc-1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                  {
+                    "SubnetIdentifier": "subnet-priv",
+                    "SubnetStatus": "Active",
+                    "SubnetAvailabilityZone": {
+                      "Name": "ap-northeast-2a"
+                    }
+                  }
+                ]
+              }
+            ],
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "npt-1-i1",
+                "Engine": "neptune",
+                "DBClusterIdentifier": "npt-1",
+                "DBInstanceStatus": "available",
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "npt-subnets",
+                  "VpcId": "vpc-1",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-priv"
+                    }
+                  ]
+                },
+                "PubliclyAccessible": false,
+                "DBClusters": {
+                  "DBClusterIdentifier": "npt-1",
+                  "Engine": "neptune"
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-public",
+                "VpcId": "vpc-1",
+                "OwnerId": "111111111111",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-subnet-pub",
+                    "RouteTableId": "rtb-public",
+                    "SubnetId": "subnet-pub",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-0abc",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "Tags": []
+              },
+              {
+                "RouteTableId": "rtb-private",
+                "VpcId": "vpc-1",
+                "OwnerId": "111111111111",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-subnet-priv",
+                    "RouteTableId": "rtb-private",
+                    "SubnetId": "subnet-priv",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  },
+                  {
+                    "Main": true,
+                    "RouteTableAssociationId": "rtbassoc-main",
+                    "RouteTableId": "rtb-private",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  }
+                ],
+                "Tags": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

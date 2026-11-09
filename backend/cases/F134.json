@@ -1,0 +1,288 @@
+{
+  "finding": "F134",
+  "rule": "REME-0100800007",
+  "service": "elb",
+  "status": "reproducible",
+  "effect": "wrong_logic",
+  "note": "elb.py:405-412 — ALB 는 HTTPS 리스너가 하나라도 있으면 HTTP forward 리스너가 있어도 양호. HTTP→HTTPS redirect 판정은 `Type != \"redirect\"` 로 반전돼 RedirectConfig 를 가진 액션에 도달하지 못한다. 미탐(a)과 오탐(b)이 함께 있어 effect 를 wrong_logic 으로 바로잡음.",
+  "scenarios": [
+    {
+      "id": "http-forward-plus-https",
+      "role": "bug",
+      "condition": "ALB 리스너 [HTTP:80 forward(평문으로 대상에 전달), HTTPS:443 forward]",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-mixed/50dc6c495c0c9188",
+                "DNSName": "alb-mixed-123.ap-northeast-2.elb.amazonaws.com",
+                "LoadBalancerName": "alb-mixed",
+                "Scheme": "internet-facing",
+                "VpcId": "vpc-1",
+                "State": {
+                  "Code": "active"
+                },
+                "Type": "application",
+                "IpAddressType": "ipv4",
+                "Attributes": [],
+                "Listeners": [
+                  {
+                    "Port": 80,
+                    "Protocol": "HTTP",
+                    "DefaultActions": [
+                      {
+                        "Type": "forward",
+                        "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:targetgroup/tg/0123456789abcdef",
+                        "Order": 1
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:listener/app/alb-mixed/50dc6c495c0c9188/0000000000000000",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-mixed/50dc6c495c0c9188"
+                  },
+                  {
+                    "Port": 443,
+                    "Protocol": "HTTPS",
+                    "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
+                    "Certificates": [
+                      {
+                        "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                      }
+                    ],
+                    "DefaultActions": [
+                      {
+                        "Type": "forward",
+                        "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:targetgroup/tg/0123456789abcdef",
+                        "Order": 1
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:listener/app/alb-mixed/50dc6c495c0c9188/0000000000000001",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-mixed/50dc6c495c0c9188"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_target_groups": []
+          }
+        },
+        "globals": {
+          "wafv2": {
+            "list_web_acls": []
+          },
+          "waf": {
+            "list_web_acls": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "HTTP:80 리스너가 평문 요청을 그대로 처리하므로 클라이언트-ELB 간 통신이 암호화되지 않는 경로가 있다 → 취약"
+    },
+    {
+      "id": "http-redirect-only",
+      "role": "bug",
+      "condition": "ALB 리스너가 HTTP:80 하나이고 기본 액션이 HTTPS 로 redirect(HTTP_301)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-redirect/50dc6c495c0c9188",
+                "DNSName": "alb-redirect-123.ap-northeast-2.elb.amazonaws.com",
+                "LoadBalancerName": "alb-redirect",
+                "Scheme": "internet-facing",
+                "VpcId": "vpc-1",
+                "State": {
+                  "Code": "active"
+                },
+                "Type": "application",
+                "IpAddressType": "ipv4",
+                "Attributes": [],
+                "Listeners": [
+                  {
+                    "Port": 80,
+                    "Protocol": "HTTP",
+                    "DefaultActions": [
+                      {
+                        "Type": "redirect",
+                        "Order": 1,
+                        "RedirectConfig": {
+                          "Protocol": "HTTPS",
+                          "Port": "443",
+                          "Host": "#{host}",
+                          "Path": "/#{path}",
+                          "Query": "#{query}",
+                          "StatusCode": "HTTP_301"
+                        }
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:listener/app/alb-redirect/50dc6c495c0c9188/0000000000000000",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-redirect/50dc6c495c0c9188"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_target_groups": []
+          }
+        },
+        "globals": {
+          "wafv2": {
+            "list_web_acls": []
+          },
+          "waf": {
+            "list_web_acls": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "HTTP 리스너는 HTTPS 로 리다이렉트만 하고 평문으로 요청을 처리하지 않는다 — 판단기준의 'HTTP→HTTPS redirect' 양호 조건"
+    },
+    {
+      "id": "https-plus-redirect",
+      "role": "control",
+      "condition": "ALB 리스너 [HTTP:80 → HTTPS redirect, HTTPS:443 forward]",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-good/50dc6c495c0c9188",
+                "DNSName": "alb-good-123.ap-northeast-2.elb.amazonaws.com",
+                "LoadBalancerName": "alb-good",
+                "Scheme": "internet-facing",
+                "VpcId": "vpc-1",
+                "State": {
+                  "Code": "active"
+                },
+                "Type": "application",
+                "IpAddressType": "ipv4",
+                "Attributes": [],
+                "Listeners": [
+                  {
+                    "Port": 80,
+                    "Protocol": "HTTP",
+                    "DefaultActions": [
+                      {
+                        "Type": "redirect",
+                        "Order": 1,
+                        "RedirectConfig": {
+                          "Protocol": "HTTPS",
+                          "Port": "443",
+                          "Host": "#{host}",
+                          "Path": "/#{path}",
+                          "Query": "#{query}",
+                          "StatusCode": "HTTP_301"
+                        }
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:listener/app/alb-good/50dc6c495c0c9188/0000000000000000",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-good/50dc6c495c0c9188"
+                  },
+                  {
+                    "Port": 443,
+                    "Protocol": "HTTPS",
+                    "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
+                    "Certificates": [
+                      {
+                        "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                      }
+                    ],
+                    "DefaultActions": [
+                      {
+                        "Type": "forward",
+                        "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:targetgroup/tg/0123456789abcdef",
+                        "Order": 1
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:listener/app/alb-good/50dc6c495c0c9188/0000000000000001",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-good/50dc6c495c0c9188"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_target_groups": []
+          }
+        },
+        "globals": {
+          "wafv2": {
+            "list_web_acls": []
+          },
+          "waf": {
+            "list_web_acls": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "http-forward-only",
+      "role": "control",
+      "condition": "ALB 리스너 HTTP:80 forward 하나",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-http/50dc6c495c0c9188",
+                "DNSName": "alb-http-123.ap-northeast-2.elb.amazonaws.com",
+                "LoadBalancerName": "alb-http",
+                "Scheme": "internet-facing",
+                "VpcId": "vpc-1",
+                "State": {
+                  "Code": "active"
+                },
+                "Type": "application",
+                "IpAddressType": "ipv4",
+                "Attributes": [],
+                "Listeners": [
+                  {
+                    "Port": 80,
+                    "Protocol": "HTTP",
+                    "DefaultActions": [
+                      {
+                        "Type": "forward",
+                        "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:targetgroup/tg/0123456789abcdef",
+                        "Order": 1
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:listener/app/alb-http/50dc6c495c0c9188/0000000000000000",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-http/50dc6c495c0c9188"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_target_groups": []
+          }
+        },
+        "globals": {
+          "wafv2": {
+            "list_web_acls": []
+          },
+          "waf": {
+            "list_web_acls": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

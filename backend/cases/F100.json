@@ -1,0 +1,170 @@
+{
+  "finding": "F100",
+  "rule": "REME-0101000005",
+  "service": "awslambda",
+  "status": "reproducible",
+  "note": "Raw/awslambda.py:148-196 `_list_attached_role_policies` 는 관리형 정책만 모으고 인라인 정책(list_role_policies/get_role_policy)은 수집하지 않는다. 역할이 삭제된 함수에서 list_attached_role_policies 가 NoSuchEntity → get_response 가 {} → `[\"AttachedPolicies\"]` KeyError 를 exception_handler 가 삼켜 메서드가 끝나고, 그 뒤 함수들은 Role 이 ARN 문자열로 남는다. 룰(:306)은 dict 가 아니면 그냥 양호. 두 경우 모두 raw 에 정책 내용이 없어 룰만으로는 못 고친다(수집 결함).",
+  "scenarios": [
+    {
+      "id": "inline-admin-policy",
+      "role": "collection",
+      "condition": "실행 역할에 관리형 정책은 없고 인라인 정책으로 Action '*' Resource '*' 를 부여 — 수집기는 인라인 정책을 모으지 않아 policies=[] 로 저장",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "inline-admin-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:inline-admin-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "inline-admin-role",
+                  "Arn": "arn:aws:iam::111122223333:role/inline-admin-role",
+                  "policies": []
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/inline-admin-role"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "인라인 정책도 역할 권한이다. 실제로 관리자 권한(*:*)이 부여된 함수이므로 취약이어야 한다"
+    },
+    {
+      "id": "role-deleted-aborts-collection",
+      "role": "collection",
+      "condition": "같은 리전 함수 2개 — 먼저 수집된 함수의 실행 역할이 삭제돼 수집이 중단되고, 뒤 함수(실제 역할에 AdministratorAccess 연결)는 Role 이 ARN 문자열로 남음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "deleted-role-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:deleted-role-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": "arn:aws:iam::111122223333:role/deleted-role",
+                "RoleArn": "arn:aws:iam::111122223333:role/deleted-role"
+              },
+              {
+                "FunctionName": "later-admin-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:later-admin-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": "arn:aws:iam::111122223333:role/admin-role"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag_contains": [
+          "later-admin-fn"
+        ]
+      },
+      "why": "later-admin-fn 의 실행 역할에는 실제로 AdministratorAccess 가 붙어 있으므로 취약이어야 한다"
+    },
+    {
+      "id": "managed-admin",
+      "role": "control",
+      "condition": "실행 역할에 관리형 AdministratorAccess 연결 (정상 수집)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "admin-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:admin-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "admin-role",
+                  "Arn": "arn:aws:iam::111122223333:role/admin-role",
+                  "policies": [
+                    {
+                      "PolicyName": "AdministratorAccess",
+                      "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess",
+                      "Document": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Resource": "*"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/admin-role"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "managed-basic",
+      "role": "control",
+      "condition": "실행 역할에 기본 실행 정책만 연결 (정상 수집)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "basic-fn",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:basic-fn",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "basic-role",
+                  "Arn": "arn:aws:iam::111122223333:role/basic-role",
+                  "policies": [
+                    {
+                      "PolicyName": "AWSLambdaBasicExecutionRole",
+                      "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                      "Document": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Action": [
+                              "logs:CreateLogGroup",
+                              "logs:CreateLogStream",
+                              "logs:PutLogEvents"
+                            ],
+                            "Resource": "*"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/basic-role"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

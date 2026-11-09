@@ -1,0 +1,219 @@
+{
+  "finding": "F042",
+  "rule": "REME-0100500014",
+  "service": "rds",
+  "status": "reproducible",
+  "note": "rds.py:1414 `if \"db2\" or \"custom\" or \"sqlserver-ex\" or \"sqlserver-web\" in engine_type: flag = \"n/a\"` — 늘 참이라 인스턴스 경로가 전부 n/a. F036(DBClusters={})과 분리하려고 DBClusters 키 없는 인스턴스로 쓴다.",
+  "scenarios": [
+    {
+      "id": "mysql-single-az",
+      "role": "bug",
+      "condition": "단독 mysql 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), MultiAZ=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-mysql",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-mysql",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mysql",
+                "EngineVersion": "8.0.35",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-mysql.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:mysql",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "db-mysql"
+        ]
+      },
+      "why": "mysql 은 Multi-AZ 를 지원하므로 n/a 대상이 아니다 — 단일 AZ 면 취약"
+    },
+    {
+      "id": "mysql-multiaz",
+      "role": "bug",
+      "condition": "단독 mysql 인스턴스 (2025-06 이전 수집 모양 — DBClusters 키 없음), MultiAZ=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-mysql",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-mysql",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mysql",
+                "EngineVersion": "8.0.35",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-mysql.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": true,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:mysql",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "Multi-AZ 활성 → 양호"
+    },
+    {
+      "id": "cluster-single-member",
+      "role": "control",
+      "condition": "Aurora 클러스터 MultiAZ=false, 멤버 1개",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

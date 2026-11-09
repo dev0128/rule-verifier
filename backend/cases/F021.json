@@ -1,0 +1,170 @@
+{
+  "finding": "F021",
+  "rule": "REME-0100100016",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:1468·1481 `\"AWS\" in statement[\"Principal\"]` — Principal 이 문자열 \"*\"(누구나)면 \"AWS\" in \"*\" 가 False 라 검사하지 않는다. 가장 위험한 경우가 양호.",
+  "scenarios": [
+    {
+      "id": "principal-star-string",
+      "role": "bug",
+      "condition": "ReadOnlyAccess 연결 역할, 신뢰 정책 Principal=\"*\" (문자열, 모든 AWS 주체)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "ro-anyone",
+                "RoleId": "AROAROANYONE",
+                "Arn": "arn:aws:iam::111111111111:role/ro-anyone",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "sts:AssumeRole"
+                    }
+                  ]
+                },
+                "policies": [
+                  {
+                    "PolicyName": "ReadOnlyAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "ro-anyone"
+        ]
+      },
+      "why": "Principal \"*\" 는 {\"AWS\": \"*\"} 와 같다(IAM 정책 문법) — 외부 계정 누구나 역할을 맡을 수 있어 외부 계정 부여보다 더 위험"
+    },
+    {
+      "id": "external-account",
+      "role": "control",
+      "condition": "ReadOnlyAccess 연결 역할, Principal {AWS: 외부 계정 222222222222 root}",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "ro-external",
+                "RoleId": "AROAROEXTERNAL",
+                "Arn": "arn:aws:iam::111111111111:role/ro-external",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::222222222222:root"
+                      },
+                      "Action": "sts:AssumeRole"
+                    }
+                  ]
+                },
+                "policies": [
+                  {
+                    "PolicyName": "ReadOnlyAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "same-account",
+      "role": "control",
+      "condition": "ReadOnlyAccess 연결 역할, Principal {AWS: 자기 계정 111111111111 root}",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_roles": [
+              {
+                "RoleName": "ro-internal",
+                "RoleId": "AROAROINTERNAL",
+                "Arn": "arn:aws:iam::111111111111:role/ro-internal",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "sts:AssumeRole"
+                    }
+                  ]
+                },
+                "policies": [
+                  {
+                    "PolicyName": "ReadOnlyAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

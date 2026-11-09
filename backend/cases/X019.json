@@ -1,0 +1,84 @@
+{
+  "finding": "X019",
+  "rule": "REME-0105800002",
+  "service": "ecs",
+  "status": "reproducible",
+  "note": "ecs.py:96,119,123 — 판단기준(컨테이너 자원 제한 = 메모리·CPU)인데 ulimits(파일 디스크립터 등 커널 한도)만 본다. memory·memoryReservation·cpu(컨테이너/태스크)는 보지 않는다.",
+  "scenarios": [
+    {
+      "id": "memory-cpu-limited",
+      "role": "bug",
+      "condition": "컨테이너에 memory=512, cpu=256 지정, ulimits 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "awsvpc",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "memory": 512,
+                    "cpu": 256,
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {},
+                "executionRole_EvaluationResults": {}
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "컨테이너 하드 메모리 한도와 CPU 단위가 지정돼 있으므로 자원 제한이 설정된 컨테이너 — 양호"
+    },
+    {
+      "id": "no-limits",
+      "role": "control",
+      "condition": "memory·cpu·ulimits 모두 미지정(태스크 수준 cpu/memory 도 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "awsvpc",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {},
+                "executionRole_EvaluationResults": {}
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

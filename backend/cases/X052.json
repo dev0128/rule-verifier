@@ -1,0 +1,483 @@
+{
+  "finding": "X052",
+  "rule": "REME-0101100002",
+  "service": "acm",
+  "status": "reproducible",
+  "note": "Raw/acm.py:31-37 describe_certificate 가 실패하면 item[\"Certificate\"] = response.get(\"Certificate\") = None. acm.py ACM-001~003 의 `result_temp_i.get(\"Certificate\", {}).get(...)` 는 키가 있어 None 을 돌려받아 AttributeError, ACM-004 는 `result_temp_i[\"Certificate\"].get` 에서 AttributeError → 인증서 하나 때문에 룰 전체 중단.",
+  "scenarios": [
+    {
+      "id": "acm002-one-describe-failed",
+      "role": "bug",
+      "condition": "[ACM-002] 인증서 2개 — 하나는 describe_certificate 실패(Certificate=None), 하나는 검증 대기(PENDING_VALIDATION)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-describe-failed",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-describe-failed",
+                "Tags": {},
+                "Certificate": null
+              },
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-pending",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "PENDING_VALIDATION",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-pending",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-pending",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "PENDING_VALIDATION",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "PENDING_VALIDATION",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "c-pending"
+        ]
+      },
+      "why": "조회 실패 인증서는 N/A 로 빼고 나머지는 정상 판정 — 검증 대기 인증서는 취약"
+    },
+    {
+      "id": "acm001-one-describe-failed",
+      "role": "bug",
+      "rule": "REME-0101100001",
+      "condition": "[ACM-001] 인증서 2개 — 하나는 Certificate=None, 하나는 유효(ISSUED, 2099 만료)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-describe-failed",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-describe-failed",
+                "Tags": {},
+                "Certificate": null
+              },
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-valid",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-valid",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-valid",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good_contains": [
+          "c-valid"
+        ]
+      },
+      "why": "조회 실패 인증서는 N/A, 유효 인증서는 양호 — 예외로 룰 전체가 사라지면 안 된다"
+    },
+    {
+      "id": "acm003-one-describe-failed",
+      "role": "bug",
+      "rule": "REME-0101100003",
+      "condition": "[ACM-003] 인증서 2개 — 하나는 Certificate=None, 하나는 ACM 발급 *.example.com",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-describe-failed",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-describe-failed",
+                "Tags": {},
+                "Certificate": null
+              },
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-wild",
+                "DomainName": "*.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "*.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-wild",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-wild",
+                  "DomainName": "*.example.com",
+                  "SubjectAlternativeNames": [
+                    "*.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "*.example.com",
+                      "ValidationDomain": "example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "c-wild"
+        ]
+      },
+      "why": "와일드카드 인증서는 취약 — 다른 인증서의 조회 실패로 결과가 사라지면 안 된다"
+    },
+    {
+      "id": "acm004-one-describe-failed",
+      "role": "bug",
+      "rule": "REME-0101100004",
+      "condition": "[ACM-004] 인증서 2개 — 하나는 Certificate=None, 하나는 ACM 발급 · 투명성 로깅 DISABLED",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-describe-failed",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-describe-failed",
+                "Tags": {},
+                "Certificate": null
+              },
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-ct-off",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-ct-off",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-ct-off",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "DISABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "c-ct-off"
+        ]
+      },
+      "why": "투명성 로깅이 꺼진 ACM 발급 인증서는 취약"
+    },
+    {
+      "id": "acm002-all-described",
+      "role": "control",
+      "condition": "[ACM-002] 인증서 2개 모두 조회 성공 — 정상 1 + 검증 대기 1",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-ok",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-ok",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-ok",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              },
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-pending",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "PENDING_VALIDATION",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-pending",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-pending",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "PENDING_VALIDATION",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "PENDING_VALIDATION",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1
+      }
+    },
+    {
+      "id": "acm004-all-described",
+      "role": "control",
+      "rule": "REME-0101100004",
+      "condition": "[ACM-004] ACM 발급 · 투명성 로깅 DISABLED 1개",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-ct-off",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-ct-off",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-ct-off",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "DISABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

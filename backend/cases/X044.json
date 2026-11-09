@@ -1,0 +1,137 @@
+{
+  "finding": "X044",
+  "rule": "REME-0100600012",
+  "service": "ec2",
+  "status": "reproducible",
+  "note": "Raw/ec2.py:180-186 — get_ebs_encryption_by_default 가 실패하면 get_response 의 {} 에 Account_id 만 붙여 저장 → 룰 ec2.py:705 EbsEncryptionByDefault 없음 = 취약. SageMaker 도 Raw/sagemaker.py:57-63 describe_notebook_instance 실패 시 {} 행을 넣고 룰 sagemaker.py:39 SubnetId 없음 = 취약. 성공 응답에는 항상 그 키가 있으므로 raw 에서 실패를 구분할 수 있다 → 룰에서 N/A 로 고칠 수 있다(bug 역할). ELB-003(정책 조회 실패 = PolicyDescriptions [])·ELB-011(리스너 조회 실패 = Listeners [])은 실패와 '없음' 이 raw 에서 구분되지 않아 여기 시나리오로 넣지 않았다.",
+  "scenarios": [
+    {
+      "id": "ebs-default-call-failed",
+      "role": "bug",
+      "condition": "get_ebs_encryption_by_default 가 AccessDenied 로 실패 — 수집기가 {Account_id} 만 저장",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "get_ebs_encryption_by_default": [
+              {
+                "Account_id": "111122223333"
+              }
+            ],
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-1"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "flag": 0
+      },
+      "why": "기본 암호화가 켜졌는지 꺼졌는지 모른다 — 수집 실패는 취약이 아니라 판정 불가(N/A)"
+    },
+    {
+      "id": "ebs-default-off",
+      "role": "control",
+      "condition": "기본 암호화 꺼짐(EbsEncryptionByDefault=false), 볼륨 있음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "get_ebs_encryption_by_default": [
+              {
+                "EbsEncryptionByDefault": false,
+                "SseType": "sse-ebs",
+                "Account_id": "111122223333"
+              }
+            ],
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-1"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "smk-describe-failed",
+      "role": "bug",
+      "condition": "SageMaker 노트북 describe_notebook_instance 실패 — 수집기가 빈 {} 행을 저장",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sagemaker": {
+            "describe_notebook_instance": [
+              {}
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "flag": 0
+      },
+      "why": "노트북 설정(SubnetId · DirectInternetAccess)을 모른다 — 판정 불가(N/A)",
+      "rule": "REME-0103300001",
+      "service": "sagemaker"
+    },
+    {
+      "id": "smk-direct-internet",
+      "role": "control",
+      "condition": "SageMaker 노트북: VPC 서브넷 없음 + DirectInternetAccess=Enabled",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sagemaker": {
+            "describe_notebook_instance": [
+              {
+                "NotebookInstanceName": "nb-1",
+                "NotebookInstanceArn": "arn:aws:sagemaker:ap-northeast-2:111122223333:notebook-instance/nb-1",
+                "DirectInternetAccess": "Enabled"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "rule": "REME-0103300001",
+      "service": "sagemaker"
+    },
+    {
+      "id": "smk-in-vpc",
+      "role": "control",
+      "condition": "SageMaker 노트북: VPC 서브넷 + DirectInternetAccess=Disabled",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sagemaker": {
+            "describe_notebook_instance": [
+              {
+                "NotebookInstanceName": "nb-1",
+                "NotebookInstanceArn": "arn:aws:sagemaker:ap-northeast-2:111122223333:notebook-instance/nb-1",
+                "SubnetId": "subnet-1",
+                "DirectInternetAccess": "Disabled"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "rule": "REME-0103300001",
+      "service": "sagemaker"
+    }
+  ]
+}

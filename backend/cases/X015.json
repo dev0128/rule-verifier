@@ -1,0 +1,119 @@
+{
+  "finding": "X015",
+  "rule": "REME-0100500015",
+  "service": "rds",
+  "status": "reproducible",
+  "note": "rds.py:1463-1465 클러스터 경로가 `EnhancedMonitoringResourceArn`(DescribeDBInstances 의 DBInstance 필드, DBCluster 모델엔 없음)을 찾는다 → Aurora 클러스터는 늘 None → MonitoringInterval=60 이어도 취약. 클러스터에서는 MonitoringInterval(>0)·MonitoringRoleArn 으로 판단할 수 있다.",
+  "scenarios": [
+    {
+      "id": "aurora-em-60",
+      "role": "bug",
+      "condition": "Aurora MySQL 클러스터 MonitoringInterval=60, MonitoringRoleArn 설정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {},
+                "MonitoringInterval": 60,
+                "MonitoringRoleArn": "arn:aws:iam::111122223333:role/rds-monitoring-role"
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "클러스터 수준 향상된 모니터링(60초)이 켜져 있으므로 양호"
+    },
+    {
+      "id": "aurora-em-off",
+      "role": "control",
+      "condition": "Aurora MySQL 클러스터 MonitoringInterval=0",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {},
+                "MonitoringInterval": 0
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,397 @@
+{
+  "finding": "F012",
+  "rule": "REME-0104100005",
+  "service": "elasticache",
+  "status": "reproducible",
+  "note": "elasticache.py:282-283 — `route.get(\"Routes\") and \"GatewayId\" in route and \"igw\" in route[\"GatewayId\"]` 로 라우트 테이블 최상위에서 GatewayId 를 찾는다(실제로는 Routes[*] 안). 이 기준 엔진의 수집기(Raw/vpc.py:271-290)는 이미 association.subnet-id 필터를 써서 서브넷별 RouteTables 가 채워지고, 메인 라우트 테이블은 리전 ec2.describe_route_tables 에 남아 있다 — raw 에 정보가 있으므로 collection 이 아니라 bug 시나리오로 둔다.",
+  "scenarios": [
+    {
+      "id": "explicit-igw",
+      "role": "bug",
+      "condition": "캐시 서브넷이 IGW(0.0.0.0/0 → igw-…) 라우트가 있는 라우트 테이블에 명시적으로 연결됨",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "rd-1",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:rd-1",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "rd-1.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 6379
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {},
+                "CacheSubnetGroups": [
+                  {
+                    "CacheSubnetGroupName": "csg-1",
+                    "CacheSubnetGroupDescription": "csg",
+                    "VpcId": "vpc-1",
+                    "Subnets": [
+                      {
+                        "SubnetIdentifier": "subnet-a",
+                        "SubnetAvailabilityZone": {
+                          "Name": "ap-northeast-2a"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": []
+          },
+          "ec2": {
+            "describe_subnets": [
+              {
+                "SubnetId": "subnet-a",
+                "VpcId": "vpc-1",
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "ap-northeast-2a",
+                "MapPublicIpOnLaunch": false,
+                "State": "available",
+                "OwnerId": "111122223333",
+                "Tags": {},
+                "RouteTables": [
+                  {
+                    "RouteTableId": "rtb-pub",
+                    "VpcId": "vpc-1",
+                    "OwnerId": "111122223333",
+                    "Associations": [
+                      {
+                        "Main": false,
+                        "RouteTableAssociationId": "rtbassoc-rtb-pub",
+                        "RouteTableId": "rtb-pub",
+                        "SubnetId": "subnet-a",
+                        "AssociationState": {
+                          "State": "associated"
+                        }
+                      }
+                    ],
+                    "Routes": [
+                      {
+                        "DestinationCidrBlock": "10.0.0.0/16",
+                        "GatewayId": "local",
+                        "Origin": "CreateRouteTable",
+                        "State": "active"
+                      },
+                      {
+                        "DestinationCidrBlock": "0.0.0.0/0",
+                        "GatewayId": "igw-0abc",
+                        "Origin": "CreateRoute",
+                        "State": "active"
+                      }
+                    ],
+                    "PropagatingVgws": [],
+                    "Tags": []
+                  }
+                ]
+              }
+            ],
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-pub",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-rtb-pub",
+                    "RouteTableId": "rtb-pub",
+                    "SubnetId": "subnet-a",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-0abc",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "PropagatingVgws": [],
+                "Tags": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "인터넷 게이트웨이로 가는 기본 경로가 있는 서브넷은 퍼블릭 서브넷이다"
+    },
+    {
+      "id": "implicit-main-igw",
+      "role": "bug",
+      "condition": "캐시 서브넷이 명시적 연결 없음(서브넷 RouteTables=[]) — VPC 메인 라우트 테이블에 IGW 라우트",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "rd-1",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:rd-1",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "rd-1.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 6379
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {},
+                "CacheSubnetGroups": [
+                  {
+                    "CacheSubnetGroupName": "csg-1",
+                    "CacheSubnetGroupDescription": "csg",
+                    "VpcId": "vpc-1",
+                    "Subnets": [
+                      {
+                        "SubnetIdentifier": "subnet-a",
+                        "SubnetAvailabilityZone": {
+                          "Name": "ap-northeast-2a"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": []
+          },
+          "ec2": {
+            "describe_subnets": [
+              {
+                "SubnetId": "subnet-a",
+                "VpcId": "vpc-1",
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "ap-northeast-2a",
+                "MapPublicIpOnLaunch": false,
+                "State": "available",
+                "OwnerId": "111122223333",
+                "Tags": {},
+                "RouteTables": []
+              }
+            ],
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-main",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": true,
+                    "RouteTableAssociationId": "rtbassoc-rtb-main-main",
+                    "RouteTableId": "rtb-main",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "GatewayId": "igw-0abc",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "PropagatingVgws": [],
+                "Tags": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "명시적 연결이 없는 서브넷은 VPC 메인 라우트 테이블을 쓴다 — 거기에 IGW 경로가 있으면 퍼블릭"
+    },
+    {
+      "id": "private-nat",
+      "role": "control",
+      "condition": "캐시 서브넷이 NAT 게이트웨이 경로만 있는 라우트 테이블에 연결됨",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticache": {
+            "describe_cache_clusters": [
+              {
+                "CacheClusterId": "rd-1",
+                "ARN": "arn:aws:elasticache:ap-northeast-2:111122223333:cluster:rd-1",
+                "CacheNodeType": "cache.t3.micro",
+                "Engine": "redis",
+                "EngineVersion": "7.1",
+                "CacheClusterStatus": "available",
+                "NumCacheNodes": 1,
+                "PreferredAvailabilityZone": "ap-northeast-2a",
+                "CacheSubnetGroupName": "csg-1",
+                "CacheNodes": [
+                  {
+                    "CacheNodeId": "0001",
+                    "CacheNodeStatus": "available",
+                    "Endpoint": {
+                      "Address": "rd-1.abc123.0001.apn2.cache.amazonaws.com",
+                      "Port": 6379
+                    },
+                    "CustomerAvailabilityZone": "ap-northeast-2a"
+                  }
+                ],
+                "TagList": {},
+                "CacheSubnetGroups": [
+                  {
+                    "CacheSubnetGroupName": "csg-1",
+                    "CacheSubnetGroupDescription": "csg",
+                    "VpcId": "vpc-1",
+                    "Subnets": [
+                      {
+                        "SubnetIdentifier": "subnet-a",
+                        "SubnetAvailabilityZone": {
+                          "Name": "ap-northeast-2a"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "describe_serverless_caches": [],
+            "describe_replication_groups": []
+          },
+          "ec2": {
+            "describe_subnets": [
+              {
+                "SubnetId": "subnet-a",
+                "VpcId": "vpc-1",
+                "CidrBlock": "10.0.1.0/24",
+                "AvailabilityZone": "ap-northeast-2a",
+                "MapPublicIpOnLaunch": false,
+                "State": "available",
+                "OwnerId": "111122223333",
+                "Tags": {},
+                "RouteTables": [
+                  {
+                    "RouteTableId": "rtb-priv",
+                    "VpcId": "vpc-1",
+                    "OwnerId": "111122223333",
+                    "Associations": [
+                      {
+                        "Main": false,
+                        "RouteTableAssociationId": "rtbassoc-rtb-priv",
+                        "RouteTableId": "rtb-priv",
+                        "SubnetId": "subnet-a",
+                        "AssociationState": {
+                          "State": "associated"
+                        }
+                      }
+                    ],
+                    "Routes": [
+                      {
+                        "DestinationCidrBlock": "10.0.0.0/16",
+                        "GatewayId": "local",
+                        "Origin": "CreateRouteTable",
+                        "State": "active"
+                      },
+                      {
+                        "DestinationCidrBlock": "0.0.0.0/0",
+                        "NatGatewayId": "nat-0abc",
+                        "Origin": "CreateRoute",
+                        "State": "active"
+                      }
+                    ],
+                    "PropagatingVgws": [],
+                    "Tags": []
+                  }
+                ]
+              }
+            ],
+            "describe_route_tables": [
+              {
+                "RouteTableId": "rtb-priv",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Associations": [
+                  {
+                    "Main": false,
+                    "RouteTableAssociationId": "rtbassoc-rtb-priv",
+                    "RouteTableId": "rtb-priv",
+                    "SubnetId": "subnet-a",
+                    "AssociationState": {
+                      "State": "associated"
+                    }
+                  }
+                ],
+                "Routes": [
+                  {
+                    "DestinationCidrBlock": "10.0.0.0/16",
+                    "GatewayId": "local",
+                    "Origin": "CreateRouteTable",
+                    "State": "active"
+                  },
+                  {
+                    "DestinationCidrBlock": "0.0.0.0/0",
+                    "NatGatewayId": "nat-0abc",
+                    "Origin": "CreateRoute",
+                    "State": "active"
+                  }
+                ],
+                "PropagatingVgws": [],
+                "Tags": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,445 @@
+{
+  "finding": "F046",
+  "rule": "REME-0105900006",
+  "service": "eks",
+  "status": "reproducible",
+  "note": "Analyze/eks.py:404 — 인바운드를 security_group.get('IpPermissionsIngress') 로 읽는데 EC2 DescribeSecurityGroups 의 인바운드 키는 IpPermissions 라 인바운드는 점검되지 않는다. 399-402 는 아웃바운드 0.0.0.0/0 이면 취약 — EKS 가 만드는 클러스터 SG 는 기본으로 egress 0.0.0.0/0 이라 모든 클러스터가 취약.",
+  "scenarios": [
+    {
+      "id": "default-cluster-sg",
+      "role": "bug",
+      "condition": "EKS 기본 클러스터 SG — 인바운드는 자기 SG 참조만, 아웃바운드 0.0.0.0/0 (EKS 기본값)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-cluster",
+                "GroupName": "sg-cluster",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Description": "EKS cluster SG",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": [
+                      {
+                        "GroupId": "sg-cluster",
+                        "UserId": "111122223333"
+                      }
+                    ]
+                  }
+                ],
+                "IpPermissionsEgress": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "외부 인바운드 개방이 없다. 아웃바운드 전체 허용은 EKS 가 요구·생성하는 기본 구성으로 '과도한 권한 부여' 가 아니다(EKS 보안 그룹 요구사항)"
+    },
+    {
+      "id": "ingress-open-egress-restricted",
+      "role": "bug",
+      "condition": "인바운드 0.0.0.0/0 전체 트래픽 허용 + 아웃바운드는 10.0.0.0/8 로 제한",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-cluster",
+                "GroupName": "sg-cluster",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Description": "EKS cluster SG",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ],
+                "IpPermissionsEgress": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "10.0.0.0/8"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "인터넷 전체에서 클러스터 SG 로 모든 포트 인바운드가 열려 있으므로 과도한 권한 부여다"
+    },
+    {
+      "id": "ingress-open-egress-default",
+      "role": "control",
+      "condition": "인바운드 0.0.0.0/0 + 아웃바운드 0.0.0.0/0",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-cluster",
+                "GroupName": "sg-cluster",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Description": "EKS cluster SG",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ],
+                "IpPermissionsEgress": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "0.0.0.0/0"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "all-restricted",
+      "role": "control",
+      "condition": "인바운드 자기 SG 참조 + 10.0.0.0/16, 아웃바운드 10.0.0.0/8 — 0.0.0.0/0 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "eks": {
+            "describe_cluster": [
+              {
+                "name": "c1",
+                "arn": "arn:aws:eks:ap-northeast-2:111122223333:cluster/c1",
+                "version": "1.31",
+                "roleArn": "arn:aws:iam::111122223333:role/eks-cluster-role",
+                "resourcesVpcConfig": {
+                  "subnetIds": [
+                    "subnet-a",
+                    "subnet-b"
+                  ],
+                  "securityGroupIds": [],
+                  "clusterSecurityGroupId": "sg-cluster",
+                  "vpcId": "vpc-1",
+                  "endpointPublicAccess": false,
+                  "endpointPrivateAccess": true,
+                  "publicAccessCidrs": [
+                    "0.0.0.0/0"
+                  ]
+                },
+                "logging": {
+                  "clusterLogging": [
+                    {
+                      "types": [
+                        "api",
+                        "audit",
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                      ],
+                      "enabled": true
+                    }
+                  ]
+                },
+                "status": "ACTIVE",
+                "nodegroups": [],
+                "fargateProfile": [],
+                "updateRecodes": [],
+                "clusterRole_EvaluationResults": {
+                  "EvalActionName": "eks:*",
+                  "EvalResourceName": "*",
+                  "EvalDecision": "implicitDeny"
+                },
+                "identity": {
+                  "oidc": {
+                    "issuer": "https://oidc.eks.ap-northeast-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"
+                  }
+                }
+              }
+            ]
+          },
+          "ec2": {
+            "describe_security_groups": [
+              {
+                "GroupId": "sg-cluster",
+                "GroupName": "sg-cluster",
+                "VpcId": "vpc-1",
+                "OwnerId": "111122223333",
+                "Description": "EKS cluster SG",
+                "IpPermissions": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": [
+                      {
+                        "GroupId": "sg-cluster",
+                        "UserId": "111122223333"
+                      }
+                    ]
+                  },
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "10.0.0.0/16"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ],
+                "IpPermissionsEgress": [
+                  {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                      {
+                        "CidrIp": "10.0.0.0/8"
+                      }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_vpcs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "finding": "X017",
+  "rule": "REME-0101200006",
+  "service": "apigateway",
+  "status": "reproducible",
+  "note": "Analyze/apigateway.py:383,442-445 — v2 스테이지도 v1 과 같은 키 'accessLogSettings'(소문자)로 읽는다. apigatewayv2 GetStages 필드명은 AccessLogSettings 라 v2 API 는 액세스 로그를 켜도 항상 취약.",
+  "scenarios": [
+    {
+      "id": "v2-access-log",
+      "role": "bug",
+      "condition": "HTTP API $default 스테이지에 AccessLogSettings 설정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [],
+            "v2_apis": [
+              {
+                "ApiId": "v2http1",
+                "Name": "http1",
+                "ProtocolType": "HTTP",
+                "ApiEndpoint": "https://v2http1.execute-api.ap-northeast-2.amazonaws.com",
+                "ApiKeySelectionExpression": "$request.header.x-api-key",
+                "CreatedDate": "2026-01-01T00:00:00+09:00",
+                "DisableExecuteApiEndpoint": false,
+                "RouteSelectionExpression": "$request.method $request.path",
+                "Tags": {},
+                "integrations": [],
+                "stages": [
+                  {
+                    "StageName": "$default",
+                    "AutoDeploy": true,
+                    "DefaultRouteSettings": {
+                      "DetailedMetricsEnabled": false
+                    },
+                    "RouteSettings": {},
+                    "StageVariables": {},
+                    "Tags": {},
+                    "CreatedDate": "2026-01-01T00:00:00+09:00",
+                    "LastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "AccessLogSettings": {
+                      "DestinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-v2-access",
+                      "Format": "$context.requestId"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "v2 스테이지 액세스 로그(AccessLogSettings.DestinationArn)가 설정돼 있으므로 양호"
+    },
+    {
+      "id": "v1-access-log",
+      "role": "control",
+      "condition": "REST API 스테이지 accessLogSettings 설정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "accessLogSettings": {
+                      "format": "$context.requestId",
+                      "destinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-access"
+                    }
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "v2-no-access-log",
+      "role": "control",
+      "condition": "HTTP API 스테이지 액세스 로그 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [],
+            "v2_apis": [
+              {
+                "ApiId": "v2http1",
+                "Name": "http1",
+                "ProtocolType": "HTTP",
+                "ApiEndpoint": "https://v2http1.execute-api.ap-northeast-2.amazonaws.com",
+                "ApiKeySelectionExpression": "$request.header.x-api-key",
+                "CreatedDate": "2026-01-01T00:00:00+09:00",
+                "DisableExecuteApiEndpoint": false,
+                "RouteSelectionExpression": "$request.method $request.path",
+                "Tags": {},
+                "integrations": [],
+                "stages": [
+                  {
+                    "StageName": "$default",
+                    "AutoDeploy": true,
+                    "DefaultRouteSettings": {
+                      "DetailedMetricsEnabled": false
+                    },
+                    "RouteSettings": {},
+                    "StageVariables": {},
+                    "Tags": {},
+                    "CreatedDate": "2026-01-01T00:00:00+09:00",
+                    "LastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

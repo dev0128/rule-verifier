@@ -1,0 +1,120 @@
+{
+  "finding": "F053",
+  "rule": "REME-0103100003",
+  "service": "sqs",
+  "status": "reproducible",
+  "note": "Raw/sqs.py:60-68 — get_queue_attributes 응답에 `update({..., 'Policy': {}})` 를 먼저 해서 원본 Policy 문자열이 지워지고, 다음 줄 `if ...get('Policy')` 는 항상 거짓. 모든 큐의 Policy 가 {} 라 룰은 항상 양호. raw 에 정책이 남지 않으므로 룰 수정으로는 못 고친다(재수집 필요).",
+  "scenarios": [
+    {
+      "id": "public-queue-policy-lost",
+      "role": "collection",
+      "condition": "실제로는 Principal \"*\" · Action sqs:SendMessage 공개 정책이 붙은 큐 (수집기가 만드는 모양: Raw/sqs.py:60-66 이 Policy 를 {} 로 덮어씀)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:public-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/public-q",
+                "QueueName": "public-q",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "실제 리소스는 누구나 메시지를 보낼 수 있는 공개 큐이므로 취약. 수집 결과에 정책이 없어 룰만으로는 판정 불가"
+    },
+    {
+      "id": "no-policy",
+      "role": "control",
+      "condition": "정책이 없는 큐 (수집기가 만드는 모양: Raw/sqs.py:60-66 이 Policy 를 {} 로 덮어씀)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:private-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/private-q",
+                "QueueName": "private-q",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "public-parsed",
+      "role": "control",
+      "condition": "Principal \"*\" · Action [\"sqs:SendMessage\"] 공개 정책 (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:public-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/public-q",
+                "QueueName": "public-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": [
+                        "sqs:SendMessage"
+                      ],
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:public-q"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

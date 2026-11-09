@@ -1,0 +1,737 @@
+{
+  "finding": "F068",
+  "rule": "REME-0101200002",
+  "service": "apigateway",
+  "status": "reproducible",
+  "note": "Raw/apigateway.py:82 — v1 get_stages 실패(스로틀링 TooManyRequestsException 은 예외목록이라 조용히 삼킴 · NotFound · 권한 거부) 시 get_response 가 {} → stages=None. v2 _get_stages_v2(116) 는 paginate 예외 시 메서드가 중단돼 이후 API 에 'stages' 키가 없다. Analyze apigateway.py:148,183,242,352,408,442 `for stage in key_data['stages']` 가 None 에서 TypeError → 룰 전체(모든 API) 결과 소실. raw 에 '스테이지 수집 실패'(None · 키 없음)가 드러나므로 룰에서 그 API 만 N/A 로 뺄 수 있다 → bug. API-001 시나리오는 F063(v1 WAF 직접 연결도 취약) 과 섞이지 않도록 stages=None API 하나만 둔다. v2 get_stages 가 실패한 바로 그 API 는 stages=[] 로 남아(스테이지 없음과 구분 불가) 여기서는 다루지 않는다.",
+  "scenarios": [
+    {
+      "id": "api003-v1-stages-none",
+      "role": "bug",
+      "condition": "REST API 2개 — rest-ok 는 캐시 활성 스테이지, rest-nostage 는 get_stages 실패로 stages=None",
+      "rule": "REME-0101200003",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest-ok",
+                "name": "rest-ok",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": true,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "INFO",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": true,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": true,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "webAclArn": "arn:aws:wafv2:ap-northeast-2:111122223333:regional/webacl/api-acl/11111111-2222-3333-4444-555555555555",
+                    "accessLogSettings": {
+                      "format": "$context.requestId",
+                      "destinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-access"
+                    }
+                  }
+                ],
+                "resources": []
+              },
+              {
+                "id": "id-rest-nostage",
+                "name": "rest-nostage",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": null,
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "na_contains": [
+          "rest-nostage"
+        ]
+      },
+      "why": "스테이지를 못 가져온 API 만 판단 불가(N/A), 나머지 API 는 정상 판정돼야 한다"
+    },
+    {
+      "id": "api005-v1-stages-none",
+      "role": "bug",
+      "condition": "REST API 2개 — rest-ok 는 캐시 암호화 스테이지, rest-nostage 는 stages=None",
+      "rule": "REME-0101200005",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest-ok",
+                "name": "rest-ok",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": true,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "INFO",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": true,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": true,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "webAclArn": "arn:aws:wafv2:ap-northeast-2:111122223333:regional/webacl/api-acl/11111111-2222-3333-4444-555555555555",
+                    "accessLogSettings": {
+                      "format": "$context.requestId",
+                      "destinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-access"
+                    }
+                  }
+                ],
+                "resources": []
+              },
+              {
+                "id": "id-rest-nostage",
+                "name": "rest-nostage",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": null,
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "na_contains": [
+          "rest-nostage"
+        ]
+      },
+      "why": "스테이지를 못 가져온 API 만 N/A"
+    },
+    {
+      "id": "api002-v1-stages-none",
+      "role": "bug",
+      "condition": "REST API 2개 — rest-ok 는 실행 로깅 INFO, rest-nostage 는 stages=None",
+      "rule": "REME-0101200002",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest-ok",
+                "name": "rest-ok",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": true,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "INFO",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": true,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": true,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "webAclArn": "arn:aws:wafv2:ap-northeast-2:111122223333:regional/webacl/api-acl/11111111-2222-3333-4444-555555555555",
+                    "accessLogSettings": {
+                      "format": "$context.requestId",
+                      "destinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-access"
+                    }
+                  }
+                ],
+                "resources": []
+              },
+              {
+                "id": "id-rest-nostage",
+                "name": "rest-nostage",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": null,
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "na_contains": [
+          "rest-nostage"
+        ]
+      },
+      "why": "스테이지를 못 가져온 API 만 N/A"
+    },
+    {
+      "id": "api002-v2-stages-missing",
+      "role": "bug",
+      "condition": "WebSocket API ws-ok 는 LoggingLevel=INFO, http-after 는 앞 API 의 get_stages 실패로 'stages' 키 없음",
+      "rule": "REME-0101200002",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [],
+            "v2_apis": [
+              {
+                "ApiId": "v2ws-ok",
+                "Name": "ws-ok",
+                "ProtocolType": "WEBSOCKET",
+                "ApiEndpoint": "wss://v2ws-ok.execute-api.ap-northeast-2.amazonaws.com",
+                "ApiKeySelectionExpression": "$request.header.x-api-key",
+                "CreatedDate": "2026-01-01T00:00:00+09:00",
+                "DisableExecuteApiEndpoint": false,
+                "RouteSelectionExpression": "$request.body.action",
+                "Tags": {},
+                "integrations": [],
+                "stages": [
+                  {
+                    "StageName": "$default",
+                    "AutoDeploy": false,
+                    "DefaultRouteSettings": {
+                      "DetailedMetricsEnabled": false,
+                      "DataTraceEnabled": false,
+                      "ThrottlingBurstLimit": 5000,
+                      "ThrottlingRateLimit": 10000.0,
+                      "LoggingLevel": "INFO"
+                    },
+                    "RouteSettings": {},
+                    "StageVariables": {},
+                    "Tags": {},
+                    "CreatedDate": "2026-01-01T00:00:00+09:00",
+                    "LastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "AccessLogSettings": {
+                      "DestinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-v2-access",
+                      "Format": "$context.requestId"
+                    }
+                  }
+                ]
+              },
+              {
+                "ApiId": "v2http-after",
+                "Name": "http-after",
+                "ProtocolType": "HTTP",
+                "ApiEndpoint": "https://v2http-after.execute-api.ap-northeast-2.amazonaws.com",
+                "ApiKeySelectionExpression": "$request.header.x-api-key",
+                "CreatedDate": "2026-01-01T00:00:00+09:00",
+                "DisableExecuteApiEndpoint": false,
+                "RouteSelectionExpression": "$request.method $request.path",
+                "Tags": {},
+                "integrations": []
+              }
+            ]
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "na_contains": [
+          "http-after"
+        ]
+      },
+      "why": "스테이지 정보가 없는 API 만 N/A, 로깅이 켜진 API 는 양호"
+    },
+    {
+      "id": "api006-v2-stages-missing",
+      "role": "bug",
+      "condition": "REST API rest-ok 는 액세스 로그 설정, v2 http-after 는 'stages' 키 없음",
+      "rule": "REME-0101200006",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest-ok",
+                "name": "rest-ok",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": true,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "INFO",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": true,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": true,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "webAclArn": "arn:aws:wafv2:ap-northeast-2:111122223333:regional/webacl/api-acl/11111111-2222-3333-4444-555555555555",
+                    "accessLogSettings": {
+                      "format": "$context.requestId",
+                      "destinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-access"
+                    }
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": [
+              {
+                "ApiId": "v2http-after",
+                "Name": "http-after",
+                "ProtocolType": "HTTP",
+                "ApiEndpoint": "https://v2http-after.execute-api.ap-northeast-2.amazonaws.com",
+                "ApiKeySelectionExpression": "$request.header.x-api-key",
+                "CreatedDate": "2026-01-01T00:00:00+09:00",
+                "DisableExecuteApiEndpoint": false,
+                "RouteSelectionExpression": "$request.method $request.path",
+                "Tags": {},
+                "integrations": []
+              }
+            ]
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "na_contains": [
+          "http-after"
+        ]
+      },
+      "why": "스테이지 정보가 없는 API 만 N/A, 액세스 로그가 켜진 REST API 는 양호"
+    },
+    {
+      "id": "api001-v1-stages-none",
+      "role": "bug",
+      "condition": "REST API rest-nostage(stages=None) 1개 + CloudFront 없음",
+      "rule": "REME-0101200001",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest-nostage",
+                "name": "rest-nostage",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": null,
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "na": 1,
+        "flag": 0,
+        "good": 0,
+        "na_contains": [
+          "rest-nostage"
+        ]
+      },
+      "why": "스테이지(webAclArn)를 못 가져왔으므로 WAF 통합 여부는 판단 불가(N/A) — 예외로 룰 결과 전체를 잃으면 안 된다"
+    },
+    {
+      "id": "api003-normal",
+      "role": "control",
+      "condition": "REST API 캐시 활성 스테이지 1개 (수집 정상)",
+      "rule": "REME-0101200003",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest-ok",
+                "name": "rest-ok",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": true,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "INFO",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": true,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": true,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "webAclArn": "arn:aws:wafv2:ap-northeast-2:111122223333:regional/webacl/api-acl/11111111-2222-3333-4444-555555555555",
+                    "accessLogSettings": {
+                      "format": "$context.requestId",
+                      "destinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-access"
+                    }
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "api002-normal",
+      "role": "control",
+      "condition": "REST API loggingLevel=INFO 스테이지 1개 (수집 정상)",
+      "rule": "REME-0101200002",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest-ok",
+                "name": "rest-ok",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": true,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "INFO",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": true,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": true,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "webAclArn": "arn:aws:wafv2:ap-northeast-2:111122223333:regional/webacl/api-acl/11111111-2222-3333-4444-555555555555",
+                    "accessLogSettings": {
+                      "format": "$context.requestId",
+                      "destinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-access"
+                    }
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "api006-normal",
+      "role": "control",
+      "condition": "REST API 액세스 로그 + HTTP API 액세스 로그 없음 (수집 정상)",
+      "rule": "REME-0101200006",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest-ok",
+                "name": "rest-ok",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": true,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "INFO",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": true,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": true,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "webAclArn": "arn:aws:wafv2:ap-northeast-2:111122223333:regional/webacl/api-acl/11111111-2222-3333-4444-555555555555",
+                    "accessLogSettings": {
+                      "format": "$context.requestId",
+                      "destinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-access"
+                    }
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": [
+              {
+                "ApiId": "v2http-nolog",
+                "Name": "http-nolog",
+                "ProtocolType": "HTTP",
+                "ApiEndpoint": "https://v2http-nolog.execute-api.ap-northeast-2.amazonaws.com",
+                "ApiKeySelectionExpression": "$request.header.x-api-key",
+                "CreatedDate": "2026-01-01T00:00:00+09:00",
+                "DisableExecuteApiEndpoint": false,
+                "RouteSelectionExpression": "$request.method $request.path",
+                "Tags": {},
+                "integrations": [],
+                "stages": [
+                  {
+                    "StageName": "$default",
+                    "AutoDeploy": true,
+                    "DefaultRouteSettings": {
+                      "DetailedMetricsEnabled": false
+                    },
+                    "RouteSettings": {},
+                    "StageVariables": {},
+                    "Tags": {},
+                    "CreatedDate": "2026-01-01T00:00:00+09:00",
+                    "LastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "http-nolog"
+        ]
+      }
+    }
+  ]
+}

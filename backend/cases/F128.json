@@ -1,0 +1,119 @@
+{
+  "finding": "F128",
+  "rule": "REME-0102800001",
+  "service": "waf",
+  "status": "reproducible",
+  "note": "Raw/wafv2.py:12 — client 를 region='us-east-1' 로 고정하고 list_web_acls(Scope=REGIONAL) 도 이 client 로 부른다. REGIONAL Web ACL 은 리전별 자원이라 서울 등 다른 리전 ALB/API GW 용 Web ACL 은 수집되지 않고, 룰(waf.py:19-32)은 globals 의 목록만 본다. raw 에 그 Web ACL 의 흔적이 전혀 없어 룰로는 고칠 수 없다 → collection.",
+  "scenarios": [
+    {
+      "id": "regional-acl-seoul",
+      "role": "collection",
+      "condition": "실제: ap-northeast-2 ALB 에 REGIONAL Web ACL 연결, CloudFront 없음 — 수집 결과는 globals.wafv2.list_web_acls=[] (us-east-1 만 조회)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "wafv2": {
+            "list_web_acls": [],
+            "list_rule_groups": [],
+            "list_ip_sets": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {}
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "계정이 서울 리전에서 WAF Web ACL 을 사용하고 있으므로 'WAF 사용여부' 는 양호"
+    },
+    {
+      "id": "cloudfront-acl",
+      "role": "control",
+      "condition": "CLOUDFRONT Web ACL 1개 수집됨",
+      "args": [],
+      "raw": {
+        "globals": {
+          "wafv2": {
+            "list_web_acls": [
+              {
+                "Name": "cf-acl",
+                "Id": "cf-acl-id",
+                "Description": "",
+                "LockToken": "tok",
+                "ARN": "arn:aws:wafv2:us-east-1:111122223333:global/webacl/cf-acl/cf-acl-id",
+                "Scope": "CLOUDFRONT",
+                "TagList": {},
+                "WebACL": {
+                  "Name": "cf-acl",
+                  "Id": "cf-acl-id",
+                  "ARN": "arn:aws:wafv2:us-east-1:111122223333:global/webacl/cf-acl/cf-acl-id",
+                  "DefaultAction": {
+                    "Allow": {}
+                  },
+                  "Rules": []
+                },
+                "ResourceArns": [],
+                "LoggingConfiguration": {
+                  "ResourceArn": "x",
+                  "LogDestinationConfigs": [
+                    "arn:aws:logs:us-east-1:111122223333:log-group:aws-waf-logs-cf"
+                  ],
+                  "ManagedByFirewallManager": false
+                }
+              }
+            ],
+            "list_rule_groups": [],
+            "list_ip_sets": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {}
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "no-acl-anywhere",
+      "role": "control",
+      "condition": "어느 리전에도 Web ACL 없음 (list_web_acls=[])",
+      "args": [],
+      "raw": {
+        "globals": {
+          "wafv2": {
+            "list_web_acls": [],
+            "list_rule_groups": [],
+            "list_ip_sets": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {}
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

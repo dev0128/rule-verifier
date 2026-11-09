@@ -1,0 +1,280 @@
+{
+  "finding": "X064",
+  "rule": "REME-0105200001",
+  "service": "support",
+  "status": "reproducible",
+  "note": "support.py:111-161(실제 함수) — TA 체크 중 하나라도 결과가 조회되면(TrustAdvisorEnabled) 양호. Red(error)/Yellow(warning) 결과를 보던 원래 함수(:57-107)는 문자열 안에 들어가 죽은 코드다. 판단기준 '오류 및 경고를 주기적으로 검토(조치)하는 경우 양호' 를 판정하지 않는다.",
+  "scenarios": [
+    {
+      "id": "security-check-red",
+      "role": "bug",
+      "condition": "TA 사용 가능(Business 지원 플랜), 보안 범주 체크 'Security Groups - Specific Ports Unrestricted' 결과가 error(Red), 플래그된 리소스 3개 미조치",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          },
+          "support": {
+            "describe_trusted_advisor_checks": [
+              {
+                "id": "HCP4007jGY",
+                "name": "Security Groups - Specific Ports Unrestricted",
+                "description": "...",
+                "category": "security",
+                "metadata": [
+                  "Region",
+                  "Status"
+                ],
+                "summary": {
+                  "checkId": "HCP4007jGY",
+                  "timestamp": "2026-11-08T00:00:00Z",
+                  "status": "error",
+                  "hasFlaggedResources": true,
+                  "resourcesSummary": {
+                    "resourcesProcessed": 10,
+                    "resourcesFlagged": 3,
+                    "resourcesIgnored": 0,
+                    "resourcesSuppressed": 0
+                  }
+                },
+                "TrustAdvisorEnabled": true,
+                "result": {
+                  "checkId": "HCP4007jGY",
+                  "timestamp": "2026-11-08T00:00:00Z",
+                  "status": "error",
+                  "resourcesSummary": {
+                    "resourcesProcessed": 10,
+                    "resourcesFlagged": 3,
+                    "resourcesIgnored": 0,
+                    "resourcesSuppressed": 0
+                  },
+                  "categorySpecificSummary": {},
+                  "flaggedResources": [
+                    {
+                      "status": "error",
+                      "region": "ap-northeast-2",
+                      "resourceId": "r-HCP4007jGY",
+                      "isSuppressed": false,
+                      "metadata": [
+                        "ap-northeast-2",
+                        "error"
+                      ]
+                    },
+                    {
+                      "status": "error",
+                      "region": "ap-northeast-2",
+                      "resourceId": "r-HCP4007jGY",
+                      "isSuppressed": false,
+                      "metadata": [
+                        "ap-northeast-2",
+                        "error"
+                      ]
+                    },
+                    {
+                      "status": "error",
+                      "region": "ap-northeast-2",
+                      "resourceId": "r-HCP4007jGY",
+                      "isSuppressed": false,
+                      "metadata": [
+                        "ap-northeast-2",
+                        "error"
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "Pfx0RwqBli",
+                "name": "Amazon S3 Bucket Permissions",
+                "description": "...",
+                "category": "security",
+                "metadata": [
+                  "Region",
+                  "Status"
+                ],
+                "summary": {
+                  "checkId": "Pfx0RwqBli",
+                  "timestamp": "2026-11-08T00:00:00Z",
+                  "status": "ok",
+                  "hasFlaggedResources": false,
+                  "resourcesSummary": {
+                    "resourcesProcessed": 10,
+                    "resourcesFlagged": 0,
+                    "resourcesIgnored": 0,
+                    "resourcesSuppressed": 0
+                  }
+                },
+                "TrustAdvisorEnabled": true,
+                "result": {
+                  "checkId": "Pfx0RwqBli",
+                  "timestamp": "2026-11-08T00:00:00Z",
+                  "status": "ok",
+                  "resourcesSummary": {
+                    "resourcesProcessed": 10,
+                    "resourcesFlagged": 0,
+                    "resourcesIgnored": 0,
+                    "resourcesSuppressed": 0
+                  },
+                  "categorySpecificSummary": {},
+                  "flaggedResources": []
+                }
+              }
+            ],
+            "support_premium_plan": [
+              {
+                "id": "PremiumPlanSupported",
+                "supportPremiumPlan": true,
+                "description": "Amazon Web Services Premium Support Plan is subscribed."
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "판단기준은 오류 · 경고를 검토 · 조치했는가이다 — 보안 체크에 미조치 Red 결과가 남아 있으므로 취약"
+    },
+    {
+      "id": "all-ok",
+      "role": "control",
+      "condition": "TA 사용 가능, 체크 결과 모두 ok",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          },
+          "support": {
+            "describe_trusted_advisor_checks": [
+              {
+                "id": "HCP4007jGY",
+                "name": "Security Groups - Specific Ports Unrestricted",
+                "description": "...",
+                "category": "security",
+                "metadata": [
+                  "Region",
+                  "Status"
+                ],
+                "summary": {
+                  "checkId": "HCP4007jGY",
+                  "timestamp": "2026-11-08T00:00:00Z",
+                  "status": "ok",
+                  "hasFlaggedResources": false,
+                  "resourcesSummary": {
+                    "resourcesProcessed": 10,
+                    "resourcesFlagged": 0,
+                    "resourcesIgnored": 0,
+                    "resourcesSuppressed": 0
+                  }
+                },
+                "TrustAdvisorEnabled": true,
+                "result": {
+                  "checkId": "HCP4007jGY",
+                  "timestamp": "2026-11-08T00:00:00Z",
+                  "status": "ok",
+                  "resourcesSummary": {
+                    "resourcesProcessed": 10,
+                    "resourcesFlagged": 0,
+                    "resourcesIgnored": 0,
+                    "resourcesSuppressed": 0
+                  },
+                  "categorySpecificSummary": {},
+                  "flaggedResources": []
+                }
+              },
+              {
+                "id": "Pfx0RwqBli",
+                "name": "Amazon S3 Bucket Permissions",
+                "description": "...",
+                "category": "security",
+                "metadata": [
+                  "Region",
+                  "Status"
+                ],
+                "summary": {
+                  "checkId": "Pfx0RwqBli",
+                  "timestamp": "2026-11-08T00:00:00Z",
+                  "status": "ok",
+                  "hasFlaggedResources": false,
+                  "resourcesSummary": {
+                    "resourcesProcessed": 10,
+                    "resourcesFlagged": 0,
+                    "resourcesIgnored": 0,
+                    "resourcesSuppressed": 0
+                  }
+                },
+                "TrustAdvisorEnabled": true,
+                "result": {
+                  "checkId": "Pfx0RwqBli",
+                  "timestamp": "2026-11-08T00:00:00Z",
+                  "status": "ok",
+                  "resourcesSummary": {
+                    "resourcesProcessed": 10,
+                    "resourcesFlagged": 0,
+                    "resourcesIgnored": 0,
+                    "resourcesSuppressed": 0
+                  },
+                  "categorySpecificSummary": {},
+                  "flaggedResources": []
+                }
+              }
+            ],
+            "support_premium_plan": [
+              {
+                "id": "PremiumPlanSupported",
+                "supportPremiumPlan": true,
+                "description": "Amazon Web Services Premium Support Plan is subscribed."
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "no-checks",
+      "role": "control",
+      "condition": "TA 체크 목록이 비어 있음 (지원 플랜 미가입 등)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          },
+          "support": {
+            "describe_trusted_advisor_checks": [],
+            "support_premium_plan": [
+              {
+                "id": "PremiumPlanSupported",
+                "supportPremiumPlan": true,
+                "description": "Amazon Web Services Premium Support Plan is subscribed."
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

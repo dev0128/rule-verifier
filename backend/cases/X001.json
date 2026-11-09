@@ -1,0 +1,133 @@
+{
+  "finding": "X001",
+  "rule": "REME-0100600004",
+  "service": "ec2",
+  "status": "reproducible",
+  "note": "Raw/ec2.py:139-148 `_describe_snapshot_attribute` — 루프에서 `item[\"CreateVolumePermissions\"] = []` 를 먼저 넣고 `response[\"CreateVolumePermissions\"]` 를 읽는다. 조회가 한 번 실패하면(get_response → {}) KeyError 로 메서드 전체가 멈춰 실패한 스냅샷은 [], 그 뒤 스냅샷은 키 자체가 없다. 룰 ec2.py:211-212 `for key_data_i in key_data` 가 None 을 돌다 TypeError → 룰 전체 N/A. 실패한 스냅샷이 [] 로 남는 부분은 raw 에서 '권한 없음' 과 구분되지 않는다(수집 결함).",
+  "scenarios": [
+    {
+      "id": "attribute-missing-after-abort",
+      "role": "bug",
+      "condition": "snap-pub(퍼블릭, 정상 수집) 다음에 속성 조회가 멈춰 snap-later 에 CreateVolumePermissions 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_snapshots": [
+              {
+                "SnapshotId": "snap-pub",
+                "VolumeId": "vol-1",
+                "OwnerId": "111122223333",
+                "State": "completed",
+                "StartTime": "2026-11-01T00:00:00.000Z",
+                "Encrypted": false,
+                "VolumeSize": 8,
+                "CreateVolumePermissions": [
+                  {
+                    "Group": "all"
+                  }
+                ]
+              },
+              {
+                "SnapshotId": "snap-later",
+                "VolumeId": "vol-1",
+                "OwnerId": "111122223333",
+                "State": "completed",
+                "StartTime": "2026-11-01T00:00:00.000Z",
+                "Encrypted": false,
+                "VolumeSize": 8
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "snap-pub"
+        ],
+        "na_contains": [
+          "snap-later"
+        ]
+      },
+      "why": "속성을 모르는 스냅샷은 판정 불가(N/A)로 빼고, 퍼블릭 공유된 snap-pub 은 취약으로 나와야 한다"
+    },
+    {
+      "id": "failed-public-snapshot",
+      "role": "collection",
+      "condition": "실제로 퍼블릭(Group=all)인 snap-fail 의 describe_snapshot_attribute 가 스로틀로 실패 — 수집기가 미리 넣어 둔 [] 가 그대로 남음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_snapshots": [
+              {
+                "SnapshotId": "snap-fail",
+                "VolumeId": "vol-1",
+                "OwnerId": "111122223333",
+                "State": "completed",
+                "StartTime": "2026-11-01T00:00:00.000Z",
+                "Encrypted": false,
+                "VolumeSize": 8,
+                "CreateVolumePermissions": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "snap-fail 은 실제로 퍼블릭 공유 중이므로 취약이어야 한다"
+    },
+    {
+      "id": "public-and-private",
+      "role": "control",
+      "condition": "퍼블릭 스냅샷 1개 + 공유 없는 스냅샷 1개 (정상 수집)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_snapshots": [
+              {
+                "SnapshotId": "snap-pub",
+                "VolumeId": "vol-1",
+                "OwnerId": "111122223333",
+                "State": "completed",
+                "StartTime": "2026-11-01T00:00:00.000Z",
+                "Encrypted": false,
+                "VolumeSize": 8,
+                "CreateVolumePermissions": [
+                  {
+                    "Group": "all"
+                  }
+                ]
+              },
+              {
+                "SnapshotId": "snap-priv",
+                "VolumeId": "vol-1",
+                "OwnerId": "111122223333",
+                "State": "completed",
+                "StartTime": "2026-11-01T00:00:00.000Z",
+                "Encrypted": false,
+                "VolumeSize": 8,
+                "CreateVolumePermissions": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "snap-pub"
+        ]
+      }
+    }
+  ]
+}

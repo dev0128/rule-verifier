@@ -1,0 +1,361 @@
+{
+  "finding": "F145",
+  "rule": "REME-0106000001",
+  "service": "ecr",
+  "status": "reproducible",
+  "effect": "wrong_logic",
+  "note": "ecr.py:33-36 — Principal 이 문자열 '*' 일 때만 퍼블릭으로 본다. {'AWS':'*'}·{'AWS':['*']} 는 놓치고(미탐), Effect 를 보지 않아 Deny '*' 를 퍼블릭으로 본다(오탐). Statement 가 단일 객체면 dict 키를 순회해 AttributeError. 미탐·오탐·예외가 섞여 effect 를 wrong_logic 으로 바로잡음.",
+  "scenarios": [
+    {
+      "id": "aws-star",
+      "role": "bug",
+      "condition": "리포지토리 정책 Allow + Principal {'AWS': '*'} (콘솔에서 '모든 사용자' 지정한 형태)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/pub1",
+                "registryId": "111111111111",
+                "repositoryName": "pub1",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/pub1",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "*"
+                      },
+                      "Action": [
+                        "ecr:BatchGetImage",
+                        "ecr:GetDownloadUrlForLayer"
+                      ]
+                    }
+                  ]
+                },
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "{'AWS':'*'} 는 모든 AWS 보안 주체(익명 포함) — 퍼블릭 액세스 허용"
+    },
+    {
+      "id": "aws-star-list",
+      "role": "bug",
+      "condition": "Allow + Principal {'AWS': ['*']}",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/pub2",
+                "registryId": "111111111111",
+                "repositoryName": "pub2",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/pub2",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": [
+                          "*"
+                        ]
+                      },
+                      "Action": [
+                        "ecr:BatchGetImage",
+                        "ecr:GetDownloadUrlForLayer"
+                      ]
+                    }
+                  ]
+                },
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "리스트 표기도 같은 '모든 보안 주체'"
+    },
+    {
+      "id": "deny-star",
+      "role": "bug",
+      "condition": "Deny + Principal '*' 문장만 있는 정책 (특정 액션을 모두에게 거부)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/deny",
+                "registryId": "111111111111",
+                "repositoryName": "deny",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/deny",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Deny",
+                      "Principal": "*",
+                      "Action": [
+                        "ecr:BatchGetImage",
+                        "ecr:GetDownloadUrlForLayer"
+                      ]
+                    }
+                  ]
+                },
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "Deny 문장은 접근을 막을 뿐 퍼블릭 허용이 아니다"
+    },
+    {
+      "id": "statement-object",
+      "role": "bug",
+      "condition": "리포지토리 2개: ① Statement 가 리스트가 아닌 단일 객체(Allow + Principal '*') ② 정책 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/single-stmt",
+                "registryId": "111111111111",
+                "repositoryName": "single-stmt",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/single-stmt",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {
+                  "Version": "2012-10-17",
+                  "Statement": {
+                    "Sid": "s1",
+                    "Effect": "Allow",
+                    "Principal": "*",
+                    "Action": [
+                      "ecr:BatchGetImage",
+                      "ecr:GetDownloadUrlForLayer"
+                    ]
+                  }
+                },
+                "lifecyclePolicyText": {}
+              },
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/private",
+                "registryId": "111111111111",
+                "repositoryName": "private",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/private",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {},
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "flag_contains": [
+          "single-stmt"
+        ]
+      },
+      "why": "IAM 정책 문법상 Statement 는 단일 객체도 허용된다 — 예외 없이 ①은 퍼블릭(취약), ②는 양호로 판정해야 한다"
+    },
+    {
+      "id": "plain-star",
+      "role": "control",
+      "condition": "Allow + Principal '*'",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/pub0",
+                "registryId": "111111111111",
+                "repositoryName": "pub0",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/pub0",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": [
+                        "ecr:BatchGetImage",
+                        "ecr:GetDownloadUrlForLayer"
+                      ]
+                    }
+                  ]
+                },
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "no-policy",
+      "role": "control",
+      "condition": "리포지토리 정책 없음 (policyText={})",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/private",
+                "registryId": "111111111111",
+                "repositoryName": "private",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/private",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {},
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

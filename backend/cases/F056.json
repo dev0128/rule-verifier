@@ -1,0 +1,108 @@
+{
+  "finding": "F056",
+  "rule": "REME-0103100001",
+  "service": "sqs",
+  "status": "reproducible",
+  "note": "Analyze/sqs.py:36 — `SqsManagedSseEnabled in ['false', False]` 이면 취약. SSE-SQS 와 SSE-KMS 는 배타적이라 KMS 로 암호화한 큐는 SqsManagedSseEnabled=false 이고 KmsMasterKeyId 가 있다. KmsMasterKeyId 를 보지 않아 오탐.",
+  "scenarios": [
+    {
+      "id": "sse-kms",
+      "role": "bug",
+      "condition": "SSE-KMS 큐 — SqsManagedSseEnabled=\"false\", KmsMasterKeyId=\"alias/aws/sqs\"",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:kms-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "false",
+                "KmsMasterKeyId": "alias/aws/sqs",
+                "KmsDataKeyReusePeriodSeconds": "300",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/kms-q",
+                "QueueName": "kms-q",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "KMS 키로 서버 측 암호화가 적용돼 있으므로 양호"
+    },
+    {
+      "id": "sse-sqs",
+      "role": "control",
+      "condition": "SSE-SQS 큐 — SqsManagedSseEnabled=\"true\"",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:sqs-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/sqs-q",
+                "QueueName": "sqs-q",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "unencrypted",
+      "role": "control",
+      "condition": "암호화 없음 — SqsManagedSseEnabled=\"false\", KmsMasterKeyId 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:plain-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "false",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/plain-q",
+                "QueueName": "plain-q",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "finding": "X009",
+  "rule": "REME-0100100007",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:570 `key_data[\"MinimumPasswordLength\"] < int(args_[0])` — 비밀번호 정책이 있으면 항상 인자를 읽는데 None 이면 TypeError, \"\"/[] 이면 IndexError.",
+  "scenarios": [
+    {
+      "id": "args-none",
+      "role": "bug",
+      "condition": "인자 None (커스텀룰 마스터 참조) — 최소 길이 14, 기호·숫자·대소문자 모두 요구",
+      "args": null,
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 90,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "인자가 없으면 기본값(기본 룰셋 12)으로 판정해야 한다. 길이 14 + 모든 문자 종류 요구는 어떤 합리적 기본값(8~14)에서도 양호"
+    },
+    {
+      "id": "args-empty-str",
+      "role": "bug",
+      "condition": "인자 \"\" (거버넌스 기본 룰) — 최소 길이 14, 기호·숫자·대소문자 모두 요구",
+      "args": "",
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 90,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "인자가 없으면 기본값(기본 룰셋 12)으로 판정해야 한다. 길이 14 + 모든 문자 종류 요구는 어떤 합리적 기본값(8~14)에서도 양호"
+    },
+    {
+      "id": "args-empty-list",
+      "role": "bug",
+      "condition": "인자 [] (빈 리스트) — 최소 길이 14, 기호·숫자·대소문자 모두 요구",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 90,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "인자가 없으면 기본값(기본 룰셋 12)으로 판정해야 한다. 길이 14 + 모든 문자 종류 요구는 어떤 합리적 기본값(8~14)에서도 양호"
+    },
+    {
+      "id": "args-none-weak",
+      "role": "bug",
+      "condition": "인자 None — 최소 길이 6, 기호 미요구",
+      "args": null,
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 6,
+                "RequireSymbols": false,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 90,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "기호를 요구하지 않으므로 인자와 무관하게 복잡성 미충족 — 취약"
+    },
+    {
+      "id": "args-default",
+      "role": "control",
+      "condition": "기본 룰셋 인자 [\"12\"] — 최소 길이 14, 기호·숫자·대소문자 모두 요구",
+      "args": [
+        "12"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_account_password_policy": [
+              {
+                "MinimumPasswordLength": 14,
+                "RequireSymbols": true,
+                "RequireNumbers": true,
+                "RequireUppercaseCharacters": true,
+                "RequireLowercaseCharacters": true,
+                "AllowUsersToChangePassword": true,
+                "ExpirePasswords": true,
+                "MaxPasswordAge": 90,
+                "PasswordReusePrevention": 24,
+                "HardExpiry": false,
+                "AccountId": "111111111111"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

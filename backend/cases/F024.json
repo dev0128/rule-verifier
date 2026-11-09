@@ -1,0 +1,307 @@
+{
+  "finding": "F024",
+  "rule": "REME-0103900004",
+  "service": "route53",
+  "status": "reproducible",
+  "note": "route53.py:203-204,233-239 — A 레코드 값이 계정 EIP(describe_addresses) 목록에 없으면 dangling 으로 본다. 실행 중 EC2 의 자동 할당 공인 IP(describe_instances[].PublicIpAddress, raw 에 있음)를 가리키는 정상 레코드도 취약. 또 레코드마다 영역 키로 result_items_ 를 불러 한 영역이 flag·good 양쪽에 들어가고 checked 가 레코드 수만큼 는다.",
+  "scenarios": [
+    {
+      "id": "ec2-auto-public-ip",
+      "role": "bug",
+      "condition": "퍼블릭 영역의 A 레코드가 실행 중 EC2 의 자동 할당 공인 IP(3.34.10.10)를 가리킴, EIP 없음",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_hosted_zone": [
+              {
+                "Name": "z1.example.com.",
+                "Id": "Z1",
+                "HostedZone": {
+                  "Id": "/hostedzone/Z1",
+                  "Name": "z1.example.com.",
+                  "CallerReference": "x",
+                  "Config": {
+                    "PrivateZone": false
+                  },
+                  "ResourceRecordSetCount": 2
+                },
+                "DelegationSet": {
+                  "NameServers": [
+                    "ns-1.awsdns-01.org"
+                  ]
+                },
+                "dnssec": {},
+                "ResourceRecordSets": [
+                  {
+                    "Name": "app.z1.example.com.",
+                    "Type": "A",
+                    "TTL": 300,
+                    "ResourceRecords": [
+                      {
+                        "Value": "3.34.10.10"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "list_query_logging_configs": [],
+            "get_domain_detail": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_addresses": [],
+            "describe_instances": [
+              {
+                "InstanceId": "i-00",
+                "State": {
+                  "Name": "running"
+                },
+                "PublicIpAddress": "3.34.10.10",
+                "PrivateIpAddress": "10.0.0.10",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0
+      },
+      "why": "레코드 대상 IP 가 계정의 실행 중 인스턴스에 붙어 있으므로 dangling 이 아니다"
+    },
+    {
+      "id": "mixed-records-one-zone",
+      "role": "bug",
+      "condition": "한 퍼블릭 영역에 EIP 를 가리키는 A 레코드 1개 + 어디에도 없는 IP 를 가리키는 A 레코드 1개",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_hosted_zone": [
+              {
+                "Name": "z1.example.com.",
+                "Id": "Z1",
+                "HostedZone": {
+                  "Id": "/hostedzone/Z1",
+                  "Name": "z1.example.com.",
+                  "CallerReference": "x",
+                  "Config": {
+                    "PrivateZone": false
+                  },
+                  "ResourceRecordSetCount": 2
+                },
+                "DelegationSet": {
+                  "NameServers": [
+                    "ns-1.awsdns-01.org"
+                  ]
+                },
+                "dnssec": {},
+                "ResourceRecordSets": [
+                  {
+                    "Name": "ok.z1.example.com.",
+                    "Type": "A",
+                    "TTL": 300,
+                    "ResourceRecords": [
+                      {
+                        "Value": "13.125.1.1"
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "old.z1.example.com.",
+                    "Type": "A",
+                    "TTL": 300,
+                    "ResourceRecords": [
+                      {
+                        "Value": "52.79.9.9"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "list_query_logging_configs": [],
+            "get_domain_detail": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_addresses": [
+              {
+                "PublicIp": "13.125.1.1",
+                "AllocationId": "eipalloc-0",
+                "Domain": "vpc"
+              }
+            ],
+            "describe_instances": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 1,
+        "flag": 1,
+        "good": 0
+      },
+      "why": "결과 행 단위는 호스팅 영역(id=영역 이름)이다. dangling 레코드가 있는 영역은 취약 1건이어야 하고 같은 영역이 양호로도 집계되면 안 된다"
+    },
+    {
+      "id": "eip-record",
+      "role": "control",
+      "condition": "A 레코드가 계정 EIP 를 가리킴",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_hosted_zone": [
+              {
+                "Name": "z1.example.com.",
+                "Id": "Z1",
+                "HostedZone": {
+                  "Id": "/hostedzone/Z1",
+                  "Name": "z1.example.com.",
+                  "CallerReference": "x",
+                  "Config": {
+                    "PrivateZone": false
+                  },
+                  "ResourceRecordSetCount": 2
+                },
+                "DelegationSet": {
+                  "NameServers": [
+                    "ns-1.awsdns-01.org"
+                  ]
+                },
+                "dnssec": {},
+                "ResourceRecordSets": [
+                  {
+                    "Name": "ok.z1.example.com.",
+                    "Type": "A",
+                    "TTL": 300,
+                    "ResourceRecords": [
+                      {
+                        "Value": "13.125.1.1"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "list_query_logging_configs": [],
+            "get_domain_detail": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_addresses": [
+              {
+                "PublicIp": "13.125.1.1",
+                "AllocationId": "eipalloc-0",
+                "Domain": "vpc"
+              }
+            ],
+            "describe_instances": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 1,
+        "good": 1
+      }
+    },
+    {
+      "id": "unknown-ip-record",
+      "role": "control",
+      "condition": "A 레코드가 계정 EIP · 인스턴스 어디에도 없는 IP 를 가리킴",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_hosted_zone": [
+              {
+                "Name": "z1.example.com.",
+                "Id": "Z1",
+                "HostedZone": {
+                  "Id": "/hostedzone/Z1",
+                  "Name": "z1.example.com.",
+                  "CallerReference": "x",
+                  "Config": {
+                    "PrivateZone": false
+                  },
+                  "ResourceRecordSetCount": 2
+                },
+                "DelegationSet": {
+                  "NameServers": [
+                    "ns-1.awsdns-01.org"
+                  ]
+                },
+                "dnssec": {},
+                "ResourceRecordSets": [
+                  {
+                    "Name": "old.z1.example.com.",
+                    "Type": "A",
+                    "TTL": 300,
+                    "ResourceRecords": [
+                      {
+                        "Value": "52.79.9.9"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "list_query_logging_configs": [],
+            "get_domain_detail": []
+          },
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_addresses": [],
+            "describe_instances": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 1,
+        "flag": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "finding": "X053",
+  "rule": "REME-0100100017",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:1548 `for group_user in key_data[\"Users\"]` — get(\"Users\") 가 None 인 그룹(수집 _get_group 이 중간에 끊겨 뒤 그룹에 Users 키 없음, Raw/iam.py:194-202)에서 TypeError 로 룰 전체 중단.",
+  "scenarios": [
+    {
+      "id": "group-without-users-key",
+      "role": "bug",
+      "condition": "그룹 2개 — admins(AdministratorAccess, 사용자 u1 MFA 미사용) + devs(get_group 수집 실패로 Users 키 없음)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_groups": [
+              {
+                "GroupName": "admins",
+                "GroupId": "AGPAADMINS",
+                "Arn": "arn:aws:iam::111111111111:group/admins",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [
+                  {
+                    "PolicyName": "AdministratorAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Users": [
+                  {
+                    "UserName": "u1",
+                    "UserId": "AIDAU1",
+                    "Arn": "arn:aws:iam::111111111111:user/u1",
+                    "Path": "/",
+                    "CreateDate": "2020-01-01 00:00:00+00:00"
+                  }
+                ]
+              },
+              {
+                "GroupName": "devs",
+                "GroupId": "AGPADEVS",
+                "Arn": "arn:aws:iam::111111111111:group/devs",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": []
+              }
+            ],
+            "get_credential_report": [
+              {
+                "user": "u1",
+                "arn": "arn:aws:iam::111111111111:user/u1",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "true",
+                "password_last_used": "2020-01-01T00:00:00+00:00",
+                "password_last_changed": "2020-01-01T00:00:00+00:00",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "admins"
+        ]
+      },
+      "why": "구성원 조회가 실패한 그룹은 판정에서 빼고 나머지 그룹은 정상 판정해야 한다 — admins 의 u1 은 MFA 가 없으므로 취약"
+    },
+    {
+      "id": "users-present",
+      "role": "control",
+      "condition": "같은 두 그룹, devs 의 Users=[] 로 수집됨",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_groups": [
+              {
+                "GroupName": "admins",
+                "GroupId": "AGPAADMINS",
+                "Arn": "arn:aws:iam::111111111111:group/admins",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [
+                  {
+                    "PolicyName": "AdministratorAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Users": [
+                  {
+                    "UserName": "u1",
+                    "UserId": "AIDAU1",
+                    "Arn": "arn:aws:iam::111111111111:user/u1",
+                    "Path": "/",
+                    "CreateDate": "2020-01-01 00:00:00+00:00"
+                  }
+                ]
+              },
+              {
+                "GroupName": "devs",
+                "GroupId": "AGPADEVS",
+                "Arn": "arn:aws:iam::111111111111:group/devs",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Users": []
+              }
+            ],
+            "get_credential_report": [
+              {
+                "user": "u1",
+                "arn": "arn:aws:iam::111111111111:user/u1",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "true",
+                "password_last_used": "2020-01-01T00:00:00+00:00",
+                "password_last_changed": "2020-01-01T00:00:00+00:00",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "admins"
+        ]
+      }
+    }
+  ]
+}

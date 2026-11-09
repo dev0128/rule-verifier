@@ -1,0 +1,247 @@
+{
+  "finding": "F089",
+  "rule": "REME-0102200005",
+  "service": "redshift",
+  "status": "reproducible",
+  "note": "redshift.py:245-247 `result_temp_i.get(\"Endpoint\")` 가 None 인데 바로 `[\"Port\"]` — 생성 중 클러스터 하나로 룰 전체 TypeError(N/A).",
+  "scenarios": [
+    {
+      "id": "creating-plus-default",
+      "role": "bug",
+      "condition": "생성 중 클러스터(Endpoint 없음) + 기본 포트 5439 클러스터",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "redshift": {
+            "describe_clusters": [
+              {
+                "ClusterIdentifier": "rs-new",
+                "NodeType": "ra3.xlplus",
+                "ClusterStatus": "creating",
+                "ClusterAvailabilityStatus": "Available",
+                "AutomatedSnapshotRetentionPeriod": 1,
+                "ManualSnapshotRetentionPeriod": -1,
+                "AllowVersionUpgrade": true,
+                "Encrypted": true,
+                "ClusterParameterGroups": [
+                  {
+                    "ParameterGroupName": "default.redshift-1.0",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "Tags": {},
+                "logging_status": {
+                  "LoggingEnabled": false
+                },
+                "Snapshots": []
+              },
+              {
+                "ClusterIdentifier": "rs-1",
+                "NodeType": "ra3.xlplus",
+                "ClusterStatus": "available",
+                "ClusterAvailabilityStatus": "Available",
+                "AutomatedSnapshotRetentionPeriod": 1,
+                "ManualSnapshotRetentionPeriod": -1,
+                "AllowVersionUpgrade": true,
+                "Encrypted": true,
+                "ClusterParameterGroups": [
+                  {
+                    "ParameterGroupName": "default.redshift-1.0",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "Tags": {},
+                "Endpoint": {
+                  "Address": "rs-1.abc123.ap-northeast-2.redshift.amazonaws.com",
+                  "Port": 5439
+                },
+                "logging_status": {
+                  "LoggingEnabled": false
+                },
+                "Snapshots": []
+              }
+            ],
+            "describe_cluster_parameter_groups": [
+              {
+                "ParameterGroupName": "default.redshift-1.0",
+                "ParameterGroupFamily": "redshift-1.0",
+                "Description": "default.redshift-1.0",
+                "Tags": {},
+                "Parameters": [
+                  {
+                    "ParameterName": "enable_user_activity_logging",
+                    "ParameterValue": "false",
+                    "Source": "engine-default",
+                    "DataType": "boolean",
+                    "ApplyType": "static",
+                    "IsModifiable": true
+                  },
+                  {
+                    "ParameterName": "require_ssl",
+                    "ParameterValue": "false",
+                    "Source": "engine-default",
+                    "DataType": "boolean",
+                    "ApplyType": "static",
+                    "IsModifiable": true
+                  }
+                ]
+              }
+            ],
+            "describe_cluster_security_groups": [],
+            "describe_cluster_parameters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "rs-1"
+        ]
+      },
+      "why": "Endpoint 없는 클러스터는 판정 불가로 빼고(N/A), 나머지 클러스터는 정상 판정 — 5439 사용 → 취약"
+    },
+    {
+      "id": "default-port",
+      "role": "control",
+      "condition": "클러스터 Port=5439",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "redshift": {
+            "describe_clusters": [
+              {
+                "ClusterIdentifier": "rs-1",
+                "NodeType": "ra3.xlplus",
+                "ClusterStatus": "available",
+                "ClusterAvailabilityStatus": "Available",
+                "AutomatedSnapshotRetentionPeriod": 1,
+                "ManualSnapshotRetentionPeriod": -1,
+                "AllowVersionUpgrade": true,
+                "Encrypted": true,
+                "ClusterParameterGroups": [
+                  {
+                    "ParameterGroupName": "default.redshift-1.0",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "Tags": {},
+                "Endpoint": {
+                  "Address": "rs-1.abc123.ap-northeast-2.redshift.amazonaws.com",
+                  "Port": 5439
+                },
+                "logging_status": {
+                  "LoggingEnabled": false
+                },
+                "Snapshots": []
+              }
+            ],
+            "describe_cluster_parameter_groups": [
+              {
+                "ParameterGroupName": "default.redshift-1.0",
+                "ParameterGroupFamily": "redshift-1.0",
+                "Description": "default.redshift-1.0",
+                "Tags": {},
+                "Parameters": [
+                  {
+                    "ParameterName": "enable_user_activity_logging",
+                    "ParameterValue": "false",
+                    "Source": "engine-default",
+                    "DataType": "boolean",
+                    "ApplyType": "static",
+                    "IsModifiable": true
+                  },
+                  {
+                    "ParameterName": "require_ssl",
+                    "ParameterValue": "false",
+                    "Source": "engine-default",
+                    "DataType": "boolean",
+                    "ApplyType": "static",
+                    "IsModifiable": true
+                  }
+                ]
+              }
+            ],
+            "describe_cluster_security_groups": [],
+            "describe_cluster_parameters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "custom-port",
+      "role": "control",
+      "condition": "클러스터 Port=5440",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "redshift": {
+            "describe_clusters": [
+              {
+                "ClusterIdentifier": "rs-1",
+                "NodeType": "ra3.xlplus",
+                "ClusterStatus": "available",
+                "ClusterAvailabilityStatus": "Available",
+                "AutomatedSnapshotRetentionPeriod": 1,
+                "ManualSnapshotRetentionPeriod": -1,
+                "AllowVersionUpgrade": true,
+                "Encrypted": true,
+                "ClusterParameterGroups": [
+                  {
+                    "ParameterGroupName": "default.redshift-1.0",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "Tags": {},
+                "Endpoint": {
+                  "Address": "rs-1.abc123.ap-northeast-2.redshift.amazonaws.com",
+                  "Port": 5440
+                },
+                "logging_status": {
+                  "LoggingEnabled": false
+                },
+                "Snapshots": []
+              }
+            ],
+            "describe_cluster_parameter_groups": [
+              {
+                "ParameterGroupName": "default.redshift-1.0",
+                "ParameterGroupFamily": "redshift-1.0",
+                "Description": "default.redshift-1.0",
+                "Tags": {},
+                "Parameters": [
+                  {
+                    "ParameterName": "enable_user_activity_logging",
+                    "ParameterValue": "false",
+                    "Source": "engine-default",
+                    "DataType": "boolean",
+                    "ApplyType": "static",
+                    "IsModifiable": true
+                  },
+                  {
+                    "ParameterName": "require_ssl",
+                    "ParameterValue": "false",
+                    "Source": "engine-default",
+                    "DataType": "boolean",
+                    "ApplyType": "static",
+                    "IsModifiable": true
+                  }
+                ]
+              }
+            ],
+            "describe_cluster_security_groups": [],
+            "describe_cluster_parameters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

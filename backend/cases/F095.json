@@ -1,0 +1,348 @@
+{
+  "finding": "F095",
+  "rule": "REME-0105000003",
+  "service": "kms",
+  "status": "reproducible",
+  "note": "kms.py:160-164 — Principal == \"*\" 또는 Principal.AWS == \"*\" 인 Allow 문이면 Condition 을 보지 않고 퍼블릭으로 판정. kms:CallerAccount 로 자기 계정에 제한된 CloudTrail·EBS 기본 정책도 취약(오탐). 반대로 Principal.AWS 가 리스트 [\"*\"] 면 == 비교에 걸리지 않아 놓친다(미탐 — principal-aws-list-star 시나리오, 카탈로그 effect 는 오탐 쪽만 적음).",
+  "scenarios": [
+    {
+      "id": "cloudtrail-caller-account",
+      "role": "bug",
+      "condition": "CloudTrail 콘솔 기본 키 정책 — Principal {AWS: \"*\"} + Condition kms:CallerAccount=자기 계정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-cloudtrail",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-cloudtrail",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-cloudtrail",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-cloudtrail",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    },
+                    {
+                      "Sid": "Allow principals in the account to decrypt log files",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "*"
+                      },
+                      "Action": [
+                        "kms:Decrypt",
+                        "kms:ReEncryptFrom"
+                      ],
+                      "Resource": "*",
+                      "Condition": {
+                        "StringEquals": {
+                          "kms:CallerAccount": "111111111111"
+                        },
+                        "StringLike": {
+                          "kms:EncryptionContext:aws:cloudtrail:arn": "arn:aws:cloudtrail:*:111111111111:trail/*"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "kms:CallerAccount 조건으로 호출자가 자기 계정 주체로 제한되므로 퍼블릭 액세스가 아니다"
+    },
+    {
+      "id": "ebs-caller-account-via-service",
+      "role": "bug",
+      "condition": "EBS 기본 키 정책 — Principal {AWS: \"*\"} + kms:CallerAccount + kms:ViaService=ec2",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-ebs",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-ebs",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-ebs",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-ebs",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    },
+                    {
+                      "Sid": "Allow access through EBS for all principals in the account",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "*"
+                      },
+                      "Action": [
+                        "kms:Encrypt",
+                        "kms:Decrypt",
+                        "kms:ReEncrypt*",
+                        "kms:GenerateDataKey*",
+                        "kms:CreateGrant",
+                        "kms:DescribeKey"
+                      ],
+                      "Resource": "*",
+                      "Condition": {
+                        "StringEquals": {
+                          "kms:CallerAccount": "111111111111",
+                          "kms:ViaService": "ec2.ap-northeast-2.amazonaws.com"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "자기 계정 + EC2 경유로 제한된 정책이라 퍼블릭이 아니다"
+    },
+    {
+      "id": "principal-aws-list-star",
+      "role": "bug",
+      "condition": "Principal {AWS: [\"*\"]} (리스트), 조건 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-list-star",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-list-star",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-list-star",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-list-star",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    },
+                    {
+                      "Sid": "public-list",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": [
+                          "*"
+                        ]
+                      },
+                      "Action": "kms:Decrypt",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "k-list-star"
+        ]
+      },
+      "why": "{AWS: [\"*\"]} 는 {AWS: \"*\"} 와 같은 의미 — 조건 없이 누구나 허용이므로 퍼블릭"
+    },
+    {
+      "id": "principal-star-no-condition",
+      "role": "control",
+      "condition": "Principal \"*\", 조건 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-public",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-public",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-public",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-public",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    },
+                    {
+                      "Sid": "public",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "kms:Decrypt",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "default-root-only",
+      "role": "control",
+      "condition": "기본 키 정책 (자기 계정 root 만)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kms": {
+            "list_keys": [
+              {
+                "KeyId": "k-default",
+                "KeyArn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-default",
+                "Aliases": [],
+                "KeyRotationEnabled": true,
+                "KeyRotationStatus": {
+                  "KeyRotationEnabled": true
+                },
+                "Tags": {},
+                "KeyMetadata": {
+                  "AWSAccountId": "111111111111",
+                  "KeyId": "k-default",
+                  "Arn": "arn:aws:kms:ap-northeast-2:111111111111:key/k-default",
+                  "Enabled": true,
+                  "KeyUsage": "ENCRYPT_DECRYPT",
+                  "KeyState": "Enabled",
+                  "Origin": "AWS_KMS",
+                  "KeyManager": "CUSTOMER",
+                  "KeySpec": "SYMMETRIC_DEFAULT",
+                  "CreationDate": "2020-01-01 00:00:00+00:00"
+                },
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "key-default-1",
+                  "Statement": [
+                    {
+                      "Sid": "Enable IAM User Permissions",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "kms:*",
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

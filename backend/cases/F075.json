@@ -1,0 +1,183 @@
+{
+  "finding": "F075",
+  "rule": "REME-0101100001",
+  "service": "acm",
+  "status": "reproducible",
+  "note": "acm.py:37-39 — 만료를 DomainValidationOptions[].ValidationStatus == \"EXPIRED\" 로 판정. botocore acm DomainStatus 값은 PENDING_VALIDATION|SUCCESS|FAILED 뿐이라 항상 양호. Certificate.Status == \"EXPIRED\" 또는 NotAfter < now 를 봐야 한다.",
+  "scenarios": [
+    {
+      "id": "status-expired",
+      "role": "bug",
+      "condition": "ACM 발급 인증서 Status=EXPIRED, NotAfter=2023-01-01, 도메인 검증 상태는 SUCCESS 그대로",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-expired",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "EXPIRED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2023-01-01 00:00:00+00:00",
+                "CertificateId": "c-expired",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-expired",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "EXPIRED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2023-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "c-expired"
+        ]
+      },
+      "why": "인증서가 만료됐다(Certificate.Status=EXPIRED, NotAfter 경과). 만료돼도 도메인 검증 상태는 SUCCESS 로 남는다"
+    },
+    {
+      "id": "imported-expired",
+      "role": "bug",
+      "condition": "IMPORTED 인증서 Status=EXPIRED, NotAfter=2022-06-30 (DomainValidationOptions 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-imp-expired",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "EXPIRED",
+                "Type": "IMPORTED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2022-06-30 00:00:00+00:00",
+                "CertificateId": "c-imp-expired",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-imp-expired",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "EXPIRED",
+                  "Type": "IMPORTED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2022-06-30 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "c-imp-expired"
+        ]
+      },
+      "why": "가져온 인증서도 만료된 인증서다"
+    },
+    {
+      "id": "issued-valid",
+      "role": "control",
+      "condition": "ACM 발급 인증서 Status=ISSUED, NotAfter=2099-01-01",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "acm": {
+            "list_certificates": [
+              {
+                "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-valid",
+                "DomainName": "www.example.com",
+                "SubjectAlternativeNameSummaries": [
+                  "www.example.com"
+                ],
+                "HasAdditionalSubjectAlternativeNames": false,
+                "Status": "ISSUED",
+                "Type": "AMAZON_ISSUED",
+                "KeyAlgorithm": "RSA_2048",
+                "InUse": false,
+                "NotAfter": "2099-01-01 00:00:00+00:00",
+                "CertificateId": "c-valid",
+                "Tags": {},
+                "Certificate": {
+                  "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/c-valid",
+                  "DomainName": "www.example.com",
+                  "SubjectAlternativeNames": [
+                    "www.example.com"
+                  ],
+                  "Status": "ISSUED",
+                  "Type": "AMAZON_ISSUED",
+                  "KeyAlgorithm": "RSA_2048",
+                  "NotBefore": "2020-01-01 00:00:00+00:00",
+                  "NotAfter": "2099-01-01 00:00:00+00:00",
+                  "InUseBy": [],
+                  "RenewalEligibility": "INELIGIBLE",
+                  "Options": {
+                    "CertificateTransparencyLoggingPreference": "ENABLED"
+                  },
+                  "DomainValidationOptions": [
+                    {
+                      "DomainName": "www.example.com",
+                      "ValidationDomain": "www.example.com",
+                      "ValidationStatus": "SUCCESS",
+                      "ValidationMethod": "DNS"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

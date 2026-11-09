@@ -1,0 +1,306 @@
+{
+  "finding": "F064",
+  "rule": "REME-0101200002",
+  "service": "apigateway",
+  "status": "reproducible",
+  "note": "Analyze/apigateway.py:184 — v2 스테이지를 DefaultRouteSettings.get('loggingLevel') 로 읽는다. apigatewayv2 GetStages 필드명은 LoggingLevel(대문자 L)이라 항상 'OFF' 로 간주. HTTP API 는 실행 로깅(LoggingLevel)이 없고 AccessLogSettings 로만 로깅하는데 이를 보지 않는다 → v2 API 전부 취약.",
+  "scenarios": [
+    {
+      "id": "ws-logging-info",
+      "role": "bug",
+      "condition": "WebSocket API 스테이지 DefaultRouteSettings.LoggingLevel=INFO",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [],
+            "v2_apis": [
+              {
+                "ApiId": "v2ws1",
+                "Name": "ws1",
+                "ProtocolType": "WEBSOCKET",
+                "ApiEndpoint": "wss://v2ws1.execute-api.ap-northeast-2.amazonaws.com",
+                "ApiKeySelectionExpression": "$request.header.x-api-key",
+                "CreatedDate": "2026-01-01T00:00:00+09:00",
+                "DisableExecuteApiEndpoint": false,
+                "RouteSelectionExpression": "$request.body.action",
+                "Tags": {},
+                "integrations": [],
+                "stages": [
+                  {
+                    "StageName": "$default",
+                    "AutoDeploy": false,
+                    "DefaultRouteSettings": {
+                      "DetailedMetricsEnabled": false,
+                      "DataTraceEnabled": false,
+                      "ThrottlingBurstLimit": 5000,
+                      "ThrottlingRateLimit": 10000.0,
+                      "LoggingLevel": "INFO"
+                    },
+                    "RouteSettings": {},
+                    "StageVariables": {},
+                    "Tags": {},
+                    "CreatedDate": "2026-01-01T00:00:00+09:00",
+                    "LastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "WebSocket API 실행 로깅이 INFO 로 켜져 있으므로 로깅 활성"
+    },
+    {
+      "id": "http-access-log",
+      "role": "bug",
+      "condition": "HTTP API 스테이지에 AccessLogSettings(CloudWatch Logs 대상) 설정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [],
+            "v2_apis": [
+              {
+                "ApiId": "v2http1",
+                "Name": "http1",
+                "ProtocolType": "HTTP",
+                "ApiEndpoint": "https://v2http1.execute-api.ap-northeast-2.amazonaws.com",
+                "ApiKeySelectionExpression": "$request.header.x-api-key",
+                "CreatedDate": "2026-01-01T00:00:00+09:00",
+                "DisableExecuteApiEndpoint": false,
+                "RouteSelectionExpression": "$request.method $request.path",
+                "Tags": {},
+                "integrations": [],
+                "stages": [
+                  {
+                    "StageName": "$default",
+                    "AutoDeploy": true,
+                    "DefaultRouteSettings": {
+                      "DetailedMetricsEnabled": false
+                    },
+                    "RouteSettings": {},
+                    "StageVariables": {},
+                    "Tags": {},
+                    "CreatedDate": "2026-01-01T00:00:00+09:00",
+                    "LastUpdatedDate": "2026-01-01T00:00:00+09:00",
+                    "AccessLogSettings": {
+                      "DestinationArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:apigw-v2-access",
+                      "Format": "$context.requestId"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "HTTP API 는 실행 로깅을 지원하지 않고 액세스 로그가 유일한 로깅 수단 — 설정돼 있으면 로깅 활성"
+    },
+    {
+      "id": "v1-logging-info",
+      "role": "control",
+      "condition": "REST API methodSettings */* loggingLevel=INFO",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "INFO",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "v1-logging-off",
+      "role": "control",
+      "condition": "REST API methodSettings */* loggingLevel=OFF",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [
+              {
+                "id": "id-rest1",
+                "name": "rest1",
+                "createdDate": "2026-01-01T00:00:00+09:00",
+                "apiKeySource": "HEADER",
+                "endpointConfiguration": {
+                  "types": [
+                    "REGIONAL"
+                  ]
+                },
+                "disableExecuteApiEndpoint": false,
+                "rootResourceId": "root1",
+                "stages": [
+                  {
+                    "deploymentId": "dep1",
+                    "stageName": "prod",
+                    "cacheClusterEnabled": false,
+                    "cacheClusterStatus": "NOT_AVAILABLE",
+                    "methodSettings": {
+                      "*/*": {
+                        "metricsEnabled": false,
+                        "loggingLevel": "OFF",
+                        "dataTraceEnabled": false,
+                        "throttlingBurstLimit": 5000,
+                        "throttlingRateLimit": 10000.0,
+                        "cachingEnabled": false,
+                        "cacheTtlInSeconds": 300,
+                        "cacheDataEncrypted": false,
+                        "requireAuthorizationForCacheControl": true,
+                        "unauthorizedCacheControlHeaderStrategy": "SUCCEED_WITH_RESPONSE_HEADER"
+                      }
+                    },
+                    "tracingEnabled": false,
+                    "createdDate": "2026-01-01T00:00:00+09:00",
+                    "lastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ],
+                "resources": []
+              }
+            ],
+            "v2_apis": []
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "ws-logging-off",
+      "role": "control",
+      "condition": "WebSocket API LoggingLevel=OFF, 액세스 로그 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "apigateway": {
+            "get_client_certificates": [],
+            "v1_apis": [],
+            "v2_apis": [
+              {
+                "ApiId": "v2ws1",
+                "Name": "ws1",
+                "ProtocolType": "WEBSOCKET",
+                "ApiEndpoint": "wss://v2ws1.execute-api.ap-northeast-2.amazonaws.com",
+                "ApiKeySelectionExpression": "$request.header.x-api-key",
+                "CreatedDate": "2026-01-01T00:00:00+09:00",
+                "DisableExecuteApiEndpoint": false,
+                "RouteSelectionExpression": "$request.body.action",
+                "Tags": {},
+                "integrations": [],
+                "stages": [
+                  {
+                    "StageName": "$default",
+                    "AutoDeploy": false,
+                    "DefaultRouteSettings": {
+                      "DetailedMetricsEnabled": false,
+                      "DataTraceEnabled": false,
+                      "ThrottlingBurstLimit": 5000,
+                      "ThrottlingRateLimit": 10000.0,
+                      "LoggingLevel": "OFF"
+                    },
+                    "RouteSettings": {},
+                    "StageVariables": {},
+                    "Tags": {},
+                    "CreatedDate": "2026-01-01T00:00:00+09:00",
+                    "LastUpdatedDate": "2026-01-01T00:00:00+09:00"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "globals": {
+          "cloudfront": {
+            "list_distributions": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

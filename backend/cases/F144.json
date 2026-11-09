@@ -1,0 +1,140 @@
+{
+  "finding": "F144",
+  "rule": "REME-0106000003",
+  "service": "ecr",
+  "status": "reproducible",
+  "note": "ecr.py:174-176 — key_data = imageScanningConfiguration 인데 key_data.get(key_value[0]) 로 'imageScanningConfiguration' 키를 다시 찾는다(check_value[0]='scanOnPush' 여야 함) → 항상 None → 전 리포지토리 취약. 레지스트리 수준 스캔 설정(get_registry_scanning_configuration)은 수집하지 않는다(collection).",
+  "scenarios": [
+    {
+      "id": "scan-on-push",
+      "role": "bug",
+      "condition": "리포지토리 imageScanningConfiguration.scanOnPush=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/app",
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/app",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": true
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {},
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "푸시 시 자동 스캔이 켜져 있으므로 양호"
+    },
+    {
+      "id": "registry-continuous-scan",
+      "role": "collection",
+      "condition": "리포지토리 scanOnPush=false 이지만 레지스트리 스캔 설정(ENHANCED, 필터 '*' CONTINUOUS_SCAN)으로 전 리포지토리가 자동 스캔됨 — 수집기는 get_registry_scanning_configuration 을 호출하지 않음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/app",
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/app",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {},
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "레지스트리 수준 규칙이 리포지토리 설정보다 우선해 실제로 자동 스캔이 된다. 수집된 raw 에는 이 설정이 없다"
+    },
+    {
+      "id": "scan-off",
+      "role": "control",
+      "condition": "scanOnPush=false, 레지스트리 스캔 규칙 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/app",
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/app",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {},
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

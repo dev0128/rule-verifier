@@ -1,0 +1,148 @@
+{
+  "finding": "X034",
+  "rule": "REME-0100900009",
+  "service": "cloudfront",
+  "status": "reproducible",
+  "note": "cloudfront.py:712-729 — 오리진마다 flag 를 덮어쓴다. 점 4개 이상인 S3 오리진은 `flag = False` 를 대입하므로 앞선 취약 오리진의 True 를 지운다. 같은 배포라도 오리진 순서에 따라 결과가 바뀐다.",
+  "scenarios": [
+    {
+      "id": "weak-then-s3",
+      "role": "bug",
+      "condition": "오리진 순서 [origin.example.com http-only, S3]",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EORD1",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EORD1",
+                "DomainName": "eord1.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 2,
+                  "Items": [
+                    {
+                      "Id": "c",
+                      "DomainName": "origin.example.com",
+                      "OriginPath": "",
+                      "CustomOriginConfig": {
+                        "HTTPPort": 80,
+                        "HTTPSPort": 443,
+                        "OriginProtocolPolicy": "http-only",
+                        "OriginSslProtocols": {
+                          "Quantity": 1,
+                          "Items": [
+                            "TLSv1.2"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Id": "web-bucket",
+                      "DomainName": "web-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "c",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "오리진 하나라도 취약한 프로토콜로 통신하면 배포는 취약 — 순서와 무관해야 한다"
+    },
+    {
+      "id": "s3-then-weak",
+      "role": "control",
+      "condition": "같은 오리진, 순서 [S3, origin.example.com http-only]",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EORD2",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EORD2",
+                "DomainName": "eord2.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 2,
+                  "Items": [
+                    {
+                      "Id": "web-bucket",
+                      "DomainName": "web-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    },
+                    {
+                      "Id": "c",
+                      "DomainName": "origin.example.com",
+                      "OriginPath": "",
+                      "CustomOriginConfig": {
+                        "HTTPPort": 80,
+                        "HTTPSPort": 443,
+                        "OriginProtocolPolicy": "http-only",
+                        "OriginSslProtocols": {
+                          "Quantity": 1,
+                          "Items": [
+                            "TLSv1.2"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "web-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

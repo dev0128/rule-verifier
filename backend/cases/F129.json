@@ -1,0 +1,241 @@
+{
+  "finding": "F129",
+  "rule": "REME-0104800004",
+  "service": "opensearch",
+  "status": "reproducible",
+  "note": "opensearch.py:192-195 Principal 이 dict 이고 AWS 키가 있으면 계정 ID 비교 없이 취약(자기 계정 포함), Principal \"*\"(문자열) 은 dict 가 아니라 양호, AccessPolicies={}(수집기 기본값) 이면 `[\"Statement\"]` KeyError 로 룰 전체 N/A. 도메인 ARN 에 소유 계정 ID 가 있어 자기 계정 판별이 가능하다.",
+  "scenarios": [
+    {
+      "id": "own-account-only",
+      "role": "bug",
+      "condition": "정책 Principal = 자기 계정 root (arn:aws:iam::111122223333:root)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "opensearch": {
+            "describe_domains": [
+              {
+                "DomainId": "111122223333/d-own",
+                "DomainName": "d-own",
+                "ARN": "arn:aws:es:ap-northeast-2:111122223333:domain/d-own",
+                "Created": true,
+                "Deleted": false,
+                "Processing": false,
+                "EngineVersion": "OpenSearch_2.11",
+                "Endpoint": "search-d-own-abc.ap-northeast-2.es.amazonaws.com",
+                "AccessPolicies": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111122223333:root"
+                      },
+                      "Action": "es:*",
+                      "Resource": "arn:aws:es:ap-northeast-2:111122223333:domain/d-own/*"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "도메인 소유 계정만 허용 — 교차 계정 액세스가 아니다"
+    },
+    {
+      "id": "principal-star-string",
+      "role": "bug",
+      "condition": "정책 Principal = \"*\" (문자열, 전체 공개)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "opensearch": {
+            "describe_domains": [
+              {
+                "DomainId": "111122223333/d-public",
+                "DomainName": "d-public",
+                "ARN": "arn:aws:es:ap-northeast-2:111122223333:domain/d-public",
+                "Created": true,
+                "Deleted": false,
+                "Processing": false,
+                "EngineVersion": "OpenSearch_2.11",
+                "Endpoint": "search-d-public-abc.ap-northeast-2.es.amazonaws.com",
+                "AccessPolicies": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "es:*",
+                      "Resource": "arn:aws:es:ap-northeast-2:111122223333:domain/d-public/*"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "d-public"
+        ]
+      },
+      "why": "모든 계정(신뢰하지 않는 계정 포함)에 허용 → 취약"
+    },
+    {
+      "id": "no-policy-plus-cross",
+      "role": "bug",
+      "condition": "d-nopol(AccessPolicies={}) + d-cross(타 계정 999988887777 허용)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "opensearch": {
+            "describe_domains": [
+              {
+                "DomainId": "111122223333/d-nopol",
+                "DomainName": "d-nopol",
+                "ARN": "arn:aws:es:ap-northeast-2:111122223333:domain/d-nopol",
+                "Created": true,
+                "Deleted": false,
+                "Processing": false,
+                "EngineVersion": "OpenSearch_2.11",
+                "Endpoint": "search-d-nopol-abc.ap-northeast-2.es.amazonaws.com",
+                "AccessPolicies": {},
+                "Tags": {}
+              },
+              {
+                "DomainId": "111122223333/d-cross",
+                "DomainName": "d-cross",
+                "ARN": "arn:aws:es:ap-northeast-2:111122223333:domain/d-cross",
+                "Created": true,
+                "Deleted": false,
+                "Processing": false,
+                "EngineVersion": "OpenSearch_2.11",
+                "Endpoint": "search-d-cross-abc.ap-northeast-2.es.amazonaws.com",
+                "AccessPolicies": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::999988887777:root"
+                      },
+                      "Action": "es:*",
+                      "Resource": "arn:aws:es:ap-northeast-2:111122223333:domain/d-cross/*"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "d-cross"
+        ],
+        "flag_excludes": [
+          "d-nopol"
+        ]
+      },
+      "why": "정책 없는 도메인은 교차 계정 허용이 없다(양호/해당없음). 다른 도메인 판정까지 사라지면 안 된다"
+    },
+    {
+      "id": "cross-account",
+      "role": "control",
+      "condition": "정책 Principal = 타 계정 999988887777 root",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "opensearch": {
+            "describe_domains": [
+              {
+                "DomainId": "111122223333/d-cross",
+                "DomainName": "d-cross",
+                "ARN": "arn:aws:es:ap-northeast-2:111122223333:domain/d-cross",
+                "Created": true,
+                "Deleted": false,
+                "Processing": false,
+                "EngineVersion": "OpenSearch_2.11",
+                "Endpoint": "search-d-cross-abc.ap-northeast-2.es.amazonaws.com",
+                "AccessPolicies": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::999988887777:root"
+                      },
+                      "Action": "es:*",
+                      "Resource": "arn:aws:es:ap-northeast-2:111122223333:domain/d-cross/*"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "aws-star",
+      "role": "control",
+      "condition": "정책 Principal = {\"AWS\": \"*\"}",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "opensearch": {
+            "describe_domains": [
+              {
+                "DomainId": "111122223333/d-star",
+                "DomainName": "d-star",
+                "ARN": "arn:aws:es:ap-northeast-2:111122223333:domain/d-star",
+                "Created": true,
+                "Deleted": false,
+                "Processing": false,
+                "EngineVersion": "OpenSearch_2.11",
+                "Endpoint": "search-d-star-abc.ap-northeast-2.es.amazonaws.com",
+                "AccessPolicies": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "*"
+                      },
+                      "Action": "es:*",
+                      "Resource": "arn:aws:es:ap-northeast-2:111122223333:domain/d-star/*"
+                    }
+                  ]
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "finding": "F009",
+  "rule": "REME-0101700001",
+  "service": "athena",
+  "status": "reproducible",
+  "note": "athena.py:69-72 — Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption 만 본다. 관리형 쿼리 결과(WorkGroupConfiguration.ManagedQueryResultsConfiguration.Enabled=true, 2025-06 도입)는 결과를 항상 암호화해 저장하지만 ResultConfiguration 이 없어 취약. 덧붙여 운영 엔진의 botocore 1.37.2(2025-02) 모델에는 이 필드가 없어 JSON 파서가 응답에서 버린다(이 레포 venv 로 GetWorkGroup 응답 파싱해 확인) → 현 수집 raw 에는 아예 안 남는다(collection 시나리오). 룰 수정과 botocore 갱신이 둘 다 필요.",
+  "scenarios": [
+    {
+      "id": "managed-results",
+      "role": "bug",
+      "condition": "관리형 쿼리 결과 작업 그룹 — ManagedQueryResultsConfiguration.Enabled=true, ResultConfiguration 없음 (최신 botocore 로 수집한 모양)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "athena": {
+            "get_work_group": [
+              {
+                "Name": "managed",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ManagedQueryResultsConfiguration": {
+                    "Enabled": true
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "관리형 쿼리 결과는 AWS 가 항상 암호화해 저장한다(기본 AWS 소유 키, 선택 시 고객 KMS 키) — 쿼리 결과 암호화가 적용돼 있으므로 양호"
+    },
+    {
+      "id": "managed-results-kms",
+      "role": "bug",
+      "condition": "관리형 쿼리 결과 + 고객 KMS 키 — ManagedQueryResultsConfiguration {Enabled: true, EncryptionConfiguration: {KmsKey}}",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "athena": {
+            "get_work_group": [
+              {
+                "Name": "managed-kms",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ManagedQueryResultsConfiguration": {
+                    "Enabled": true,
+                    "EncryptionConfiguration": {
+                      "KmsKey": "arn:aws:kms:ap-northeast-2:111111111111:key/abcd"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "고객 KMS 키로 결과를 암호화하므로 양호"
+    },
+    {
+      "id": "managed-results-dropped-by-botocore",
+      "role": "collection",
+      "condition": "관리형 쿼리 결과 작업 그룹을 운영 엔진(botocore 1.37.2)으로 수집 — ManagedQueryResultsConfiguration 이 파서에서 빠져 Configuration 에 EnforceWorkGroupConfiguration 등만 남음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "athena": {
+            "get_work_group": [
+              {
+                "Name": "managed",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "실제 리소스는 관리형 쿼리 결과(항상 암호화)라 양호. raw 로는 암호화 설정 없는 일반 작업 그룹과 구별되지 않아 룰만으로는 판정 불가 — botocore 갱신 후 재수집 필요"
+    },
+    {
+      "id": "unencrypted",
+      "role": "control",
+      "condition": "일반 작업 그룹, OutputLocation 만 있고 EncryptionConfiguration 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "athena": {
+            "get_work_group": [
+              {
+                "Name": "plain",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/plain/"
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "sse-s3",
+      "role": "control",
+      "condition": "일반 작업 그룹, SSE_S3",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "athena": {
+            "get_work_group": [
+              {
+                "Name": "sse",
+                "State": "ENABLED",
+                "Configuration": {
+                  "EnforceWorkGroupConfiguration": true,
+                  "PublishCloudWatchMetricsEnabled": true,
+                  "RequesterPaysEnabled": false,
+                  "EngineVersion": {
+                    "SelectedEngineVersion": "AUTO",
+                    "EffectiveEngineVersion": "Athena engine version 3"
+                  },
+                  "ResultConfiguration": {
+                    "OutputLocation": "s3://athena-results-111111111111/sse/",
+                    "EncryptionConfiguration": {
+                      "EncryptionOption": "SSE_S3"
+                    }
+                  }
+                },
+                "Description": "",
+                "CreationTime": "2025-01-01T00:00:00+00:00",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,341 @@
+{
+  "finding": "X055",
+  "rule": "REME-0104200002",
+  "service": "docdb",
+  "status": "not_reproducible",
+  "note": "docdb.py:105 이 Parameter['ParameterValue'] 를 대괄호로 읽는 것은 맞지만, DocumentDB 클러스터 파라미터는 기본값도 ParameterValue 를 채워 온다 — dev 실데이터(AWS-00203000, ap-northeast-2·ca-central-1 default.docdb5.0) 9개 파라미터 전부 ParameterValue 있음(audit_logs='disabled', Source=system). Aurora 처럼 값 없는 기본값 행이 docdb 에는 없어 현실적인 raw 로는 예외가 나지 않는다. 사용자 그룹도 같은 family 기본값을 복사하므로 동일. 값이 없는 audit_logs 행이 실제로 확인되면 다시 연다.",
+  "scenarios": [
+    {
+      "id": "default-group-real-shape",
+      "role": "control",
+      "condition": "default.docdb5.0 그룹 사용(실데이터 모양 — audit_logs ParameterValue='disabled', Source=system), 로그 내보내기 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "docdb-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster:docdb-1",
+                "Engine": "docdb",
+                "EngineVersion": "5.0.0",
+                "Status": "available",
+                "DBClusterParameterGroup": "default.docdb5.0",
+                "StorageEncrypted": true,
+                "EnabledCloudwatchLogsExports": [],
+                "Tags": {}
+              }
+            ],
+            "describe_db_cluster_parameter_groups": [
+              {
+                "DBClusterParameterGroupName": "default.docdb5.0",
+                "DBParameterGroupFamily": "docdb5.0",
+                "Description": "default.docdb5.0",
+                "DBClusterParameterGroupArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster-pg:default.docdb5.0",
+                "Parameters": [
+                  {
+                    "ParameterName": "audit_logs",
+                    "ParameterValue": "disabled",
+                    "Description": "audit_logs",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled,ddl,dml_read,dml_write,all,none",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  },
+                  {
+                    "ParameterName": "profiler",
+                    "ParameterValue": "disabled",
+                    "Description": "profiler",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  },
+                  {
+                    "ParameterName": "tls",
+                    "ParameterValue": "enabled",
+                    "Description": "tls",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "기본 파라미터 그룹 · audit_logs 비활성 — 감사 로깅이 꺼져 있으므로 취약. 예외 없이 판정된다"
+    },
+    {
+      "id": "custom-group-system-default",
+      "role": "control",
+      "condition": "사용자 그룹 custom-docdb(audit_logs 를 손대지 않아 Source=system · ParameterValue='disabled') + 다른 클러스터는 audit 활성 그룹",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "docdb-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster:docdb-1",
+                "Engine": "docdb",
+                "EngineVersion": "5.0.0",
+                "Status": "available",
+                "DBClusterParameterGroup": "custom-docdb",
+                "StorageEncrypted": true,
+                "EnabledCloudwatchLogsExports": [],
+                "Tags": {}
+              },
+              {
+                "DBClusterIdentifier": "docdb-2",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster:docdb-2",
+                "Engine": "docdb",
+                "EngineVersion": "5.0.0",
+                "Status": "available",
+                "DBClusterParameterGroup": "audit-docdb",
+                "StorageEncrypted": true,
+                "EnabledCloudwatchLogsExports": [
+                  "audit"
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_cluster_parameter_groups": [
+              {
+                "DBClusterParameterGroupName": "custom-docdb",
+                "DBParameterGroupFamily": "docdb5.0",
+                "Description": "custom-docdb",
+                "DBClusterParameterGroupArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster-pg:custom-docdb",
+                "Parameters": [
+                  {
+                    "ParameterName": "audit_logs",
+                    "ParameterValue": "disabled",
+                    "Description": "audit_logs",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled,ddl,dml_read,dml_write,all,none",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  },
+                  {
+                    "ParameterName": "profiler",
+                    "ParameterValue": "disabled",
+                    "Description": "profiler",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  },
+                  {
+                    "ParameterName": "tls",
+                    "ParameterValue": "enabled",
+                    "Description": "tls",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  }
+                ]
+              },
+              {
+                "DBClusterParameterGroupName": "audit-docdb",
+                "DBParameterGroupFamily": "docdb5.0",
+                "Description": "audit-docdb",
+                "DBClusterParameterGroupArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster-pg:audit-docdb",
+                "Parameters": [
+                  {
+                    "ParameterName": "audit_logs",
+                    "ParameterValue": "enabled",
+                    "Description": "audit_logs",
+                    "Source": "user",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled,ddl,dml_read,dml_write,all,none",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  },
+                  {
+                    "ParameterName": "profiler",
+                    "ParameterValue": "disabled",
+                    "Description": "profiler",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  },
+                  {
+                    "ParameterName": "tls",
+                    "ParameterValue": "enabled",
+                    "Description": "tls",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "docdb-1"
+        ],
+        "good_contains": [
+          "docdb-2"
+        ]
+      }
+    },
+    {
+      "id": "audit-enabled",
+      "role": "control",
+      "condition": "사용자 그룹 audit_logs='enabled'(Source=user) + EnabledCloudwatchLogsExports=['audit']",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "docdb-2",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster:docdb-2",
+                "Engine": "docdb",
+                "EngineVersion": "5.0.0",
+                "Status": "available",
+                "DBClusterParameterGroup": "audit-docdb",
+                "StorageEncrypted": true,
+                "EnabledCloudwatchLogsExports": [
+                  "audit"
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_cluster_parameter_groups": [
+              {
+                "DBClusterParameterGroupName": "audit-docdb",
+                "DBParameterGroupFamily": "docdb5.0",
+                "Description": "audit-docdb",
+                "DBClusterParameterGroupArn": "arn:aws:rds:ap-northeast-2:111111111111:cluster-pg:audit-docdb",
+                "Parameters": [
+                  {
+                    "ParameterName": "audit_logs",
+                    "ParameterValue": "enabled",
+                    "Description": "audit_logs",
+                    "Source": "user",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled,ddl,dml_read,dml_write,all,none",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  },
+                  {
+                    "ParameterName": "profiler",
+                    "ParameterValue": "disabled",
+                    "Description": "profiler",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  },
+                  {
+                    "ParameterName": "tls",
+                    "ParameterValue": "enabled",
+                    "Description": "tls",
+                    "Source": "system",
+                    "ApplyType": "dynamic",
+                    "DataType": "string",
+                    "AllowedValues": "enabled,disabled",
+                    "IsModifiable": true,
+                    "MinimumEngineVersion": "5.0.0",
+                    "ApplyMethod": "pending-reboot",
+                    "SupportedEngineModes": [
+                      "provisioned"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

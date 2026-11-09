@@ -1,0 +1,91 @@
+{
+  "finding": "F139",
+  "rule": "REME-0105800006",
+  "service": "ecs",
+  "status": "reproducible",
+  "note": "ecs.py:351,355 — 컨테이너 최상위 'logDriver' 를 찾는다. AWS 는 containerDefinition.logConfiguration.logDriver 에 둔다 → 로그 구성이 있어도 항상 취약.",
+  "scenarios": [
+    {
+      "id": "awslogs",
+      "role": "bug",
+      "condition": "컨테이너에 logConfiguration.logDriver=awslogs 설정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "awsvpc",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "logConfiguration": {
+                      "logDriver": "awslogs",
+                      "options": {
+                        "awslogs-group": "/ecs/fam",
+                        "awslogs-region": "ap-northeast-2",
+                        "awslogs-stream-prefix": "app"
+                      }
+                    },
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {},
+                "executionRole_EvaluationResults": {}
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 1,
+        "good": 1
+      },
+      "why": "ContainerDefinition.logConfiguration.logDriver 가 설정돼 있으므로 로그 구성이 활성화된 컨테이너 — 양호"
+    },
+    {
+      "id": "no-log-config",
+      "role": "control",
+      "condition": "컨테이너에 logConfiguration 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "awsvpc",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {},
+                "executionRole_EvaluationResults": {}
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

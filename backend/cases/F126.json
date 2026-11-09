@@ -1,0 +1,374 @@
+{
+  "finding": "F126",
+  "rule": "REME-0101300007",
+  "service": "elasticbeanstalk",
+  "status": "reproducible",
+  "note": "elasticbeanstalk.py:416-422 — ResourceName=AWSEBV2LoadBalancerListener(:80 기본 리스너)의 Protocol 만 보고, Green 환경만 판정. :443 HTTPS 리스너를 둔 ALB 도 취약, CLB · 비Green 은 검사 없이 양호.",
+  "scenarios": [
+    {
+      "id": "alb-80http-443https",
+      "role": "bug",
+      "condition": "Health=Green ALB 환경, :80 기본 리스너 HTTP + :443 리스너(AWSEBV2LoadBalancerListener443) HTTPS",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-alb",
+                "EnvironmentId": "e-env-alb",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-alb.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-alb.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-alb",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-alb",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "LoadBalancerType",
+                        "Value": "application"
+                      },
+                      {
+                        "Namespace": "aws:elbv2:listener:default",
+                        "OptionName": "Protocol",
+                        "Value": "HTTP",
+                        "ResourceName": "AWSEBV2LoadBalancerListener"
+                      },
+                      {
+                        "Namespace": "aws:elbv2:listener:443",
+                        "OptionName": "Protocol",
+                        "Value": "HTTPS",
+                        "ResourceName": "AWSEBV2LoadBalancerListener443"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "HTTPS 리스너가 구성돼 있어 HTTPS 를 사용 중이다 — :80 HTTP 리스너(리다이렉트용 등)가 함께 있다고 취약은 아니다"
+    },
+    {
+      "id": "red-http-only",
+      "role": "bug",
+      "condition": "Health=Red ALB 환경, :80 기본 리스너 HTTP 만",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-red",
+                "EnvironmentId": "e-env-red",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-red.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-red.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Red",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-red",
+                "HealthStatus": "Severe",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-red",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "LoadBalancerType",
+                        "Value": "application"
+                      },
+                      {
+                        "Namespace": "aws:elbv2:listener:default",
+                        "OptionName": "Protocol",
+                        "Value": "HTTP",
+                        "ResourceName": "AWSEBV2LoadBalancerListener"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Health 는 인스턴스 상태 색일 뿐 설정과 무관하다 — 상태가 Green 이 아니어도 설정이 꺼져 있으면 취약이어야 한다"
+    },
+    {
+      "id": "clb-http-only",
+      "role": "bug",
+      "condition": "Health=Green Classic ELB 환경, aws:elb:listener:80 ListenerProtocol=HTTP 만(HTTPS 리스너 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-clb",
+                "EnvironmentId": "e-env-clb",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-clb.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-clb.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-clb",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-clb",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "LoadBalancerType",
+                        "Value": "classic"
+                      },
+                      {
+                        "Namespace": "aws:elb:listener:80",
+                        "OptionName": "ListenerProtocol",
+                        "Value": "HTTP",
+                        "ResourceName": "AWSEBLoadBalancer"
+                      },
+                      {
+                        "Namespace": "aws:elb:listener:80",
+                        "OptionName": "InstanceProtocol",
+                        "Value": "HTTP",
+                        "ResourceName": "AWSEBLoadBalancer"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Classic ELB 도 HTTP 리스너만 있으면 HTTPS 를 쓰지 않는 것이다"
+    },
+    {
+      "id": "alb-http-only",
+      "role": "control",
+      "condition": "Health=Green ALB 환경, :80 기본 리스너 HTTP 만",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-alb",
+                "EnvironmentId": "e-env-alb",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-alb.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-alb.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-alb",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-alb",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "LoadBalancerType",
+                        "Value": "application"
+                      },
+                      {
+                        "Namespace": "aws:elbv2:listener:default",
+                        "OptionName": "Protocol",
+                        "Value": "HTTP",
+                        "ResourceName": "AWSEBV2LoadBalancerListener"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "alb-default-https",
+      "role": "control",
+      "condition": "Health=Green ALB 환경, 기본 리스너 Protocol=HTTPS",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-alb",
+                "EnvironmentId": "e-env-alb",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-alb.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-alb.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-alb",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-alb",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "LoadBalancerType",
+                        "Value": "application"
+                      },
+                      {
+                        "Namespace": "aws:elbv2:listener:default",
+                        "OptionName": "Protocol",
+                        "Value": "HTTPS",
+                        "ResourceName": "AWSEBV2LoadBalancerListener"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,314 @@
+{
+  "finding": "F054",
+  "rule": "REME-0103100002",
+  "service": "sqs",
+  "status": "reproducible",
+  "effect": "false_negative",
+  "note": "Raw/sqs.py:60-68 Policy 덮어쓰기로 현재는 모든 큐가 Policy={} → 항상 양호(교차 계정 놓침, 수집 결함이라 카탈로그 effect false_positive 를 false_negative 로 바로잡음). 수집을 고치면 룰 Analyze/sqs.py:86 `if \"arn\" in Principal.get(\"AWS\")` 가 Principal \"*\"(str.get AttributeError) · {Service:...}(`in None` TypeError) 에서 예외, AWS 리스트는 원소 완전 일치라 놓치고, 자기 계정 ARN 도 교차 계정으로 취약 처리.",
+  "scenarios": [
+    {
+      "id": "cross-account-policy-lost",
+      "role": "collection",
+      "condition": "실제로는 외부 계정 222222222222 에 SendMessage 를 허용한 큐 (수집기가 만드는 모양: Raw/sqs.py:60-66 이 Policy 를 {} 로 덮어씀)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:xacct-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/xacct-q",
+                "QueueName": "xacct-q",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "실제 리소스는 신뢰 목록에 없는 외부 계정이 접근 가능하므로 취약. 수집 결과에 정책이 없어 룰만으로는 판정 불가"
+    },
+    {
+      "id": "sns-service-principal",
+      "role": "bug",
+      "condition": "SNS 구독 큐 — Principal {\"Service\": \"sns.amazonaws.com\"} + aws:SourceArn 조건 (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:sns-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/sns-q",
+                "QueueName": "sns-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "sns.amazonaws.com"
+                      },
+                      "Action": "sqs:SendMessage",
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:sns-q",
+                      "Condition": {
+                        "ArnEquals": {
+                          "aws:SourceArn": "arn:aws:sns:ap-northeast-2:111111111111:topic"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "같은 계정 SNS 토픽만 보낼 수 있는 서비스 주체 정책 — 교차 계정 접근이 아니다(예외로 죽으면 안 된다)"
+    },
+    {
+      "id": "principal-star",
+      "role": "bug",
+      "condition": "Principal \"*\" 문자열 · Action sqs:SendMessage, 조건 없음 (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:star-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/star-q",
+                "QueueName": "star-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "sqs:SendMessage",
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:star-q"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "모든 계정의 주체가 접근 가능 — 신뢰할 수 없는 교차 계정 접근을 포함하므로 취약(예외로 죽으면 안 된다)"
+    },
+    {
+      "id": "own-account-root",
+      "role": "bug",
+      "condition": "Principal.AWS 가 자기 계정(111111111111) root ARN (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:own-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/own-q",
+                "QueueName": "own-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111111111111:root"
+                      },
+                      "Action": "sqs:SendMessage",
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:own-q"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "큐 소유 계정 자신 — 교차 계정 접근이 아니다"
+    },
+    {
+      "id": "foreign-account-list",
+      "role": "bug",
+      "condition": "Principal.AWS 를 리스트 [\"arn:aws:iam::222222222222:root\"] 로 씀 (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:list-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/list-q",
+                "QueueName": "list-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": [
+                          "arn:aws:iam::222222222222:root"
+                        ]
+                      },
+                      "Action": "sqs:SendMessage",
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:list-q"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "외부 계정 222222222222 에 접근 허용 — 리스트 표기도 같은 의미이므로 취약"
+    },
+    {
+      "id": "foreign-account-string",
+      "role": "control",
+      "condition": "Principal.AWS 문자열 arn:aws:iam::222222222222:root (수집 수정 후 모양: Policy 를 json.loads 한 dict)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:xacct-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/xacct-q",
+                "QueueName": "xacct-q",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "p",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::222222222222:root"
+                      },
+                      "Action": "sqs:SendMessage",
+                      "Resource": "arn:aws:sqs:ap-northeast-2:111111111111:xacct-q"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "no-policy",
+      "role": "control",
+      "condition": "정책이 없는 큐 (수집기가 만드는 모양: Raw/sqs.py:60-66 이 Policy 를 {} 로 덮어씀)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sqs": {
+            "get_queue_attributes": [
+              {
+                "QueueArn": "arn:aws:sqs:ap-northeast-2:111111111111:private-q",
+                "ApproximateNumberOfMessages": "0",
+                "CreatedTimestamp": "1700000000",
+                "VisibilityTimeout": "30",
+                "MaximumMessageSize": "262144",
+                "MessageRetentionPeriod": "345600",
+                "DelaySeconds": "0",
+                "ReceiveMessageWaitTimeSeconds": "0",
+                "SqsManagedSseEnabled": "true",
+                "QueueUrl": "https://sqs.ap-northeast-2.amazonaws.com/111111111111/private-q",
+                "QueueName": "private-q",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

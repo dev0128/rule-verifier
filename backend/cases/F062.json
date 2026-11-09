@@ -1,0 +1,507 @@
+{
+  "finding": "F062",
+  "rule": "REME-0106300001",
+  "service": "cloudwatch",
+  "status": "reproducible",
+  "note": "cloudwatch.py:62-70 — 경보는 MetricName 만 비교(Namespace · AlarmActions 미확인). :45-51 · :1171-1179 패턴은 부분 문자열 포함만 봐서 CreateRoute ⊂ CreateRouteTable 처럼 일부 이벤트가 빠져도 통과. 전역 상태(globals()[checkitem…]) 공유로 인한 동시 실행 경합은 하네스가 시나리오마다 새 프로세스로 돌려 여기서 재현하지 않는다(CWH-015 의 F061 이 그 흔적).",
+  "scenarios": [
+    {
+      "id": "alarm-other-namespace",
+      "role": "bug",
+      "condition": "CWH-001 CIS 필터(namespace CISBenchmark) + MetricName 만 같고 Namespace=OtherApp 인 경보 + 다중 리전 trail",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudwatch": {
+            "describe_metric_filters": [
+              {
+                "filterName": "UnauthorizedAPICalls",
+                "logGroupName": "CloudTrail/main",
+                "filterPattern": "{ ($.errorCode = \"*UnauthorizedOperation\") || ($.errorCode = \"AccessDenied*\") && ($.sourceIPAddress!=\"delivery.logs.amazonaws.com\") && ($.eventName!=\"HeadBucket\") }",
+                "creationTime": 1700000000000,
+                "metricTransformations": [
+                  {
+                    "metricName": "UnauthorizedAPICalls",
+                    "metricNamespace": "CISBenchmark",
+                    "metricValue": "1"
+                  }
+                ]
+              }
+            ],
+            "describe_alarms": [
+              {
+                "AlarmName": "UnauthorizedAPICalls-alarm",
+                "AlarmArn": "arn:aws:cloudwatch:ap-northeast-2:111122223333:alarm:UnauthorizedAPICalls-alarm",
+                "ActionsEnabled": true,
+                "AlarmActions": [
+                  "arn:aws:sns:ap-northeast-2:111122223333:security-alerts"
+                ],
+                "OKActions": [],
+                "InsufficientDataActions": [],
+                "MetricName": "UnauthorizedAPICalls",
+                "Namespace": "OtherApp",
+                "Statistic": "Sum",
+                "Period": 300,
+                "EvaluationPeriods": 1,
+                "Threshold": 1.0,
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "StateValue": "OK",
+                "Dimensions": [],
+                "Tags": {}
+              }
+            ],
+            "describe_log_groups": []
+          },
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "main",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "CloudWatchLogsLogGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:CloudTrail/main:*",
+                "CloudWatchLogsRoleArn": "arn:aws:iam::111122223333:role/CloudTrail_CloudWatchLogs_Role",
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "All",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "경보가 다른 네임스페이스의 지표를 본다 — 필터가 만든 지표에는 경보가 없다"
+    },
+    {
+      "id": "alarm-no-action",
+      "role": "bug",
+      "condition": "CWH-001 CIS 필터 + 같은 지표 경보지만 AlarmActions 없음(알림 대상 없음) + 다중 리전 trail",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudwatch": {
+            "describe_metric_filters": [
+              {
+                "filterName": "UnauthorizedAPICalls",
+                "logGroupName": "CloudTrail/main",
+                "filterPattern": "{ ($.errorCode = \"*UnauthorizedOperation\") || ($.errorCode = \"AccessDenied*\") && ($.sourceIPAddress!=\"delivery.logs.amazonaws.com\") && ($.eventName!=\"HeadBucket\") }",
+                "creationTime": 1700000000000,
+                "metricTransformations": [
+                  {
+                    "metricName": "UnauthorizedAPICalls",
+                    "metricNamespace": "CISBenchmark",
+                    "metricValue": "1"
+                  }
+                ]
+              }
+            ],
+            "describe_alarms": [
+              {
+                "AlarmName": "UnauthorizedAPICalls-alarm",
+                "AlarmArn": "arn:aws:cloudwatch:ap-northeast-2:111122223333:alarm:UnauthorizedAPICalls-alarm",
+                "ActionsEnabled": true,
+                "AlarmActions": [],
+                "OKActions": [],
+                "InsufficientDataActions": [],
+                "MetricName": "UnauthorizedAPICalls",
+                "Namespace": "CISBenchmark",
+                "Statistic": "Sum",
+                "Period": 300,
+                "EvaluationPeriods": 1,
+                "Threshold": 1.0,
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "StateValue": "OK",
+                "Dimensions": [],
+                "Tags": {}
+              }
+            ],
+            "describe_log_groups": []
+          },
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "main",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "CloudWatchLogsLogGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:CloudTrail/main:*",
+                "CloudWatchLogsRoleArn": "arn:aws:iam::111122223333:role/CloudTrail_CloudWatchLogs_Role",
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "All",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "CIS 기준은 경보에 SNS 구독(알림 대상)이 있어야 한다 — 알림이 가지 않는 경보는 경보 미설정과 같다"
+    },
+    {
+      "id": "cwh012-missing-createroute",
+      "role": "bug",
+      "condition": "CWH-012: 라우트 테이블 필터에 CreateRoute 가 빠지고 CreateRouteTable 만 있음 + 경보 + 다중 리전 trail",
+      "rule": "REME-0106300012",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudwatch": {
+            "describe_metric_filters": [
+              {
+                "filterName": "RouteTableChanges",
+                "logGroupName": "CloudTrail/main",
+                "filterPattern": "{ ($.eventSource = ec2.amazonaws.com) && (($.eventName = CreateRouteTable) || ($.eventName = ReplaceRoute) || ($.eventName = ReplaceRouteTableAssociation) || ($.eventName = DeleteRouteTable) || ($.eventName = DeleteRoute) || ($.eventName = DisassociateRouteTable)) }",
+                "creationTime": 1700000000000,
+                "metricTransformations": [
+                  {
+                    "metricName": "RouteTableChanges",
+                    "metricNamespace": "CISBenchmark",
+                    "metricValue": "1"
+                  }
+                ]
+              }
+            ],
+            "describe_alarms": [
+              {
+                "AlarmName": "RouteTableChanges-alarm",
+                "AlarmArn": "arn:aws:cloudwatch:ap-northeast-2:111122223333:alarm:RouteTableChanges-alarm",
+                "ActionsEnabled": true,
+                "AlarmActions": [
+                  "arn:aws:sns:ap-northeast-2:111122223333:security-alerts"
+                ],
+                "OKActions": [],
+                "InsufficientDataActions": [],
+                "MetricName": "RouteTableChanges",
+                "Namespace": "CISBenchmark",
+                "Statistic": "Sum",
+                "Period": 300,
+                "EvaluationPeriods": 1,
+                "Threshold": 1.0,
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "StateValue": "OK",
+                "Dimensions": [],
+                "Tags": {}
+              }
+            ],
+            "describe_log_groups": []
+          },
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "main",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "CloudWatchLogsLogGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:CloudTrail/main:*",
+                "CloudWatchLogsRoleArn": "arn:aws:iam::111122223333:role/CloudTrail_CloudWatchLogs_Role",
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "All",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "CreateRoute 이벤트를 감시하지 않는다 — CreateRouteTable 은 다른 이벤트다"
+    },
+    {
+      "id": "cis-ok",
+      "role": "control",
+      "condition": "CWH-001 CIS 필터 + 같은 네임스페이스 · SNS 액션 경보 + 다중 리전 trail",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudwatch": {
+            "describe_metric_filters": [
+              {
+                "filterName": "UnauthorizedAPICalls",
+                "logGroupName": "CloudTrail/main",
+                "filterPattern": "{ ($.errorCode = \"*UnauthorizedOperation\") || ($.errorCode = \"AccessDenied*\") && ($.sourceIPAddress!=\"delivery.logs.amazonaws.com\") && ($.eventName!=\"HeadBucket\") }",
+                "creationTime": 1700000000000,
+                "metricTransformations": [
+                  {
+                    "metricName": "UnauthorizedAPICalls",
+                    "metricNamespace": "CISBenchmark",
+                    "metricValue": "1"
+                  }
+                ]
+              }
+            ],
+            "describe_alarms": [
+              {
+                "AlarmName": "UnauthorizedAPICalls-alarm",
+                "AlarmArn": "arn:aws:cloudwatch:ap-northeast-2:111122223333:alarm:UnauthorizedAPICalls-alarm",
+                "ActionsEnabled": true,
+                "AlarmActions": [
+                  "arn:aws:sns:ap-northeast-2:111122223333:security-alerts"
+                ],
+                "OKActions": [],
+                "InsufficientDataActions": [],
+                "MetricName": "UnauthorizedAPICalls",
+                "Namespace": "CISBenchmark",
+                "Statistic": "Sum",
+                "Period": 300,
+                "EvaluationPeriods": 1,
+                "Threshold": 1.0,
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "StateValue": "OK",
+                "Dimensions": [],
+                "Tags": {}
+              }
+            ],
+            "describe_log_groups": []
+          },
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "main",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "CloudWatchLogsLogGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:CloudTrail/main:*",
+                "CloudWatchLogsRoleArn": "arn:aws:iam::111122223333:role/CloudTrail_CloudWatchLogs_Role",
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "All",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "cwh012-ok",
+      "role": "control",
+      "condition": "CWH-012: 7개 이벤트 모두 있는 필터 + 경보 + 다중 리전 trail",
+      "rule": "REME-0106300012",
+      "args": [],
+      "raw": {
+        "globals": {
+          "account": {
+            "get_owner_id": [
+              {
+                "OwnerId": "111122223333"
+              }
+            ]
+          }
+        },
+        "ap-northeast-2": {
+          "cloudwatch": {
+            "describe_metric_filters": [
+              {
+                "filterName": "RouteTableChanges",
+                "logGroupName": "CloudTrail/main",
+                "filterPattern": "{ ($.eventSource = ec2.amazonaws.com) && (($.eventName = CreateRoute) || ($.eventName = CreateRouteTable) || ($.eventName = ReplaceRoute) || ($.eventName = ReplaceRouteTableAssociation) || ($.eventName = DeleteRouteTable) || ($.eventName = DeleteRoute) || ($.eventName = DisassociateRouteTable)) }",
+                "creationTime": 1700000000000,
+                "metricTransformations": [
+                  {
+                    "metricName": "RouteTableChanges",
+                    "metricNamespace": "CISBenchmark",
+                    "metricValue": "1"
+                  }
+                ]
+              }
+            ],
+            "describe_alarms": [
+              {
+                "AlarmName": "RouteTableChanges-alarm",
+                "AlarmArn": "arn:aws:cloudwatch:ap-northeast-2:111122223333:alarm:RouteTableChanges-alarm",
+                "ActionsEnabled": true,
+                "AlarmActions": [
+                  "arn:aws:sns:ap-northeast-2:111122223333:security-alerts"
+                ],
+                "OKActions": [],
+                "InsufficientDataActions": [],
+                "MetricName": "RouteTableChanges",
+                "Namespace": "CISBenchmark",
+                "Statistic": "Sum",
+                "Period": 300,
+                "EvaluationPeriods": 1,
+                "Threshold": 1.0,
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+                "StateValue": "OK",
+                "Dimensions": [],
+                "Tags": {}
+              }
+            ],
+            "describe_log_groups": []
+          },
+          "cloudtrail": {
+            "describe_trails": [
+              {
+                "Name": "main",
+                "S3BucketName": "trail-bucket",
+                "IncludeGlobalServiceEvents": true,
+                "IsMultiRegionTrail": true,
+                "HomeRegion": "ap-northeast-2",
+                "TrailARN": "arn:aws:cloudtrail:ap-northeast-2:111122223333:trail/main",
+                "LogFileValidationEnabled": true,
+                "HasCustomEventSelectors": false,
+                "HasInsightSelectors": false,
+                "IsOrganizationTrail": false,
+                "CloudWatchLogsLogGroupArn": "arn:aws:logs:ap-northeast-2:111122223333:log-group:CloudTrail/main:*",
+                "CloudWatchLogsRoleArn": "arn:aws:iam::111122223333:role/CloudTrail_CloudWatchLogs_Role",
+                "TagsList": {},
+                "trail_status": {
+                  "IsLogging": true,
+                  "LatestDeliveryTime": "2026-11-01T00:00:00Z",
+                  "StartLoggingTime": "2026-01-01T00:00:00Z"
+                },
+                "EventSelectors": {
+                  "TrailARN": "arn",
+                  "EventSelectors": [
+                    {
+                      "ReadWriteType": "All",
+                      "IncludeManagementEvents": true,
+                      "DataResources": [],
+                      "ExcludeManagementEventSources": []
+                    }
+                  ]
+                },
+                "InsightSelectors": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

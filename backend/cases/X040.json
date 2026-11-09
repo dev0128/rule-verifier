@@ -1,0 +1,325 @@
+{
+  "finding": "X040",
+  "rule": "REME-0103600002",
+  "service": "guardduty",
+  "status": "reproducible",
+  "note": "guardduty.py:99 `key_data[\"DataSources\"].get(\"S3Logs\", {}).get(\"Status\") == \"DISABLED\"` — 지원 중단 표기된 DataSources 만 보고 현재 기준인 Features[].S3_DATA_EVENTS 는 보지 않는다. 응답에 S3Logs 가 없으면 '꺼짐이 명시되지 않음' 으로 양호.",
+  "scenarios": [
+    {
+      "id": "features-disabled-datasources-absent",
+      "role": "bug",
+      "condition": "Features 의 S3_DATA_EVENTS=DISABLED, DataSources 에는 S3Logs 항목 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "guardduty": {
+            "get_detector": [
+              {
+                "CreatedAt": "2026-01-01T00:00:00.000Z",
+                "FindingPublishingFrequency": "SIX_HOURS",
+                "ServiceRole": "arn:aws:iam::111122223333:role/aws-service-role/guardduty.amazonaws.com/AWSServiceRoleForAmazonGuardDuty",
+                "Status": "ENABLED",
+                "UpdatedAt": "2026-01-01T00:00:00.000Z",
+                "DataSources": {
+                  "CloudTrail": {
+                    "Status": "ENABLED"
+                  },
+                  "DNSLogs": {
+                    "Status": "ENABLED"
+                  },
+                  "FlowLogs": {
+                    "Status": "ENABLED"
+                  },
+                  "Kubernetes": {
+                    "AuditLogs": {
+                      "Status": "ENABLED"
+                    }
+                  },
+                  "MalwareProtection": {
+                    "ScanEc2InstanceWithFindings": {
+                      "EbsVolumes": {
+                        "Status": "ENABLED"
+                      }
+                    },
+                    "ServiceRole": "x"
+                  }
+                },
+                "Tags": {},
+                "Features": [
+                  {
+                    "Name": "CLOUD_TRAIL",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "DNS_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "FLOW_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "S3_DATA_EVENTS",
+                    "Status": "DISABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "EKS_AUDIT_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "EBS_MALWARE_PROTECTION",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "RDS_LOGIN_EVENTS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "EKS_RUNTIME_MONITORING",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "LAMBDA_NETWORK_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "RUNTIME_MONITORING",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  }
+                ],
+                "DetectorId": "d1"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "GetDetector 의 Features 가 S3 보호(S3_DATA_EVENTS) 꺼짐을 알려 준다 — 취약"
+    },
+    {
+      "id": "both-disabled",
+      "role": "control",
+      "condition": "DataSources.S3Logs=DISABLED, Features S3_DATA_EVENTS=DISABLED",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "guardduty": {
+            "get_detector": [
+              {
+                "CreatedAt": "2026-01-01T00:00:00.000Z",
+                "FindingPublishingFrequency": "SIX_HOURS",
+                "ServiceRole": "arn:aws:iam::111122223333:role/aws-service-role/guardduty.amazonaws.com/AWSServiceRoleForAmazonGuardDuty",
+                "Status": "ENABLED",
+                "UpdatedAt": "2026-01-01T00:00:00.000Z",
+                "DataSources": {
+                  "CloudTrail": {
+                    "Status": "ENABLED"
+                  },
+                  "DNSLogs": {
+                    "Status": "ENABLED"
+                  },
+                  "FlowLogs": {
+                    "Status": "ENABLED"
+                  },
+                  "S3Logs": {
+                    "Status": "DISABLED"
+                  },
+                  "Kubernetes": {
+                    "AuditLogs": {
+                      "Status": "ENABLED"
+                    }
+                  },
+                  "MalwareProtection": {
+                    "ScanEc2InstanceWithFindings": {
+                      "EbsVolumes": {
+                        "Status": "ENABLED"
+                      }
+                    },
+                    "ServiceRole": "x"
+                  }
+                },
+                "Tags": {},
+                "Features": [
+                  {
+                    "Name": "CLOUD_TRAIL",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "DNS_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "FLOW_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "S3_DATA_EVENTS",
+                    "Status": "DISABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "EKS_AUDIT_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "EBS_MALWARE_PROTECTION",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "RDS_LOGIN_EVENTS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "EKS_RUNTIME_MONITORING",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "LAMBDA_NETWORK_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "RUNTIME_MONITORING",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  }
+                ],
+                "DetectorId": "d1"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "both-enabled",
+      "role": "control",
+      "condition": "DataSources.S3Logs=ENABLED, Features S3_DATA_EVENTS=ENABLED",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "guardduty": {
+            "get_detector": [
+              {
+                "CreatedAt": "2026-01-01T00:00:00.000Z",
+                "FindingPublishingFrequency": "SIX_HOURS",
+                "ServiceRole": "arn:aws:iam::111122223333:role/aws-service-role/guardduty.amazonaws.com/AWSServiceRoleForAmazonGuardDuty",
+                "Status": "ENABLED",
+                "UpdatedAt": "2026-01-01T00:00:00.000Z",
+                "DataSources": {
+                  "CloudTrail": {
+                    "Status": "ENABLED"
+                  },
+                  "DNSLogs": {
+                    "Status": "ENABLED"
+                  },
+                  "FlowLogs": {
+                    "Status": "ENABLED"
+                  },
+                  "S3Logs": {
+                    "Status": "ENABLED"
+                  },
+                  "Kubernetes": {
+                    "AuditLogs": {
+                      "Status": "ENABLED"
+                    }
+                  },
+                  "MalwareProtection": {
+                    "ScanEc2InstanceWithFindings": {
+                      "EbsVolumes": {
+                        "Status": "ENABLED"
+                      }
+                    },
+                    "ServiceRole": "x"
+                  }
+                },
+                "Tags": {},
+                "Features": [
+                  {
+                    "Name": "CLOUD_TRAIL",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "DNS_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "FLOW_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "S3_DATA_EVENTS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "EKS_AUDIT_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "EBS_MALWARE_PROTECTION",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "RDS_LOGIN_EVENTS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "EKS_RUNTIME_MONITORING",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "LAMBDA_NETWORK_LOGS",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "Name": "RUNTIME_MONITORING",
+                    "Status": "ENABLED",
+                    "UpdatedAt": "2026-01-01T00:00:00.000Z"
+                  }
+                ],
+                "DetectorId": "d1"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

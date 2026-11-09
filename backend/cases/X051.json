@@ -1,0 +1,138 @@
+{
+  "finding": "X051",
+  "rule": "REME-0103200005",
+  "service": "ssm",
+  "status": "reproducible",
+  "note": "Raw/Service/ssm.py:113-123 — describe_document_permission 이 실패하면 get_response 가 {} 를 줘 Permission={} 가 된다. Analyze ssm.py:294 `Permission['AccountIds']` KeyError 로 룰 전체 N/A.",
+  "scenarios": [
+    {
+      "id": "permission-lookup-failed",
+      "role": "bug",
+      "condition": "문서 2개 — doc-failed: 권한 조회 실패(Permission={}), doc-public: AccountIds=['all']",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ssm": {
+            "describe_instance_information": [],
+            "describe_parameters": [],
+            "describe_sessions": [],
+            "list_documents": [
+              {
+                "Name": "doc-failed",
+                "Owner": "111122223333",
+                "DocumentType": "Command",
+                "DocumentFormat": "JSON",
+                "SchemaVersion": "2.2",
+                "DocumentVersion": "1",
+                "PlatformTypes": [
+                  "Linux"
+                ],
+                "Tags": {},
+                "Document": {
+                  "Name": "doc-failed",
+                  "DocumentType": "Command",
+                  "Content": {
+                    "schemaVersion": "2.2",
+                    "mainSteps": []
+                  }
+                },
+                "Permission": {}
+              },
+              {
+                "Name": "doc-public",
+                "Owner": "111122223333",
+                "DocumentType": "Command",
+                "DocumentFormat": "JSON",
+                "SchemaVersion": "2.2",
+                "DocumentVersion": "1",
+                "PlatformTypes": [
+                  "Linux"
+                ],
+                "Tags": {},
+                "Document": {
+                  "Name": "doc-public",
+                  "DocumentType": "Command",
+                  "Content": {
+                    "schemaVersion": "2.2",
+                    "mainSteps": []
+                  }
+                },
+                "Permission": {
+                  "AccountIds": [
+                    "all"
+                  ],
+                  "AccountSharingInfoList": [
+                    {
+                      "AccountId": "all",
+                      "SharedDocumentVersion": "$DEFAULT"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "doc-public"
+        ]
+      },
+      "why": "권한 조회에 실패한 문서는 N/A 로 빼고 나머지 문서는 정상 판정해야 한다 — 퍼블릭 문서는 취약"
+    },
+    {
+      "id": "permission-ok",
+      "role": "control",
+      "condition": "문서 1개 — AccountIds=['all']",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ssm": {
+            "describe_instance_information": [],
+            "describe_parameters": [],
+            "describe_sessions": [],
+            "list_documents": [
+              {
+                "Name": "doc-public",
+                "Owner": "111122223333",
+                "DocumentType": "Command",
+                "DocumentFormat": "JSON",
+                "SchemaVersion": "2.2",
+                "DocumentVersion": "1",
+                "PlatformTypes": [
+                  "Linux"
+                ],
+                "Tags": {},
+                "Document": {
+                  "Name": "doc-public",
+                  "DocumentType": "Command",
+                  "Content": {
+                    "schemaVersion": "2.2",
+                    "mainSteps": []
+                  }
+                },
+                "Permission": {
+                  "AccountIds": [
+                    "all"
+                  ],
+                  "AccountSharingInfoList": [
+                    {
+                      "AccountId": "all",
+                      "SharedDocumentVersion": "$DEFAULT"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

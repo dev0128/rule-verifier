@@ -1,0 +1,169 @@
+{
+  "finding": "F020",
+  "rule": "REME-0100100010",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:762-764·775-777 — Allow 문에서 Action == \"*\" 또는 Resource == \"*\" (리스트 안의 \"*\" 도 각각) 하나만 있어도 취약(OR). 판단기준 상세는 Action \"*\" 와 Resource \"*\" 가 함께 있는 Allow(관리자 전체 권한). Describe/List 계열은 Resource \"*\" 가 필수라 대량 오탐.",
+  "scenarios": [
+    {
+      "id": "resource-star-only",
+      "role": "bug",
+      "condition": "Allow Action=ec2:Describe* (문자열), Resource=\"*\"",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_policies": [
+              {
+                "PolicyName": "ec2-describe",
+                "PolicyId": "ANPAEC2-DESCRIBE",
+                "Arn": "arn:aws:iam::111111111111:policy/ec2-describe",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "Document": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": "ec2:Describe*",
+                      "Resource": "*"
+                    }
+                  ]
+                },
+                "VersionId": "v1",
+                "IsDefaultVersion": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "Action 이 '*' 가 아니므로 전체 권한('*' 할당)이 아니다. Describe 계열은 리소스 수준 권한을 지원하지 않아 Resource '*' 가 정상"
+    },
+    {
+      "id": "resource-star-in-list",
+      "role": "bug",
+      "condition": "Allow Action=[s3:ListAllMyBuckets], Resource=[\"*\"] (리스트) — AWS 관리형 정책",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_policies": [
+              {
+                "PolicyName": "S3ListOnly",
+                "PolicyId": "ANPAS3LISTONLY",
+                "Arn": "arn:aws:iam::aws:policy/S3ListOnly",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "Document": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "s3:ListAllMyBuckets"
+                      ],
+                      "Resource": [
+                        "*"
+                      ]
+                    }
+                  ]
+                },
+                "VersionId": "v1",
+                "IsDefaultVersion": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "Action 이 '*' 가 아니므로 '*' 할당이 아니다"
+    },
+    {
+      "id": "action-and-resource-star",
+      "role": "control",
+      "condition": "Allow Action=\"*\", Resource=\"*\"",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_policies": [
+              {
+                "PolicyName": "full-admin",
+                "PolicyId": "ANPAFULL-ADMIN",
+                "Arn": "arn:aws:iam::111111111111:policy/full-admin",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "Document": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": "*",
+                      "Resource": "*"
+                    }
+                  ]
+                },
+                "VersionId": "v1",
+                "IsDefaultVersion": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "specific-resource",
+      "role": "control",
+      "condition": "Allow Action=s3:GetObject, Resource=arn:aws:s3:::bucket/*",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_policies": [
+              {
+                "PolicyName": "s3-get",
+                "PolicyId": "ANPAS3-GET",
+                "Arn": "arn:aws:iam::111111111111:policy/s3-get",
+                "DefaultVersionId": "v1",
+                "AttachmentCount": 1,
+                "IsAttachable": true,
+                "Document": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": "s3:GetObject",
+                      "Resource": "arn:aws:s3:::bucket/*"
+                    }
+                  ]
+                },
+                "VersionId": "v1",
+                "IsDefaultVersion": true
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

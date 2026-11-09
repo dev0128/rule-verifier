@@ -1,0 +1,215 @@
+{
+  "finding": "F109",
+  "rule": "REME-0101000004",
+  "service": "awslambda",
+  "status": "reproducible",
+  "note": "awslambda.py:248-249 `if Principal == \"*\" or Principal.get(\"AWS\") == \"*\": if Effect == \"Allow\": flag = True` — Condition(AWS:SourceAccount/SourceArn/PrincipalOrgID)을 보지 않고, Principal.AWS 가 리스트(['*'])면 문자열 비교라 놓친다.",
+  "scenarios": [
+    {
+      "id": "star-with-source-account",
+      "role": "bug",
+      "condition": "Principal '*' + Condition StringEquals AWS:SourceAccount=111122223333 (같은 계정 리소스에서 온 호출만 허용)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "default",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "lambda:InvokeFunction",
+                      "Resource": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                      "Condition": {
+                        "StringEquals": {
+                          "AWS:SourceAccount": "111122223333"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "SourceAccount 조건으로 호출 주체가 자기 계정 리소스로 제한되므로 공개 액세스가 아니다"
+    },
+    {
+      "id": "star-with-org-id",
+      "role": "bug",
+      "condition": "Principal '*' + Condition StringEquals aws:PrincipalOrgID=o-abc123 (조직 내부만 허용)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "default",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "lambda:InvokeFunction",
+                      "Resource": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                      "Condition": {
+                        "StringEquals": {
+                          "aws:PrincipalOrgID": "o-abc123"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "조직 ID 조건으로 주체가 조직 내부로 제한되므로 공개 액세스가 아니다"
+    },
+    {
+      "id": "aws-star-list",
+      "role": "bug",
+      "condition": "Principal {AWS: ['*']} 조건 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "default",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": [
+                          "*"
+                        ]
+                      },
+                      "Action": "lambda:InvokeFunction",
+                      "Resource": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "AWS: ['*'] 는 AWS: '*' 와 같은 뜻 — 누구나 호출 가능한 공개 정책"
+    },
+    {
+      "id": "star-no-condition",
+      "role": "control",
+      "condition": "Principal '*' 조건 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "default",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "lambda:InvokeFunction",
+                      "Resource": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "service-principal",
+      "role": "control",
+      "condition": "Principal.Service=s3.amazonaws.com",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "default",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "s3.amazonaws.com"
+                      },
+                      "Action": "lambda:InvokeFunction",
+                      "Resource": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

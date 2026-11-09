@@ -1,0 +1,178 @@
+{
+  "finding": "X011",
+  "rule": "REME-0100100019",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:1783 `time_since_insertion.days > int(args_[0])` — PasswordLastUsed 가 있는 사용자가 있으면 인자를 읽는데 None 이면 TypeError, \"\"/[] 이면 IndexError.",
+  "scenarios": [
+    {
+      "id": "args-none",
+      "role": "bug",
+      "condition": "인자 None (커스텀룰 마스터 참조) — 콘솔 비밀번호 있음, 2020-01-01 마지막 로그인",
+      "args": null,
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_users": [
+              {
+                "UserName": "console-old",
+                "UserId": "AIDACONSOLEOLD",
+                "Arn": "arn:aws:iam::111111111111:user/console-old",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                },
+                "PasswordLastUsed": "2020-01-01 00:00:00+00:00",
+                "LoginProfile": {
+                  "UserName": "console-old",
+                  "CreateDate": "2020-01-01 00:00:00+00:00",
+                  "PasswordResetRequired": false
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "인자가 없으면 기본값(기본 룰셋 30일, 상세 기준 90일)으로 판정해야 한다. 수년간 로그인 없는 콘솔 사용자는 어느 쪽이든 취약"
+    },
+    {
+      "id": "args-empty-str",
+      "role": "bug",
+      "condition": "인자 \"\" (거버넌스 기본 룰) — 콘솔 비밀번호 있음, 2020-01-01 마지막 로그인",
+      "args": "",
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_users": [
+              {
+                "UserName": "console-old",
+                "UserId": "AIDACONSOLEOLD",
+                "Arn": "arn:aws:iam::111111111111:user/console-old",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                },
+                "PasswordLastUsed": "2020-01-01 00:00:00+00:00",
+                "LoginProfile": {
+                  "UserName": "console-old",
+                  "CreateDate": "2020-01-01 00:00:00+00:00",
+                  "PasswordResetRequired": false
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "인자가 없으면 기본값(기본 룰셋 30일, 상세 기준 90일)으로 판정해야 한다. 수년간 로그인 없는 콘솔 사용자는 어느 쪽이든 취약"
+    },
+    {
+      "id": "args-empty-list",
+      "role": "bug",
+      "condition": "인자 [] (빈 리스트) — 콘솔 비밀번호 있음, 2020-01-01 마지막 로그인",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_users": [
+              {
+                "UserName": "console-old",
+                "UserId": "AIDACONSOLEOLD",
+                "Arn": "arn:aws:iam::111111111111:user/console-old",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                },
+                "PasswordLastUsed": "2020-01-01 00:00:00+00:00",
+                "LoginProfile": {
+                  "UserName": "console-old",
+                  "CreateDate": "2020-01-01 00:00:00+00:00",
+                  "PasswordResetRequired": false
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "인자가 없으면 기본값(기본 룰셋 30일, 상세 기준 90일)으로 판정해야 한다. 수년간 로그인 없는 콘솔 사용자는 어느 쪽이든 취약"
+    },
+    {
+      "id": "args-default",
+      "role": "control",
+      "condition": "기본 룰셋 인자 [\"30\"] — 콘솔 비밀번호 있음, 2020-01-01 마지막 로그인",
+      "args": [
+        "30"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_users": [
+              {
+                "UserName": "console-old",
+                "UserId": "AIDACONSOLEOLD",
+                "Arn": "arn:aws:iam::111111111111:user/console-old",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                },
+                "PasswordLastUsed": "2020-01-01 00:00:00+00:00",
+                "LoginProfile": {
+                  "UserName": "console-old",
+                  "CreateDate": "2020-01-01 00:00:00+00:00",
+                  "PasswordResetRequired": false
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

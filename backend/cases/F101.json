@@ -1,0 +1,196 @@
+{
+  "finding": "F101",
+  "rule": "REME-0101000006",
+  "service": "awslambda",
+  "status": "reproducible",
+  "note": "awslambda.py:387-388 `\"arn:\" in Principal.get(\"AWS\")` — 문자열이면 부분 문자열 검사라 자기 계정 ARN 도 교차 계정으로 판정, 리스트면 원소 일치 검사라 'arn:' 원소가 없어 실제 외부 계정을 놓친다. 함수 ARN 의 계정 ID 와 비교하지 않는다.",
+  "scenarios": [
+    {
+      "id": "same-account-root",
+      "role": "bug",
+      "condition": "함수와 같은 계정(111122223333) root 에 invoke 권한을 준 리소스 정책 (Principal.AWS=arn:aws:iam::111122223333:root)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "default",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::111122223333:root"
+                      },
+                      "Action": "lambda:InvokeFunction",
+                      "Resource": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "같은 계정 주체는 교차 계정 액세스가 아니다"
+    },
+    {
+      "id": "external-accounts-list",
+      "role": "bug",
+      "condition": "외부 계정 2개를 리스트로 허용 (Principal.AWS=[arn:aws:iam::444455556666:root, arn:aws:iam::777788889999:root])",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "default",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": [
+                          "arn:aws:iam::444455556666:root",
+                          "arn:aws:iam::777788889999:root"
+                        ]
+                      },
+                      "Action": "lambda:InvokeFunction",
+                      "Resource": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "다른 계정 주체에 invoke 를 허용했으므로 교차 계정 액세스 허용 정책이 존재한다"
+    },
+    {
+      "id": "external-account-string",
+      "role": "control",
+      "condition": "외부 계정 1개를 문자열로 허용 (Principal.AWS=arn:aws:iam::444455556666:root)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "default",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "AWS": "arn:aws:iam::444455556666:root"
+                      },
+                      "Action": "lambda:InvokeFunction",
+                      "Resource": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "service-principal",
+      "role": "control",
+      "condition": "서비스 주체만 허용 (Principal.Service=s3.amazonaws.com)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {
+                  "Version": "2012-10-17",
+                  "Id": "default",
+                  "Statement": [
+                    {
+                      "Sid": "s1",
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": "s3.amazonaws.com"
+                      },
+                      "Action": "lambda:InvokeFunction",
+                      "Resource": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "no-policy",
+      "role": "control",
+      "condition": "리소스 정책 없음 (Policy={})",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Policy": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

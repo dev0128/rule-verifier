@@ -1,0 +1,43 @@
+{
+  "finding": "X002",
+  "rule": "REME-0106100007",
+  "service": "vpc",
+  "status": "reproducible",
+  "note": "vpc.py:443-446 — Principal 이 12자리 계정이 아니면 `principal.split(\":\")[4]` 로 계정을 뽑는다. 전체 허용 '*' 는 콜론이 없어 IndexError, 룰 전체 N/A.",
+  "scenarios": [
+    {
+      "id": "principal-star",
+      "role": "bug",
+      "condition": "엔드포인트 서비스 허용 주체가 '*' (PrincipalType=All)",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_endpoint_services": [
+        {"ServiceName": "com.amazonaws.vpce.ap-northeast-2.vpce-svc-0star", "ServiceId": "vpce-svc-0star", "Owner": "111111111111", "ServiceType": [{"ServiceType": "Interface"}], "AcceptanceRequired": false,
+         "AllowedPrincipals": [{"PrincipalType": "All", "Principal": "*", "ServicePermissionId": "vpce-svc-perm-1", "ServiceId": "vpce-svc-0star"}]}
+      ]}}},
+      "expect": {"verdict": "Vuln", "flag": 1},
+      "why": "모든 AWS 주체가 엔드포인트를 만들 수 있는 가장 위험한 설정이므로 취약이어야 한다(예외로 죽으면 안 된다)"
+    },
+    {
+      "id": "own-account",
+      "role": "control",
+      "condition": "허용 주체가 자기 계정 root ARN",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_endpoint_services": [
+        {"ServiceName": "com.amazonaws.vpce.ap-northeast-2.vpce-svc-0own", "ServiceId": "vpce-svc-0own", "Owner": "111111111111", "ServiceType": [{"ServiceType": "Interface"}], "AcceptanceRequired": true,
+         "AllowedPrincipals": [{"PrincipalType": "Account", "Principal": "arn:aws:iam::111111111111:root", "ServicePermissionId": "vpce-svc-perm-2", "ServiceId": "vpce-svc-0own"}]}
+      ]}}},
+      "expect": {"verdict": "Secure", "good": 1}
+    },
+    {
+      "id": "untrusted-account",
+      "role": "control",
+      "condition": "허용 주체가 신뢰 목록에 없는 외부 계정 222222222222",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {"describe_vpc_endpoint_services": [
+        {"ServiceName": "com.amazonaws.vpce.ap-northeast-2.vpce-svc-0ext", "ServiceId": "vpce-svc-0ext", "Owner": "111111111111", "ServiceType": [{"ServiceType": "Interface"}], "AcceptanceRequired": true,
+         "AllowedPrincipals": [{"PrincipalType": "Account", "Principal": "arn:aws:iam::222222222222:root", "ServicePermissionId": "vpce-svc-perm-3", "ServiceId": "vpce-svc-0ext"}]}
+      ]}}},
+      "expect": {"verdict": "Vuln", "flag": 1}
+    }
+  ]
+}

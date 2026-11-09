@@ -1,0 +1,392 @@
+{
+  "finding": "F147",
+  "rule": "REME-0106000004",
+  "service": "ecr",
+  "status": "reproducible",
+  "note": "ecr.py:215-233 — describe_images 전체를 점검하고(최신 이미지 필터 없음), Raw ecr.py describe_image_scan_findings 가 ScanNotFound 면 find_scan=False · findingSeverityCounts 0 초기값 그대로 저장 → 룰은 find_scan 을 보지 않아 미스캔 이미지를 양호로 센다.",
+  "scenarios": [
+    {
+      "id": "old-image-vuln",
+      "role": "bug",
+      "condition": "리포지토리 1개에 이미지 2개: 최신(latest, 2026-11-01) 스캔 결과 취약점 0건 / 과거(태그 없음, 2024-01-01) HIGH 3건",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/app",
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/app",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": true
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {},
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": [
+              {
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "imageDigest": "sha256:new000",
+                "imagePushedAt": "2026-11-01T00:00:00+09:00",
+                "imageSizeInBytes": 12345678,
+                "imageManifestMediaType": "application/vnd.docker.distribution.manifest.v2+json",
+                "imageTags": [
+                  "latest"
+                ],
+                "imageScanStatus": {
+                  "status": "COMPLETE",
+                  "description": "The scan was completed successfully."
+                },
+                "imageScanFindingsSummary": {
+                  "imageScanCompletedAt": "2026-11-01T00:00:00+09:00",
+                  "vulnerabilitySourceUpdatedAt": "2026-11-01T00:00:00+09:00"
+                },
+                "image_scan_findings": {
+                  "registryId": "111111111111",
+                  "repositoryName": "app",
+                  "imageId": {
+                    "imageDigest": "sha256:new000"
+                  },
+                  "imageScanStatus": {
+                    "status": "COMPLETE",
+                    "description": "The scan was completed successfully."
+                  },
+                  "imageScanFindings": {
+                    "find_scan": true,
+                    "imageScanCompletedAt": "2026-11-01T00:00:00+09:00",
+                    "vulnerabilitySourceUpdatedAt": "2026-11-01T00:00:00+09:00",
+                    "findingSeverityCounts": {
+                      "CRITICAL": 0,
+                      "HIGH": 0,
+                      "MEDIUM": 0,
+                      "LOW": 0,
+                      "INFORMATIONAL": 0,
+                      "UNTRIAGED": 0,
+                      "UNDEFINED": 0
+                    }
+                  }
+                }
+              },
+              {
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "imageDigest": "sha256:old000",
+                "imagePushedAt": "2024-01-01T00:00:00+09:00",
+                "imageSizeInBytes": 12345678,
+                "imageManifestMediaType": "application/vnd.docker.distribution.manifest.v2+json",
+                "imageScanStatus": {
+                  "status": "COMPLETE",
+                  "description": "The scan was completed successfully."
+                },
+                "imageScanFindingsSummary": {
+                  "imageScanCompletedAt": "2024-01-01T00:00:00+09:00",
+                  "vulnerabilitySourceUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "findingSeverityCounts": {
+                    "HIGH": 3
+                  }
+                },
+                "image_scan_findings": {
+                  "registryId": "111111111111",
+                  "repositoryName": "app",
+                  "imageId": {
+                    "imageDigest": "sha256:old000"
+                  },
+                  "imageScanStatus": {
+                    "status": "COMPLETE",
+                    "description": "The scan was completed successfully."
+                  },
+                  "imageScanFindings": {
+                    "find_scan": true,
+                    "imageScanCompletedAt": "2024-01-01T00:00:00+09:00",
+                    "vulnerabilitySourceUpdatedAt": "2024-01-01T00:00:00+09:00",
+                    "findingSeverityCounts": {
+                      "CRITICAL": 0,
+                      "HIGH": 3,
+                      "MEDIUM": 0,
+                      "LOW": 0,
+                      "INFORMATIONAL": 0,
+                      "UNTRIAGED": 0,
+                      "UNDEFINED": 0
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0
+      },
+      "why": "항목은 '최신 이미지 버전' 의 취약점 — 최신 이미지에 취약점이 없으므로 양호. 교체된 과거 이미지는 점검 범위가 아니다"
+    },
+    {
+      "id": "never-scanned",
+      "role": "bug",
+      "condition": "스캔된 적 없는 이미지 1개 (scanOnPush=false, describe_image_scan_findings → ScanNotFoundException → find_scan=False, 건수 0)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/app",
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/app",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": false
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {},
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": [
+              {
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "imageDigest": "sha256:nosc00",
+                "imagePushedAt": "2026-11-01T00:00:00+09:00",
+                "imageSizeInBytes": 12345678,
+                "imageManifestMediaType": "application/vnd.docker.distribution.manifest.v2+json",
+                "imageTags": [
+                  "latest"
+                ],
+                "image_scan_findings": {
+                  "imageScanFindings": {
+                    "find_scan": false,
+                    "imageScanCompletedAt": "",
+                    "vulnerabilitySourceUpdatedAt": "",
+                    "findingSeverityCounts": {
+                      "CRITICAL": 0,
+                      "HIGH": 0,
+                      "MEDIUM": 0,
+                      "LOW": 0,
+                      "INFORMATIONAL": 0,
+                      "UNTRIAGED": 0,
+                      "UNDEFINED": 0
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "good": 0
+      },
+      "why": "스캔 결과가 없으면 취약점이 없는지 알 수 없다 — 양호로 세면 안 된다(N/A 또는 미스캔 취약)"
+    },
+    {
+      "id": "latest-critical",
+      "role": "control",
+      "condition": "최신 이미지 1개, 스캔 COMPLETE · CRITICAL 1건",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/app",
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/app",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": true
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {},
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": [
+              {
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "imageDigest": "sha256:crit00",
+                "imagePushedAt": "2026-11-01T00:00:00+09:00",
+                "imageSizeInBytes": 12345678,
+                "imageManifestMediaType": "application/vnd.docker.distribution.manifest.v2+json",
+                "imageTags": [
+                  "latest"
+                ],
+                "imageScanStatus": {
+                  "status": "COMPLETE",
+                  "description": "The scan was completed successfully."
+                },
+                "imageScanFindingsSummary": {
+                  "imageScanCompletedAt": "2026-11-01T00:00:00+09:00",
+                  "vulnerabilitySourceUpdatedAt": "2026-11-01T00:00:00+09:00",
+                  "findingSeverityCounts": {
+                    "CRITICAL": 1
+                  }
+                },
+                "image_scan_findings": {
+                  "registryId": "111111111111",
+                  "repositoryName": "app",
+                  "imageId": {
+                    "imageDigest": "sha256:crit00"
+                  },
+                  "imageScanStatus": {
+                    "status": "COMPLETE",
+                    "description": "The scan was completed successfully."
+                  },
+                  "imageScanFindings": {
+                    "find_scan": true,
+                    "imageScanCompletedAt": "2026-11-01T00:00:00+09:00",
+                    "vulnerabilitySourceUpdatedAt": "2026-11-01T00:00:00+09:00",
+                    "findingSeverityCounts": {
+                      "CRITICAL": 1,
+                      "HIGH": 0,
+                      "MEDIUM": 0,
+                      "LOW": 0,
+                      "INFORMATIONAL": 0,
+                      "UNTRIAGED": 0,
+                      "UNDEFINED": 0
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "latest-clean",
+      "role": "control",
+      "condition": "최신 이미지 1개, 스캔 COMPLETE · 취약점 0건",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecr": {
+            "describe_registry": [
+              {
+                "registryId": "111111111111",
+                "replicationConfiguration": {
+                  "rules": []
+                }
+              }
+            ],
+            "describe_repositories": [
+              {
+                "repositoryArn": "arn:aws:ecr:ap-northeast-2:111111111111:repository/app",
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "repositoryUri": "111111111111.dkr.ecr.ap-northeast-2.amazonaws.com/app",
+                "createdAt": "2024-01-01T00:00:00+09:00",
+                "imageTagMutability": "MUTABLE",
+                "imageScanningConfiguration": {
+                  "scanOnPush": true
+                },
+                "encryptionConfiguration": {
+                  "encryptionType": "AES256"
+                },
+                "policyText": {},
+                "lifecyclePolicyText": {}
+              }
+            ],
+            "describe_images": [
+              {
+                "registryId": "111111111111",
+                "repositoryName": "app",
+                "imageDigest": "sha256:clean0",
+                "imagePushedAt": "2026-11-01T00:00:00+09:00",
+                "imageSizeInBytes": 12345678,
+                "imageManifestMediaType": "application/vnd.docker.distribution.manifest.v2+json",
+                "imageTags": [
+                  "latest"
+                ],
+                "imageScanStatus": {
+                  "status": "COMPLETE",
+                  "description": "The scan was completed successfully."
+                },
+                "imageScanFindingsSummary": {
+                  "imageScanCompletedAt": "2026-11-01T00:00:00+09:00",
+                  "vulnerabilitySourceUpdatedAt": "2026-11-01T00:00:00+09:00"
+                },
+                "image_scan_findings": {
+                  "registryId": "111111111111",
+                  "repositoryName": "app",
+                  "imageId": {
+                    "imageDigest": "sha256:clean0"
+                  },
+                  "imageScanStatus": {
+                    "status": "COMPLETE",
+                    "description": "The scan was completed successfully."
+                  },
+                  "imageScanFindings": {
+                    "find_scan": true,
+                    "imageScanCompletedAt": "2026-11-01T00:00:00+09:00",
+                    "vulnerabilitySourceUpdatedAt": "2026-11-01T00:00:00+09:00",
+                    "findingSeverityCounts": {
+                      "CRITICAL": 0,
+                      "HIGH": 0,
+                      "MEDIUM": 0,
+                      "LOW": 0,
+                      "INFORMATIONAL": 0,
+                      "UNTRIAGED": 0,
+                      "UNDEFINED": 0
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

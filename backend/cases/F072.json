@@ -1,0 +1,136 @@
+{
+  "finding": "F072",
+  "rule": "REME-0104500001",
+  "service": "kinesis",
+  "status": "reproducible",
+  "note": "Raw/kinesis.py:59 `...[\"describe_stream\"].append(response.get(\"StreamDescription\"))` — describe_stream 실패 시 None 을 그대로 넣는다(_list_tags_for_stream 도 그 None 에서 멈춰 뒤 스트림은 Tags 없음). 룰 kinesis.py:26 `list(result_temp_i.keys())` AttributeError 로 리전·룰 전체 결과가 사라진다. None 행은 건너뛰거나 N/A 로 처리하면 되므로 룰에서 고칠 수 있다(bug 역할).",
+  "scenarios": [
+    {
+      "id": "none-entry",
+      "role": "bug",
+      "condition": "스트림 3개 중 가운데 스트림의 describe_stream 이 LimitExceededException 으로 실패 → None 행 (뒤 스트림은 Tags 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kinesis": {
+            "describe_stream": [
+              {
+                "StreamName": "stream-plain",
+                "StreamARN": "arn:aws:kinesis:ap-northeast-2:111122223333:stream/stream-plain",
+                "StreamStatus": "ACTIVE",
+                "StreamModeDetails": {
+                  "StreamMode": "ON_DEMAND"
+                },
+                "Shards": [],
+                "HasMoreShards": false,
+                "RetentionPeriodHours": 24,
+                "StreamCreationTimestamp": "2026-01-01T00:00:00.000Z",
+                "EnhancedMonitoring": [
+                  {
+                    "ShardLevelMetrics": []
+                  }
+                ],
+                "EncryptionType": "NONE",
+                "Tags": {}
+              },
+              null,
+              {
+                "StreamName": "stream-kms",
+                "StreamARN": "arn:aws:kinesis:ap-northeast-2:111122223333:stream/stream-kms",
+                "StreamStatus": "ACTIVE",
+                "StreamModeDetails": {
+                  "StreamMode": "ON_DEMAND"
+                },
+                "Shards": [],
+                "HasMoreShards": false,
+                "RetentionPeriodHours": 24,
+                "StreamCreationTimestamp": "2026-01-01T00:00:00.000Z",
+                "EnhancedMonitoring": [
+                  {
+                    "ShardLevelMetrics": []
+                  }
+                ],
+                "EncryptionType": "KMS",
+                "KeyId": "alias/aws/kinesis"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "stream-plain"
+        ],
+        "good_contains": [
+          "stream-kms"
+        ]
+      },
+      "why": "조회 실패한 스트림 하나 때문에 나머지 판정이 사라지면 안 된다 — 암호화 없는 stream-plain 취약, KMS 암호화 stream-kms 양호"
+    },
+    {
+      "id": "normal",
+      "role": "control",
+      "condition": "정상 수집 스트림 2개 — 암호화 없음 1, KMS 1",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "kinesis": {
+            "describe_stream": [
+              {
+                "StreamName": "stream-plain",
+                "StreamARN": "arn:aws:kinesis:ap-northeast-2:111122223333:stream/stream-plain",
+                "StreamStatus": "ACTIVE",
+                "StreamModeDetails": {
+                  "StreamMode": "ON_DEMAND"
+                },
+                "Shards": [],
+                "HasMoreShards": false,
+                "RetentionPeriodHours": 24,
+                "StreamCreationTimestamp": "2026-01-01T00:00:00.000Z",
+                "EnhancedMonitoring": [
+                  {
+                    "ShardLevelMetrics": []
+                  }
+                ],
+                "EncryptionType": "NONE",
+                "Tags": {}
+              },
+              {
+                "StreamName": "stream-kms",
+                "StreamARN": "arn:aws:kinesis:ap-northeast-2:111122223333:stream/stream-kms",
+                "StreamStatus": "ACTIVE",
+                "StreamModeDetails": {
+                  "StreamMode": "ON_DEMAND"
+                },
+                "Shards": [],
+                "HasMoreShards": false,
+                "RetentionPeriodHours": 24,
+                "StreamCreationTimestamp": "2026-01-01T00:00:00.000Z",
+                "EnhancedMonitoring": [
+                  {
+                    "ShardLevelMetrics": []
+                  }
+                ],
+                "EncryptionType": "KMS",
+                "Tags": {},
+                "KeyId": "alias/aws/kinesis"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "stream-plain"
+        ]
+      }
+    }
+  ]
+}

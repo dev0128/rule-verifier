@@ -1,0 +1,147 @@
+{
+  "finding": "F011",
+  "rule": "REME-0103900007",
+  "service": "route53",
+  "status": "reproducible",
+  "note": "route53.py:370-373,398 — R53-006(이전 잠금) 코드를 복사한 채 TransferLock 을 검사한다. 자동 갱신 필드 AutoRenew 는 get_domain_detail 응답에 이미 있다.",
+  "scenarios": [
+    {
+      "id": "autorenew-off-lock-on",
+      "role": "bug",
+      "condition": "AutoRenew=false, TransferLock=true",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_domain_detail": [
+              {
+                "DomainName": "example.com",
+                "AutoRenew": false,
+                "AdminPrivacy": true,
+                "RegistrantPrivacy": true,
+                "TechPrivacy": true,
+                "ExpirationDate": "2099-01-01 00:00:00+00:00",
+                "TransferLock": true,
+                "Expiry": "2099-01-01 00:00:00+00:00",
+                "StatusList": [
+                  "clientTransferProhibited"
+                ],
+                "TagList": {}
+              }
+            ],
+            "get_hosted_zone": [],
+            "list_query_logging_configs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "자동 갱신이 꺼져 있으므로 '도메인 자동 갱신 활성화 여부' 는 취약 — 이전 잠금 여부와 무관"
+    },
+    {
+      "id": "autorenew-on-lock-off",
+      "role": "bug",
+      "condition": "AutoRenew=true, TransferLock=false",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_domain_detail": [
+              {
+                "DomainName": "example.com",
+                "AutoRenew": true,
+                "AdminPrivacy": true,
+                "RegistrantPrivacy": true,
+                "TechPrivacy": true,
+                "ExpirationDate": "2099-01-01 00:00:00+00:00",
+                "TransferLock": false,
+                "Expiry": "2099-01-01 00:00:00+00:00",
+                "StatusList": [
+                  "clientTransferProhibited"
+                ],
+                "TagList": {}
+              }
+            ],
+            "get_hosted_zone": [],
+            "list_query_logging_configs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "자동 갱신이 켜져 있으므로 양호 — 이전 잠금은 R53-006 의 점검 대상"
+    },
+    {
+      "id": "both-on",
+      "role": "control",
+      "condition": "AutoRenew=true, TransferLock=true",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_domain_detail": [
+              {
+                "DomainName": "example.com",
+                "AutoRenew": true,
+                "AdminPrivacy": true,
+                "RegistrantPrivacy": true,
+                "TechPrivacy": true,
+                "ExpirationDate": "2099-01-01 00:00:00+00:00",
+                "TransferLock": true,
+                "Expiry": "2099-01-01 00:00:00+00:00",
+                "StatusList": [
+                  "clientTransferProhibited"
+                ],
+                "TagList": {}
+              }
+            ],
+            "get_hosted_zone": [],
+            "list_query_logging_configs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "both-off",
+      "role": "control",
+      "condition": "AutoRenew=false, TransferLock=false",
+      "args": [],
+      "raw": {
+        "globals": {
+          "route53": {
+            "get_domain_detail": [
+              {
+                "DomainName": "example.com",
+                "AutoRenew": false,
+                "AdminPrivacy": true,
+                "RegistrantPrivacy": true,
+                "TechPrivacy": true,
+                "ExpirationDate": "2099-01-01 00:00:00+00:00",
+                "TransferLock": false,
+                "Expiry": "2099-01-01 00:00:00+00:00",
+                "StatusList": [
+                  "clientTransferProhibited"
+                ],
+                "TagList": {}
+              }
+            ],
+            "get_hosted_zone": [],
+            "list_query_logging_configs": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

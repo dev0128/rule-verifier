@@ -1,0 +1,290 @@
+{
+  "finding": "F137",
+  "rule": "REME-0100800001",
+  "service": "elb",
+  "status": "reproducible",
+  "note": "Raw/Service/elb.py:62 — describe_load_balancer_attributes 가 실패하면 get_response 가 {} 를 돌려 response['LoadBalancerAttributes'] KeyError 로 메서드가 중단되고, 그 LB 와 이후 LB 전부에 LoadBalancerAttributes 키가 없다. 룰 elb.py:33 이 None 검사 전에 ['AccessLog'] 를 subscript 해 룰 전체가 예외. 예외는 룰에서 고칠 수 있으므로 bug, 뒤 LB 의 속성 유실은 collection.",
+  "scenarios": [
+    {
+      "id": "second-lb-missing-attrs",
+      "role": "bug",
+      "condition": "Classic ELB 2개: ① AccessLog 비활성 ② 수집 중 삭제되어 attributes 조회 실패 → LoadBalancerAttributes 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elb": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "clb-nolog",
+                "DNSName": "clb-nolog-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": false
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              },
+              {
+                "LoadBalancerName": "clb-deleted",
+                "DNSName": "clb-deleted-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "na": 1,
+        "flag_contains": [
+          "clb-nolog"
+        ],
+        "na_contains": [
+          "clb-deleted"
+        ]
+      },
+      "why": "속성 수집에 실패한 LB 는 N/A 로 빼고 나머지 LB 는 정상 판정해야 한다 — 한 LB 때문에 계정 전체 결과가 사라지면 안 된다"
+    },
+    {
+      "id": "later-lb-lost",
+      "role": "collection",
+      "condition": "Classic ELB 3개: ① AccessLog 활성 ② attributes 조회 실패(삭제됨) ③ 실제로는 AccessLog 활성인데 ②에서 메서드가 중단돼 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elb": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "clb-log",
+                "DNSName": "clb-log-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": true,
+                    "S3BucketName": "elb-logs",
+                    "EmitInterval": 60
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              },
+              {
+                "LoadBalancerName": "clb-deleted",
+                "DNSName": "clb-deleted-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": []
+              },
+              {
+                "LoadBalancerName": "clb-after",
+                "DNSName": "clb-after-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 2,
+        "na": 1,
+        "good_contains": [
+          "clb-after"
+        ]
+      },
+      "why": "③은 실제로 액세스 로그가 켜져 있으므로 양호. 수집기가 ② 실패 후 ③을 조회하지 않아 raw 로는 판정 불가"
+    },
+    {
+      "id": "all-collected",
+      "role": "control",
+      "condition": "Classic ELB 2개 모두 속성 수집 성공: ① AccessLog 비활성 ② 활성",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elb": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "clb-nolog",
+                "DNSName": "clb-nolog-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": false
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              },
+              {
+                "LoadBalancerName": "clb-log",
+                "DNSName": "clb-log-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": []
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": true,
+                    "S3BucketName": "elb-logs",
+                    "EmitInterval": 60
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1
+      }
+    }
+  ]
+}

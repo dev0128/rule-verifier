@@ -1,0 +1,130 @@
+{
+  "finding": "F102",
+  "rule": "REME-0101000001",
+  "service": "awslambda",
+  "status": "reproducible",
+  "note": "awslambda.py:50 / :61 `function.get(\"Role\", {}).get(\"RoleName\") == key_data2` — get_role 실패로 RoleName 이 없는 함수끼리 None == None 이 되어 역할 공유로 판정. 수집기가 남기는 RoleArn(원래 역할 ARN)은 보지 않는다.",
+  "scenarios": [
+    {
+      "id": "rolename-missing-different-roles",
+      "role": "bug",
+      "condition": "서로 다른 역할(role-a, role-b)을 쓰는 함수 2개, iam:GetRole 이 거부돼 Role={policies:[]} 로 RoleName 없이 저장 (RoleArn 은 남음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "fa",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:fa",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "policies": []
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/role-a"
+              },
+              {
+                "FunctionName": "fb",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:fb",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "policies": []
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/role-b"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "checked": 2,
+        "flag": 0
+      },
+      "why": "두 함수의 실행 역할은 다르다(RoleArn). 역할 공유가 아니므로 취약이 나오면 안 된다"
+    },
+    {
+      "id": "shared-role",
+      "role": "control",
+      "condition": "함수 2개가 같은 역할(shared-role) 사용",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "fa",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:fa",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "shared-role",
+                  "policies": []
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/shared-role"
+              },
+              {
+                "FunctionName": "fb",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:fb",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "shared-role",
+                  "policies": []
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/shared-role"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 2
+      }
+    },
+    {
+      "id": "different-roles",
+      "role": "control",
+      "condition": "함수 2개가 서로 다른 역할 사용 (정상 수집)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "fa",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:fa",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "role-a",
+                  "policies": []
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/role-a"
+              },
+              {
+                "FunctionName": "fb",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:fb",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Role": {
+                  "RoleName": "role-b",
+                  "policies": []
+                },
+                "RoleArn": "arn:aws:iam::111122223333:role/role-b"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 2,
+        "good": 2
+      }
+    }
+  ]
+}

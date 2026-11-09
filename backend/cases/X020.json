@@ -1,0 +1,86 @@
+{
+  "finding": "X020",
+  "rule": "REME-0100600012",
+  "service": "ec2",
+  "status": "reproducible",
+  "note": "ec2.py:690 `flag = True` 로 시작하고 :705-708 은 `if EbsEncryptionByDefault: flag=False elif UseVolume: flag=True` — 볼륨이 없을 때 flag 를 내리는 분기가 없어 UseVolume 계산이 판정에 아무 영향이 없다. 의도는 '볼륨이 있는 리전만 취약' (위키 0107 EC2-012).",
+  "scenarios": [
+    {
+      "id": "off-no-volumes",
+      "role": "bug",
+      "condition": "기본 암호화 꺼짐 (EbsEncryptionByDefault=false), 해당 리전에 EBS 볼륨 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "get_ebs_encryption_by_default": [
+              {
+                "EbsEncryptionByDefault": false,
+                "SseType": "sse-ebs",
+                "Account_id": "111122223333"
+              }
+            ],
+            "describe_volumes": []
+          }
+        }
+      },
+      "expect": {
+        "flag": 0
+      },
+      "why": "룰이 계산하는 UseVolume 의 의도(볼륨이 있는 리전만 취약)대로면 볼륨이 없는 리전은 취약이 아니어야 한다"
+    },
+    {
+      "id": "off-with-volume",
+      "role": "control",
+      "condition": "기본 암호화 꺼짐, 볼륨 1개 있음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "get_ebs_encryption_by_default": [
+              {
+                "EbsEncryptionByDefault": false,
+                "SseType": "sse-ebs",
+                "Account_id": "111122223333"
+              }
+            ],
+            "describe_volumes": [
+              {
+                "VolumeId": "vol-1",
+                "Encrypted": false
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "on",
+      "role": "control",
+      "condition": "기본 암호화 켜짐",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "get_ebs_encryption_by_default": [
+              {
+                "EbsEncryptionByDefault": true,
+                "SseType": "sse-ebs",
+                "Account_id": "111122223333"
+              }
+            ],
+            "describe_volumes": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

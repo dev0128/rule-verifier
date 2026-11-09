@@ -1,0 +1,172 @@
+{
+  "finding": "F111",
+  "rule": "REME-0100900007",
+  "service": "cloudfront",
+  "status": "reproducible",
+  "note": "cloudfront.py:536,555 — key_data2 = ViewerCertificate(dict) 를 `== True` 와 비교해 항상 False. .get('CloudFrontDefaultCertificate') 를 봐야 한다. 이 룰은 어떤 입력에서도 취약을 낼 수 없다.",
+  "scenarios": [
+    {
+      "id": "default-cert",
+      "role": "bug",
+      "condition": "기본 *.cloudfront.net 인증서 사용 (ViewerCertificate.CloudFrontDefaultCertificate=true)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EDEFAULT",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EDEFAULT",
+                "DomainName": "edefault.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "web-bucket",
+                      "DomainName": "web-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "web-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "CloudFrontDefaultCertificate": true,
+                  "SSLSupportMethod": "vip",
+                  "MinimumProtocolVersion": "TLSv1",
+                  "CertificateSource": "cloudfront"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "사용자 지정 SSL/TLS 인증서를 쓰지 않고 CloudFront 기본 인증서를 쓰므로 취약"
+    },
+    {
+      "id": "acm-cert",
+      "role": "control",
+      "condition": "ACM 사용자 지정 인증서 사용",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EACM",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EACM",
+                "DomainName": "eacm.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "web-bucket",
+                      "DomainName": "web-bucket.s3.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "S3OriginConfig": {
+                        "OriginAccessIdentity": ""
+                      },
+                      "OriginAccessControlId": ""
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "web-bucket",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "ACMCertificateArn": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "SSLSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021",
+                  "Certificate": "arn:aws:acm:us-east-1:111111111111:certificate/abc",
+                  "CertificateSource": "acm"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "mediastore-only",
+      "role": "control",
+      "condition": "오리진이 모두 MediaStore (N/A 대상)",
+      "args": [],
+      "raw": {
+        "globals": {
+          "cloudfront": {
+            "list_distributions": [
+              {
+                "Id": "EMEDIA",
+                "ARN": "arn:aws:cloudfront::111111111111:distribution/EMEDIA",
+                "DomainName": "emedia.cloudfront.net",
+                "Status": "Deployed",
+                "Enabled": true,
+                "Origins": {
+                  "Quantity": 1,
+                  "Items": [
+                    {
+                      "Id": "ms",
+                      "DomainName": "abcd.data.mediastore.ap-northeast-2.amazonaws.com",
+                      "OriginPath": "",
+                      "CustomOriginConfig": {
+                        "HTTPPort": 80,
+                        "HTTPSPort": 443,
+                        "OriginProtocolPolicy": "https-only",
+                        "OriginSslProtocols": {
+                          "Quantity": 1,
+                          "Items": [
+                            "TLSv1.2"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "ms",
+                  "ViewerProtocolPolicy": "redirect-to-https"
+                },
+                "CacheBehaviors": {
+                  "Quantity": 0
+                },
+                "ViewerCertificate": {
+                  "CloudFrontDefaultCertificate": true,
+                  "CertificateSource": "cloudfront"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "na": 1
+      }
+    }
+  ]
+}

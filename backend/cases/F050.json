@@ -1,0 +1,163 @@
+{
+  "finding": "F050",
+  "rule": "REME-0101800001",
+  "service": "autoscaling",
+  "status": "reproducible",
+  "note": "autoscaling.py:46-48 — HttpEndpoint=enabled 이면 `HopLimit != 0 or not HopLimit` 로 판정. HopLimit 은 1~64 라 항상 참 → IMDS 가 켜진 시작 템플릿은 권장값(1)이어도 항상 취약.",
+  "scenarios": [
+    {
+      "id": "hop-limit-1",
+      "role": "bug",
+      "condition": "시작 템플릿 MetadataOptions: HttpEndpoint=enabled, HttpTokens=required, HttpPutResponseHopLimit=1",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-web",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-web",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "InstanceType": "t3.micro",
+                      "MetadataOptions": {
+                        "HttpEndpoint": "enabled",
+                        "HttpTokens": "required",
+                        "HttpPutResponseHopLimit": 1
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "홉 제한 1 은 AWS 권장값 — 컨테이너·프록시 등 한 홉 너머에서 IMDS 토큰을 받을 수 없으므로 양호"
+    },
+    {
+      "id": "hop-limit-2",
+      "role": "control",
+      "condition": "HttpEndpoint=enabled, HttpPutResponseHopLimit=2",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-web",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-web",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "MetadataOptions": {
+                        "HttpEndpoint": "enabled",
+                        "HttpTokens": "optional",
+                        "HttpPutResponseHopLimit": 2
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "imds-disabled",
+      "role": "control",
+      "condition": "HttpEndpoint=disabled",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "autoscaling": {
+            "describe_auto_scaling_groups": [
+              {
+                "AutoScalingGroupName": "asg-web",
+                "AutoScalingGroupARN": "arn:aws:autoscaling:ap-northeast-2:111122223333:autoScalingGroup:x:autoScalingGroupName/asg-web",
+                "MinSize": 1,
+                "MaxSize": 2,
+                "DesiredCapacity": 1,
+                "AvailabilityZones": [
+                  "ap-northeast-2a",
+                  "ap-northeast-2c"
+                ],
+                "Instances": [],
+                "Tags": {},
+                "LaunchTemplate": {
+                  "LaunchTemplateId": "lt-0a1",
+                  "LaunchTemplateName": "lt-0a1-name",
+                  "Version": "1",
+                  "LaunchTemplateVersions": {
+                    "LaunchTemplateId": "lt-0a1",
+                    "LaunchTemplateName": "lt-0a1-name",
+                    "VersionNumber": 1,
+                    "DefaultVersion": true,
+                    "LaunchTemplateData": {
+                      "ImageId": "ami-0abc",
+                      "MetadataOptions": {
+                        "HttpEndpoint": "disabled",
+                        "HttpPutResponseHopLimit": 1
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "describe_launch_configurations": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

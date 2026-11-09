@@ -1,0 +1,174 @@
+{
+  "finding": "X041",
+  "rule": "REME-0102300002",
+  "service": "awsconfig",
+  "status": "not_reproducible",
+  "note": "재현 불가 — Analyze/awsconfig.py:94-97 이 기록기 · 상태 목록의 [0] 만 보는 것은 맞지만, 수집기(Raw/awsconfig.py:54-72)는 DescribeConfigurationRecorders / DescribeConfigurationRecorderStatus 를 인자 없이 부르고, AWS API 는 이 경우 '고객 관리형 기록기' 하나만 돌려준다(botocore 1.37.2 config 모델 문서: \"If a configuration recorder is not specified, this operation returns details for the customer managed configuration recorder\"). 고객 관리형 기록기는 리전당 1개뿐이고 서비스 연동 기록기는 이 호출에 나오지 않으므로 목록 원소는 항상 0~1개 — '첫 번째만 봐서' 결과가 틀리는 입력을 수집기가 만들 수 없다. (별개로 상태는 있는데 기록기 목록이 비면 result_temp2[0] IndexError 가 날 수 있으나 이 결함 범위 밖)",
+  "scenarios": [
+    {
+      "id": "recording-all",
+      "role": "control",
+      "condition": "고객 관리형 기록기 1개, recording=true, allSupported=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "config": {
+            "describe_configuration_recorders": [
+              {
+                "arn": "arn:aws:config:ap-northeast-2:111111111111:configuration-recorder/default/abc",
+                "name": "default",
+                "roleARN": "arn:aws:iam::111111111111:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig",
+                "recordingGroup": {
+                  "allSupported": true,
+                  "includeGlobalResourceTypes": false,
+                  "resourceTypes": [],
+                  "exclusionByResourceTypes": {
+                    "resourceTypes": []
+                  },
+                  "recordingStrategy": {
+                    "useOnly": "ALL_SUPPORTED_RESOURCE_TYPES"
+                  }
+                },
+                "recordingMode": {
+                  "recordingFrequency": "CONTINUOUS",
+                  "recordingModeOverrides": []
+                },
+                "recordingScope": "PAID"
+              }
+            ],
+            "describe_configuration_recorder_status": [
+              {
+                "arn": "arn:aws:config:ap-northeast-2:111111111111:configuration-recorder/default/abc",
+                "name": "default",
+                "lastStartTime": "2026-01-01T00:00:00+00:00",
+                "recording": true,
+                "lastStatus": "SUCCESS",
+                "lastStatusChangeTime": "2026-11-01T00:00:00+00:00"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "stopped",
+      "role": "control",
+      "condition": "기록기 1개, recording=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "config": {
+            "describe_configuration_recorders": [
+              {
+                "arn": "arn:aws:config:ap-northeast-2:111111111111:configuration-recorder/default/abc",
+                "name": "default",
+                "roleARN": "arn:aws:iam::111111111111:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig",
+                "recordingGroup": {
+                  "allSupported": true,
+                  "includeGlobalResourceTypes": false,
+                  "resourceTypes": [],
+                  "exclusionByResourceTypes": {
+                    "resourceTypes": []
+                  },
+                  "recordingStrategy": {
+                    "useOnly": "ALL_SUPPORTED_RESOURCE_TYPES"
+                  }
+                },
+                "recordingMode": {
+                  "recordingFrequency": "CONTINUOUS",
+                  "recordingModeOverrides": []
+                },
+                "recordingScope": "PAID"
+              }
+            ],
+            "describe_configuration_recorder_status": [
+              {
+                "arn": "arn:aws:config:ap-northeast-2:111111111111:configuration-recorder/default/abc",
+                "name": "default",
+                "lastStartTime": "2026-01-01T00:00:00+00:00",
+                "recording": false,
+                "lastStatus": "SUCCESS",
+                "lastStatusChangeTime": "2026-11-01T00:00:00+00:00"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "partial-types",
+      "role": "control",
+      "condition": "기록기 1개, recording=true 지만 allSupported=false(특정 리소스만 기록)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "config": {
+            "describe_configuration_recorders": [
+              {
+                "arn": "arn:aws:config:ap-northeast-2:111111111111:configuration-recorder/default/abc",
+                "name": "default",
+                "roleARN": "arn:aws:iam::111111111111:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig",
+                "recordingGroup": {
+                  "allSupported": false,
+                  "includeGlobalResourceTypes": false,
+                  "resourceTypes": [],
+                  "exclusionByResourceTypes": {
+                    "resourceTypes": []
+                  },
+                  "recordingStrategy": {
+                    "useOnly": "INCLUSION_BY_RESOURCE_TYPES"
+                  }
+                },
+                "recordingMode": {
+                  "recordingFrequency": "CONTINUOUS",
+                  "recordingModeOverrides": []
+                },
+                "recordingScope": "PAID"
+              }
+            ],
+            "describe_configuration_recorder_status": [
+              {
+                "arn": "arn:aws:config:ap-northeast-2:111111111111:configuration-recorder/default/abc",
+                "name": "default",
+                "lastStartTime": "2026-01-01T00:00:00+00:00",
+                "recording": true,
+                "lastStatus": "SUCCESS",
+                "lastStatusChangeTime": "2026-11-01T00:00:00+00:00"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "no-recorder",
+      "role": "control",
+      "condition": "기록기 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "config": {
+            "describe_configuration_recorders": [],
+            "describe_configuration_recorder_status": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

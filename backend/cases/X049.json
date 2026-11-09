@@ -1,0 +1,216 @@
+{
+  "finding": "X049",
+  "rule": "REME-0102900002",
+  "service": "ses",
+  "status": "reproducible",
+  "note": "(1) Analyze/ses.py:101-102 — `isinstance(key_data_i.get('Principal', {}), dict)` 다음 `key_data_i['Principal']` 를 대괄호로 읽어 Principal 이 없는 문(NotPrincipal 사용 등)에서 KeyError → 룰 전체 예외. (SES 가 NotPrincipal 문을 받아들이는지는 AWS 문서로 확인하지 못했다 — 입력 모양 기준 재현.) (2) Raw/ses.py:74,93 — list_identity_policies / get_identity_policies 실패 시 get_response 가 {} 라 {}['PolicyNames'] KeyError → _get_identity_policies 가 중단돼 실패 자격 증명과 그 뒤 자격 증명에 'Policies' 키가 없다. Analyze ses.py:36,97 `result_temp_i['Policies']` KeyError → SES-001/002 룰 전체 예외(계정 결과 소실). 키 없음이 raw 에 드러나므로 룰에서 그 자격 증명만 N/A 처리 가능 → bug.",
+  "scenarios": [
+    {
+      "id": "statement-without-principal",
+      "role": "bug",
+      "condition": "자격 증명 2개 — a.example.com 은 Deny + NotPrincipal {AWS: 자기 계정 root}(Principal 키 없음), partner.example.com 은 타 계정 root Allow",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "a.example.com",
+                "Policies": [
+                  {
+                    "PolicyName": "send-auth",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Deny",
+                        "NotPrincipal": {
+                          "AWS": "arn:aws:iam::111122223333:root"
+                        },
+                        "Action": [
+                          "ses:SendEmail",
+                          "ses:SendRawEmail"
+                        ],
+                        "Resource": "arn:aws:ses:ap-northeast-2:111122223333:identity/a.example.com"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "IdentityType": "Domain",
+                "Identity": "partner.example.com",
+                "Policies": [
+                  {
+                    "PolicyName": "send-auth",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::999999999999:root"
+                        },
+                        "Action": [
+                          "ses:SendEmail",
+                          "ses:SendRawEmail"
+                        ],
+                        "Resource": "arn:aws:ses:ap-northeast-2:111122223333:identity/partner.example.com"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "partner.example.com"
+        ]
+      },
+      "why": "자기 계정 외를 막는 Deny 문은 교차 계정 허용이 아니고, 타 계정 Allow 는 취약 — 문 하나 모양 때문에 예외로 전체 결과를 잃으면 안 된다"
+    },
+    {
+      "id": "policies-missing-ses002",
+      "role": "bug",
+      "condition": "자격 증명 2개 — partner.example.com 은 타 계정 Allow, b.example.com 은 정책 수집 실패로 'Policies' 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "partner.example.com",
+                "Policies": [
+                  {
+                    "PolicyName": "send-auth",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::999999999999:root"
+                        },
+                        "Action": [
+                          "ses:SendEmail",
+                          "ses:SendRawEmail"
+                        ],
+                        "Resource": "arn:aws:ses:ap-northeast-2:111122223333:identity/partner.example.com"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "IdentityType": "Domain",
+                "Identity": "b.example.com"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "na": 1,
+        "flag_contains": [
+          "partner.example.com"
+        ],
+        "na_contains": [
+          "b.example.com"
+        ]
+      },
+      "why": "정책을 못 가져온 자격 증명만 N/A, 나머지는 정상 판정"
+    },
+    {
+      "id": "policies-missing-ses001",
+      "role": "bug",
+      "condition": "a.example.com 은 정책 없음(Policies=[]), b.example.com 은 'Policies' 키 없음",
+      "rule": "REME-0102900001",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "a.example.com",
+                "Policies": []
+              },
+              {
+                "IdentityType": "Domain",
+                "Identity": "b.example.com"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "na": 1,
+        "flag": 0,
+        "na_contains": [
+          "b.example.com"
+        ]
+      },
+      "why": "같은 수집 실패가 SES-001 도 깨뜨린다 — 실패 자격 증명만 N/A"
+    },
+    {
+      "id": "normal",
+      "role": "control",
+      "condition": "a.example.com 정책 없음 + partner.example.com 타 계정 Allow (수집 정상)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ses": {
+            "list_identities": [
+              {
+                "IdentityType": "Domain",
+                "Identity": "a.example.com",
+                "Policies": []
+              },
+              {
+                "IdentityType": "Domain",
+                "Identity": "partner.example.com",
+                "Policies": [
+                  {
+                    "PolicyName": "send-auth",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "s1",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::999999999999:root"
+                        },
+                        "Action": [
+                          "ses:SendEmail",
+                          "ses:SendRawEmail"
+                        ],
+                        "Resource": "arn:aws:ses:ap-northeast-2:111122223333:identity/partner.example.com"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "good": 1
+      }
+    }
+  ]
+}

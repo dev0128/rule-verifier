@@ -1,0 +1,44 @@
+{
+  "finding": "F116",
+  "rule": "REME-0106100006",
+  "service": "vpc",
+  "status": "reproducible",
+  "note": "vpc.py:395 — `len(availability_zone) >= 1` 이면 양호. '다수 AZ' 기준이면 >= 2 여야 한다. 지금은 서브넷이 0개인 VPC 만 취약.",
+  "scenarios": [
+    {
+      "id": "single-az",
+      "role": "bug",
+      "condition": "VPC 의 서브넷 2개가 모두 ap-northeast-2a 한 AZ 에만 있음",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {
+        "describe_vpcs": [{"VpcId": "vpc-single", "IsDefault": false, "CidrBlock": "10.0.0.0/16"}],
+        "describe_subnets": [
+          {"VpcId": "vpc-single", "SubnetId": "subnet-1", "AvailabilityZone": "ap-northeast-2a"},
+          {"VpcId": "vpc-single", "SubnetId": "subnet-2", "AvailabilityZone": "ap-northeast-2a"}]}}},
+      "expect": {"verdict": "Vuln", "flag": 1},
+      "why": "항목명이 '다수의 가용성 영역(AZ) 서브넷 구성' — AZ 가 하나뿐이면 AZ 장애에 VPC 전체가 영향받으므로 취약"
+    },
+    {
+      "id": "two-az",
+      "role": "control",
+      "condition": "서브넷이 ap-northeast-2a · 2c 두 AZ 에 분산",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {
+        "describe_vpcs": [{"VpcId": "vpc-multi", "IsDefault": false, "CidrBlock": "10.0.0.0/16"}],
+        "describe_subnets": [
+          {"VpcId": "vpc-multi", "SubnetId": "subnet-1", "AvailabilityZone": "ap-northeast-2a"},
+          {"VpcId": "vpc-multi", "SubnetId": "subnet-2", "AvailabilityZone": "ap-northeast-2c"}]}}},
+      "expect": {"verdict": "Secure", "good": 1}
+    },
+    {
+      "id": "no-subnet",
+      "role": "control",
+      "condition": "서브넷이 하나도 없는 VPC",
+      "args": [],
+      "raw": {"ap-northeast-2": {"ec2": {
+        "describe_vpcs": [{"VpcId": "vpc-empty", "IsDefault": false, "CidrBlock": "10.0.0.0/16"}],
+        "describe_subnets": []}}},
+      "expect": {"verdict": "Vuln", "flag": 1}
+    }
+  ]
+}

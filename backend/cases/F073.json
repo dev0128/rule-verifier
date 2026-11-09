@@ -1,0 +1,2048 @@
+{
+  "finding": "F073",
+  "rule": "REME-0103400001",
+  "service": "secretsmanager",
+  "status": "reproducible",
+  "note": "Raw/secretsmanager.py:33 — `self.client.list_secrets()['SecretList']` 한 번만 호출(NextToken 무시) → 첫 페이지(최대 100개)만. :36 describe_secret 에 개별 예외 처리가 없고 결과는 :40 에서 일괄 대입이라, 시크릿 하나라도 DescribeSecret 이 실패하면(리소스 정책 거부 · 목록과 조회 사이 삭제) 클래스 exception_handler 가 메서드를 삼켜 :32 의 describe_secret=[] 가 남는다. 두 경우 모두 raw 에 흔적이 없어 룰로는 못 고친다.",
+  "scenarios": [
+    {
+      "id": "101st-secret-lost",
+      "role": "collection",
+      "condition": "시크릿 101개 — 첫 페이지 100개는 모두 자동 교체 활성, 101번째(secret-101)는 교체 비활성이지만 수집 안 됨",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "secretsmanager": {
+            "describe_secret": [
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-001-AbCdEf",
+                "Name": "secret-001",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-002-AbCdEf",
+                "Name": "secret-002",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-003-AbCdEf",
+                "Name": "secret-003",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-004-AbCdEf",
+                "Name": "secret-004",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-005-AbCdEf",
+                "Name": "secret-005",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-006-AbCdEf",
+                "Name": "secret-006",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-007-AbCdEf",
+                "Name": "secret-007",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-008-AbCdEf",
+                "Name": "secret-008",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-009-AbCdEf",
+                "Name": "secret-009",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-010-AbCdEf",
+                "Name": "secret-010",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-011-AbCdEf",
+                "Name": "secret-011",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-012-AbCdEf",
+                "Name": "secret-012",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-013-AbCdEf",
+                "Name": "secret-013",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-014-AbCdEf",
+                "Name": "secret-014",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-015-AbCdEf",
+                "Name": "secret-015",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-016-AbCdEf",
+                "Name": "secret-016",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-017-AbCdEf",
+                "Name": "secret-017",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-018-AbCdEf",
+                "Name": "secret-018",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-019-AbCdEf",
+                "Name": "secret-019",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-020-AbCdEf",
+                "Name": "secret-020",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-021-AbCdEf",
+                "Name": "secret-021",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-022-AbCdEf",
+                "Name": "secret-022",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-023-AbCdEf",
+                "Name": "secret-023",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-024-AbCdEf",
+                "Name": "secret-024",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-025-AbCdEf",
+                "Name": "secret-025",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-026-AbCdEf",
+                "Name": "secret-026",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-027-AbCdEf",
+                "Name": "secret-027",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-028-AbCdEf",
+                "Name": "secret-028",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-029-AbCdEf",
+                "Name": "secret-029",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-030-AbCdEf",
+                "Name": "secret-030",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-031-AbCdEf",
+                "Name": "secret-031",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-032-AbCdEf",
+                "Name": "secret-032",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-033-AbCdEf",
+                "Name": "secret-033",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-034-AbCdEf",
+                "Name": "secret-034",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-035-AbCdEf",
+                "Name": "secret-035",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-036-AbCdEf",
+                "Name": "secret-036",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-037-AbCdEf",
+                "Name": "secret-037",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-038-AbCdEf",
+                "Name": "secret-038",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-039-AbCdEf",
+                "Name": "secret-039",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-040-AbCdEf",
+                "Name": "secret-040",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-041-AbCdEf",
+                "Name": "secret-041",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-042-AbCdEf",
+                "Name": "secret-042",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-043-AbCdEf",
+                "Name": "secret-043",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-044-AbCdEf",
+                "Name": "secret-044",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-045-AbCdEf",
+                "Name": "secret-045",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-046-AbCdEf",
+                "Name": "secret-046",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-047-AbCdEf",
+                "Name": "secret-047",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-048-AbCdEf",
+                "Name": "secret-048",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-049-AbCdEf",
+                "Name": "secret-049",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-050-AbCdEf",
+                "Name": "secret-050",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-051-AbCdEf",
+                "Name": "secret-051",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-052-AbCdEf",
+                "Name": "secret-052",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-053-AbCdEf",
+                "Name": "secret-053",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-054-AbCdEf",
+                "Name": "secret-054",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-055-AbCdEf",
+                "Name": "secret-055",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-056-AbCdEf",
+                "Name": "secret-056",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-057-AbCdEf",
+                "Name": "secret-057",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-058-AbCdEf",
+                "Name": "secret-058",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-059-AbCdEf",
+                "Name": "secret-059",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-060-AbCdEf",
+                "Name": "secret-060",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-061-AbCdEf",
+                "Name": "secret-061",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-062-AbCdEf",
+                "Name": "secret-062",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-063-AbCdEf",
+                "Name": "secret-063",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-064-AbCdEf",
+                "Name": "secret-064",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-065-AbCdEf",
+                "Name": "secret-065",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-066-AbCdEf",
+                "Name": "secret-066",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-067-AbCdEf",
+                "Name": "secret-067",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-068-AbCdEf",
+                "Name": "secret-068",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-069-AbCdEf",
+                "Name": "secret-069",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-070-AbCdEf",
+                "Name": "secret-070",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-071-AbCdEf",
+                "Name": "secret-071",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-072-AbCdEf",
+                "Name": "secret-072",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-073-AbCdEf",
+                "Name": "secret-073",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-074-AbCdEf",
+                "Name": "secret-074",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-075-AbCdEf",
+                "Name": "secret-075",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-076-AbCdEf",
+                "Name": "secret-076",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-077-AbCdEf",
+                "Name": "secret-077",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-078-AbCdEf",
+                "Name": "secret-078",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-079-AbCdEf",
+                "Name": "secret-079",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-080-AbCdEf",
+                "Name": "secret-080",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-081-AbCdEf",
+                "Name": "secret-081",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-082-AbCdEf",
+                "Name": "secret-082",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-083-AbCdEf",
+                "Name": "secret-083",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-084-AbCdEf",
+                "Name": "secret-084",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-085-AbCdEf",
+                "Name": "secret-085",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-086-AbCdEf",
+                "Name": "secret-086",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-087-AbCdEf",
+                "Name": "secret-087",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-088-AbCdEf",
+                "Name": "secret-088",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-089-AbCdEf",
+                "Name": "secret-089",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-090-AbCdEf",
+                "Name": "secret-090",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-091-AbCdEf",
+                "Name": "secret-091",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-092-AbCdEf",
+                "Name": "secret-092",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-093-AbCdEf",
+                "Name": "secret-093",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-094-AbCdEf",
+                "Name": "secret-094",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-095-AbCdEf",
+                "Name": "secret-095",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-096-AbCdEf",
+                "Name": "secret-096",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-097-AbCdEf",
+                "Name": "secret-097",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-098-AbCdEf",
+                "Name": "secret-098",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-099-AbCdEf",
+                "Name": "secret-099",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              },
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:secret-100-AbCdEf",
+                "Name": "secret-100",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 101,
+        "flag": 1
+      },
+      "why": "실제 리소스 기준으로 secret-101 은 자동 교체가 꺼져 있어 취약. 수집 결과에 없으므로 룰로는 판정 불가 — list_secrets 페이지네이션 후 재수집 필요"
+    },
+    {
+      "id": "describe-denied-region-empty",
+      "role": "collection",
+      "condition": "시크릿 2개(db-pass 교체 비활성, api-key 교체 활성) 중 api-key 의 DescribeSecret 이 리소스 정책으로 거부 → 리전 describe_secret=[]",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "secretsmanager": {
+            "describe_secret": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "db-pass"
+        ]
+      },
+      "why": "조회 가능한 db-pass 는 자동 교체가 꺼져 있어 취약. 한 시크릿의 실패로 리전 전체가 비어 N/A 가 되면 취약을 놓친다"
+    },
+    {
+      "id": "rotation-off",
+      "role": "control",
+      "condition": "시크릿 1개, RotationEnabled=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "secretsmanager": {
+            "describe_secret": [
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:db-pass-AbCdEf",
+                "Name": "db-pass",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": false
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "rotation-never-configured",
+      "role": "control",
+      "condition": "시크릿 1개, 교체를 설정한 적 없음(RotationEnabled 키 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "secretsmanager": {
+            "describe_secret": [
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:db-pass-AbCdEf",
+                "Name": "db-pass",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "rotation-on",
+      "role": "control",
+      "condition": "시크릿 1개, RotationEnabled=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "secretsmanager": {
+            "describe_secret": [
+              {
+                "ARN": "arn:aws:secretsmanager:ap-northeast-2:111111111111:secret:api-key-AbCdEf",
+                "Name": "api-key",
+                "LastChangedDate": "2026-10-01T00:00:00+00:00",
+                "CreatedDate": "2025-01-01T00:00:00+00:00",
+                "VersionIdsToStages": {
+                  "v1": [
+                    "AWSCURRENT"
+                  ]
+                },
+                "Tags": {},
+                "RotationEnabled": true,
+                "RotationLambdaARN": "arn:aws:lambda:ap-northeast-2:111111111111:function:rotate",
+                "RotationRules": {
+                  "AutomaticallyAfterDays": 30
+                },
+                "LastRotatedDate": "2026-10-01T00:00:00+00:00",
+                "NextRotationDate": "2026-10-31T00:00:00+00:00"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

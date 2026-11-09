@@ -1,0 +1,119 @@
+{
+  "finding": "F097",
+  "rule": "REME-0104600002",
+  "service": "mq",
+  "status": "reproducible",
+  "note": "mq.py:88 — 실제 로깅 상태(Logs.General · Logs.Audit)가 아니라 Logs.Pending(재부팅 대기 변경) 유무를 본다. 로깅이 켜진 정상 브로커는 취약, 로깅이 꺼졌어도 Pending.Audit=True 면 양호.",
+  "scenarios": [
+    {
+      "id": "logs-on",
+      "role": "bug",
+      "condition": "ActiveMQ 브로커 Logs.General=true · Logs.Audit=true, 보류 변경(Pending) 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "mq": {
+            "describe_broker": [
+              {
+                "BrokerId": "mq-on",
+                "BrokerArn": "arn:aws:mq:ap-northeast-2:111122223333:broker:mq-on:mq-on",
+                "BrokerName": "mq-on",
+                "BrokerState": "RUNNING",
+                "EngineType": "ActiveMQ",
+                "EngineVersion": "5.18",
+                "DeploymentMode": "SINGLE_INSTANCE",
+                "HostInstanceType": "mq.t3.micro",
+                "PubliclyAccessible": false,
+                "Logs": {
+                  "Audit": true,
+                  "AuditLogGroup": "/aws/amazonmq/broker/b1/audit",
+                  "General": true,
+                  "GeneralLogGroup": "/aws/amazonmq/broker/b1/general"
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "로그 내보내기가 켜져 있다(판단기준: 로그 내보내기 활성화 시 양호)"
+    },
+    {
+      "id": "logs-off-pending-on",
+      "role": "bug",
+      "condition": "로깅 꺼짐(General · Audit=false), 재부팅 대기 중인 변경 Pending.Audit/General=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "mq": {
+            "describe_broker": [
+              {
+                "BrokerId": "mq-pending",
+                "BrokerArn": "arn:aws:mq:ap-northeast-2:111122223333:broker:mq-pending:mq-pending",
+                "BrokerName": "mq-pending",
+                "BrokerState": "RUNNING",
+                "EngineType": "ActiveMQ",
+                "EngineVersion": "5.18",
+                "DeploymentMode": "SINGLE_INSTANCE",
+                "HostInstanceType": "mq.t3.micro",
+                "PubliclyAccessible": false,
+                "Logs": {
+                  "Audit": false,
+                  "General": false,
+                  "Pending": {
+                    "Audit": true,
+                    "General": true
+                  }
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "지금은 로그를 내보내지 않는다 — 보류 변경은 재부팅 전까지 적용되지 않는다"
+    },
+    {
+      "id": "logs-off",
+      "role": "control",
+      "condition": "로깅 꺼짐, Pending 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "mq": {
+            "describe_broker": [
+              {
+                "BrokerId": "mq-off",
+                "BrokerArn": "arn:aws:mq:ap-northeast-2:111122223333:broker:mq-off:mq-off",
+                "BrokerName": "mq-off",
+                "BrokerState": "RUNNING",
+                "EngineType": "ActiveMQ",
+                "EngineVersion": "5.18",
+                "DeploymentMode": "SINGLE_INSTANCE",
+                "HostInstanceType": "mq.t3.micro",
+                "PubliclyAccessible": false,
+                "Logs": {
+                  "Audit": false,
+                  "General": false
+                },
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

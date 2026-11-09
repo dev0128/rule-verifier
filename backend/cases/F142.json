@@ -1,0 +1,94 @@
+{
+  "finding": "F142",
+  "rule": "REME-0105800011",
+  "service": "ecs",
+  "status": "reproducible",
+  "note": "ecs.py:626-633 — 환경변수 amazon-ecs-agent-latest-version 이 없으면 룰 시작 시 GitHub API 를 timeout 없이 부르고 raise_for_status. 하네스는 외부망을 막으므로(OSError) 이 경로가 '외부망 차단' 상황이다. 클러스터 유무와 관계없이 룰 첫머리에서 예외가 나므로 기대대로 나오는 control 시나리오를 만들 수 없다(모든 입력이 예외).",
+  "scenarios": [
+    {
+      "id": "no-clusters",
+      "role": "bug",
+      "condition": "ECS 클러스터 없음(describe_clusters 빈 리스트), 외부망 차단",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "checked": 0
+      },
+      "why": "점검 대상 컨테이너 인스턴스가 없으면 최신 버전 조회와 무관하게 예외 없이 N/A(점검 0건)여야 한다"
+    },
+    {
+      "id": "cluster-without-instances",
+      "role": "bug",
+      "condition": "Fargate 전용 클러스터(containerInstances 빈 리스트), 외부망 차단",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [],
+            "describe_clusters": [
+              {
+                "clusterName": "c1",
+                "clusterArn": "arn:aws:ecs:ap-northeast-2:111122223333:cluster/c1",
+                "status": "ACTIVE",
+                "settings": [],
+                "services": [],
+                "Tags": {},
+                "containerInstances": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "checked": 0
+      },
+      "why": "컨테이너 인스턴스가 0개이므로 점검 0건 → N/A. 외부 조회 실패가 결과를 지우면 안 된다"
+    },
+    {
+      "id": "instance-offline",
+      "role": "bug",
+      "condition": "EC2 컨테이너 인스턴스 1개, 외부망 차단(최신 버전 조회 불가)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [],
+            "describe_clusters": [
+              {
+                "clusterName": "c1",
+                "clusterArn": "arn:aws:ecs:ap-northeast-2:111122223333:cluster/c1",
+                "status": "ACTIVE",
+                "settings": [],
+                "services": [],
+                "Tags": {},
+                "containerInstances": [
+                  {
+                    "containerInstanceArn": "arn:aws:ecs:ap-northeast-2:111122223333:container-instance/c1/1",
+                    "ec2InstanceId": "i-0aaa",
+                    "versionInfo": {
+                      "agentVersion": "1.89.2"
+                    },
+                    "Tags": {}
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "flag": 0
+      },
+      "why": "최신 버전을 알 수 없으면 근거 없이 취약으로 볼 수 없다 — 예외 없이 해당 인스턴스는 N/A(또는 판정 보류)여야 한다"
+    }
+  ]
+}

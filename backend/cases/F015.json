@@ -1,0 +1,152 @@
+{
+  "finding": "F015",
+  "rule": "REME-0100100006",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:462-471 — date1(마지막 사용일)·date2(발급/변경일) 중 하나라도 N/A·no_information 이면 활성 여부·발급일과 상관없이 \"n/a\". 교체 판정(boolean_3)은 date2 만 쓰는데도 미사용(date1=N/A) 키·비밀번호를 건너뛴다.",
+  "scenarios": [
+    {
+      "id": "active-key-never-used-old",
+      "role": "bug",
+      "condition": "활성 액세스 키 1, 2020-01-01 발급 후 한 번도 사용 안 함 (last_used_date=N/A), 비밀번호 없음",
+      "args": [
+        "90"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "unused-key",
+                "arn": "arn:aws:iam::111111111111:user/unused-key",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "true",
+                "access_key_1_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "unused-key"
+        ]
+      },
+      "why": "교체 기준은 발급(last_rotated) 후 경과일이다. 90일 넘게 교체하지 않은 활성 키는 사용 여부와 무관하게 교체 또는 삭제 대상"
+    },
+    {
+      "id": "password-never-used-old",
+      "role": "bug",
+      "condition": "콘솔 비밀번호 활성, 2020-01-01 설정 후 한 번도 로그인 안 함 (password_last_used=no_information), 키 없음",
+      "args": [
+        "90"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "never-login",
+                "arn": "arn:aws:iam::111111111111:user/never-login",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "true",
+                "password_last_used": "no_information",
+                "password_last_changed": "2020-01-01T00:00:00+00:00",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "false",
+                "access_key_1_last_rotated": "N/A",
+                "access_key_1_last_used_date": "N/A",
+                "access_key_1_last_used_region": "N/A",
+                "access_key_1_last_used_service": "N/A",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "never-login"
+        ]
+      },
+      "why": "엔진은 비밀번호도 password_last_changed 기준으로 교체 여부를 본다. 90일 넘게 바꾸지 않은 활성 비밀번호를 한 번도 안 썼다는 이유로 n/a 처리하면 안 된다"
+    },
+    {
+      "id": "active-key-used-old-rotated",
+      "role": "control",
+      "condition": "활성 액세스 키 1, 2020-01-01 발급, 2020-06-01 마지막 사용",
+      "args": [
+        "90"
+      ],
+      "raw": {
+        "globals": {
+          "iam": {
+            "get_credential_report": [
+              {
+                "user": "old-key",
+                "arn": "arn:aws:iam::111111111111:user/old-key",
+                "user_creation_time": "2020-01-01T00:00:00+00:00",
+                "password_enabled": "false",
+                "password_last_used": "N/A",
+                "password_last_changed": "N/A",
+                "password_next_rotation": "N/A",
+                "mfa_active": "false",
+                "access_key_1_active": "true",
+                "access_key_1_last_rotated": "2020-01-01T00:00:00+00:00",
+                "access_key_1_last_used_date": "2020-06-01T00:00:00+00:00",
+                "access_key_1_last_used_region": "ap-northeast-2",
+                "access_key_1_last_used_service": "s3",
+                "access_key_2_active": "false",
+                "access_key_2_last_rotated": "N/A",
+                "access_key_2_last_used_date": "N/A",
+                "access_key_2_last_used_region": "N/A",
+                "access_key_2_last_used_service": "N/A",
+                "cert_1_active": "false",
+                "cert_1_last_rotated": "N/A",
+                "cert_2_active": "false",
+                "cert_2_last_rotated": "N/A"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "old-key"
+        ]
+      }
+    }
+  ]
+}

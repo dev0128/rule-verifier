@@ -1,0 +1,318 @@
+{
+  "finding": "X039",
+  "rule": "REME-0100500003",
+  "service": "rds",
+  "status": "reproducible",
+  "note": "rds.py:274-278 OEM 옵션이 있으면 그룹의 모든 옵션을 돌며 `Port != 5500 and != 1158` 이면 양호로 바꾼다 — Port 가 없는 옵션(Timezone 등, Port=None)이나 다른 포트 옵션 하나로 OEM 5500 이 양호가 된다. (*-cdb 엔진 전부 N/A(rds.py:237,287) 부분은 CDB 의 OEM 옵션 지원 여부를 확인하지 못해 시나리오에 넣지 않았다.)",
+  "scenarios": [
+    {
+      "id": "oem-default-plus-timezone",
+      "role": "bug",
+      "condition": "oracle-ee 인스턴스, 옵션 그룹에 OEM(Port 5500) + Timezone(포트 없음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-ora",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-ora",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "oracle-ee",
+                "EngineVersion": "19.0.0.0.ru-2024-01.rur-2024-01.r1",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-ora.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 1521,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "og-ora",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.oracle-ee",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "DBClusters": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [
+              {
+                "OptionGroupName": "og-ora",
+                "EngineName": "oracle-ee",
+                "MajorEngineVersion": "19",
+                "Options": [
+                  {
+                    "OptionName": "OEM",
+                    "Port": 5500,
+                    "Persistent": false,
+                    "Permanent": false,
+                    "VpcSecurityGroupMemberships": [
+                      {
+                        "VpcSecurityGroupId": "sg-1",
+                        "Status": "active"
+                      }
+                    ]
+                  },
+                  {
+                    "OptionName": "Timezone",
+                    "Persistent": true,
+                    "Permanent": true,
+                    "OptionSettings": [
+                      {
+                        "Name": "TIME_ZONE",
+                        "Value": "Asia/Seoul"
+                      }
+                    ]
+                  }
+                ],
+                "VpcId": "vpc-1"
+              }
+            ],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "db-ora"
+        ]
+      },
+      "why": "OEM 이 기본 포트 5500 을 쓰므로 취약 — 다른 옵션의 포트와 무관"
+    },
+    {
+      "id": "oem-default-only",
+      "role": "control",
+      "condition": "oracle-ee 인스턴스, 옵션 그룹에 OEM(Port 5500) 만",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-ora",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-ora",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "oracle-ee",
+                "EngineVersion": "19.0.0.0.ru-2024-01.rur-2024-01.r1",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-ora.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 1521,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "og-ora",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.oracle-ee",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "DBClusters": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [
+              {
+                "OptionGroupName": "og-ora",
+                "EngineName": "oracle-ee",
+                "MajorEngineVersion": "19",
+                "Options": [
+                  {
+                    "OptionName": "OEM",
+                    "Port": 5500,
+                    "Persistent": false,
+                    "Permanent": false,
+                    "VpcSecurityGroupMemberships": [
+                      {
+                        "VpcSecurityGroupId": "sg-1",
+                        "Status": "active"
+                      }
+                    ]
+                  }
+                ],
+                "VpcId": "vpc-1"
+              }
+            ],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "oem-custom-port",
+      "role": "control",
+      "condition": "oracle-ee 인스턴스, OEM Port 5501",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-ora",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-ora",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "oracle-ee",
+                "EngineVersion": "19.0.0.0.ru-2024-01.rur-2024-01.r1",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-ora.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 1521,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "og-ora",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.oracle-ee",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "DBClusters": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [
+              {
+                "OptionGroupName": "og-ora",
+                "EngineName": "oracle-ee",
+                "MajorEngineVersion": "19",
+                "Options": [
+                  {
+                    "OptionName": "OEM",
+                    "Port": 5501,
+                    "Persistent": false,
+                    "Permanent": false,
+                    "VpcSecurityGroupMemberships": [
+                      {
+                        "VpcSecurityGroupId": "sg-1",
+                        "Status": "active"
+                      }
+                    ]
+                  }
+                ],
+                "VpcId": "vpc-1"
+              }
+            ],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

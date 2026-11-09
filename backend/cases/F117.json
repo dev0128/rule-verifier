@@ -1,0 +1,46 @@
+{
+  "finding": "F117",
+  "rule": "REME-0106100003",
+  "service": "vpc",
+  "status": "reproducible",
+  "note": "vpc.py:159 — 비기본 VPC 가 있는 리전 수가 `>= 1` 이면 양호. '다중 리전' 기준이면 >= 2 여야 한다. 지금은 비기본 VPC 가 하나도 없는 계정만 취약.",
+  "scenarios": [
+    {
+      "id": "single-region",
+      "role": "bug",
+      "condition": "비기본 VPC 가 ap-northeast-2 에만 있고 us-east-1 에는 기본 VPC 뿐",
+      "args": [],
+      "raw": {
+        "globals": {"account": {"get_owner_id": [{"OwnerId": "111111111111"}]}},
+        "ap-northeast-2": {"ec2": {"describe_vpcs": [{"VpcId": "vpc-1", "IsDefault": false}]}},
+        "us-east-1": {"ec2": {"describe_vpcs": [{"VpcId": "vpc-d", "IsDefault": true}]}}
+      },
+      "expect": {"verdict": "Vuln", "flag": 1},
+      "why": "항목명이 'VPC 다중 리전 구성' — 워크로드 VPC 가 한 리전에만 있으면 리전 장애 대비가 없으므로 취약"
+    },
+    {
+      "id": "two-regions",
+      "role": "control",
+      "condition": "ap-northeast-2 와 us-east-1 모두에 비기본 VPC",
+      "args": [],
+      "raw": {
+        "globals": {"account": {"get_owner_id": [{"OwnerId": "111111111111"}]}},
+        "ap-northeast-2": {"ec2": {"describe_vpcs": [{"VpcId": "vpc-1", "IsDefault": false}]}},
+        "us-east-1": {"ec2": {"describe_vpcs": [{"VpcId": "vpc-2", "IsDefault": false}]}}
+      },
+      "expect": {"verdict": "Secure", "good": 1}
+    },
+    {
+      "id": "default-only",
+      "role": "control",
+      "condition": "모든 리전에 기본 VPC 만 있음",
+      "args": [],
+      "raw": {
+        "globals": {"account": {"get_owner_id": [{"OwnerId": "111111111111"}]}},
+        "ap-northeast-2": {"ec2": {"describe_vpcs": [{"VpcId": "vpc-d1", "IsDefault": true}]}},
+        "us-east-1": {"ec2": {"describe_vpcs": [{"VpcId": "vpc-d2", "IsDefault": true}]}}
+      },
+      "expect": {"verdict": "Vuln", "flag": 1}
+    }
+  ]
+}

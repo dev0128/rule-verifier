@@ -1,0 +1,70 @@
+{
+  "finding": "F080",
+  "rule": "REME-0105500001",
+  "service": "resourceexplorer2",
+  "status": "reproducible",
+  "note": "Analyze/resourceexplorer2.py:23-35 — 인덱스 항목을 하나씩 돌며 항목이 비어있지 않으면 양호. 목록이 비면 점검 0건(N/A)이라 '인덱스 없음' 을 취약으로 낼 수 없다. 또 Raw/resourceexplorer2.py:36 이 list_indexes(Regions=['us-east-1']) 로 us-east-1 인덱스만 가져와, 다른 리전에만 인덱스가 있으면 raw 가 [] 로 같아진다(룰로 구분 불가 → collection).",
+  "scenarios": [
+    {
+      "id": "no-index",
+      "role": "bug",
+      "condition": "Resource Explorer 인덱스 없음 (list_indexes=[])",
+      "args": [],
+      "raw": {
+        "globals": {
+          "resourceexplorer2": {
+            "list_indexes": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "항목은 '인덱스 존재 여부' — 인덱스가 없으면 계정 단위 1건 취약이어야 한다"
+    },
+    {
+      "id": "index-only-seoul",
+      "role": "collection",
+      "condition": "실제: ap-northeast-2 에만 LOCAL 인덱스 — 수집 결과는 us-east-1 만 조회해 list_indexes=[]",
+      "args": [],
+      "raw": {
+        "globals": {
+          "resourceexplorer2": {
+            "list_indexes": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0
+      },
+      "why": "인덱스가 존재하므로 양호. 수집이 us-east-1 만 보므로 raw 로는 '인덱스 없음' 과 구분할 수 없다"
+    },
+    {
+      "id": "index-us-east-1",
+      "role": "control",
+      "condition": "us-east-1 AGGREGATOR 인덱스 1개",
+      "args": [],
+      "raw": {
+        "globals": {
+          "resourceexplorer2": {
+            "list_indexes": [
+              {
+                "Arn": "arn:aws:resource-explorer-2:us-east-1:111122223333:index/abcd1234-ab12-cd34-ef56-abcdef123456",
+                "Region": "us-east-1",
+                "Type": "AGGREGATOR",
+                "Id": "abcd1234-ab12-cd34-ef56-abcdef123456",
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

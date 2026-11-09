@@ -1,0 +1,129 @@
+{
+  "finding": "F138",
+  "rule": "REME-0105800001",
+  "service": "ecs",
+  "status": "reproducible",
+  "note": "Raw/Service/ecs.py:95 — method_exchange_tag(containerDefinition, \"environment\") 가 environment 를 지우고 {name: value} 를 컨테이너의 'Tags' 로 옮긴다. Analyze ecs.py:42 는 containerDefinition.get('environment', []) 만 보므로 항상 [] → 아무것도 스캔하지 않고 양호. 값은 Tags 에 그대로 남아 있어 룰에서 고칠 수 있으므로 collection 이 아니라 bug 로 둔다.",
+  "scenarios": [
+    {
+      "id": "aws-key-in-env-collected",
+      "role": "bug",
+      "condition": "컨테이너 환경변수에 AWS 액세스 키 · 시크릿 키 — 수집기 처리 후 모양(environment 없음, Tags={이름: 값})",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "networkMode": "awsvpc",
+                "Tags": {},
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "family": "fam",
+                    "Tags": {
+                      "AWS_ACCESS_KEY_ID": "AKIAIOSFODNN7EXAMPLE",
+                      "AWS_SECRET_ACCESS_KEY": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+                    }
+                  }
+                ]
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "태스크 정의 환경변수에 평문 AWS 자격 증명이 있으므로 '환경변수에서 중요정보 노출' 은 취약이어야 한다. 수집 후 환경변수는 컨테이너 Tags 에 남아 있다"
+    },
+    {
+      "id": "benign-env-collected",
+      "role": "control",
+      "condition": "환경변수에 중요정보 없음(Tags={LOG_LEVEL: info}) — 수집기 처리 후 모양",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "networkMode": "awsvpc",
+                "Tags": {},
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "family": "fam",
+                    "Tags": {
+                      "LOG_LEVEL": "info"
+                    }
+                  }
+                ]
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "checked": 1,
+        "good": 1
+      }
+    },
+    {
+      "id": "raw-environment-shape",
+      "role": "control",
+      "condition": "(룰 로직 확인용) 수집 전 원형 environment 에 AWS 키 — 수집기가 실제로 만들지 않는 모양",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ecs": {
+            "describe_task_definition": [
+              {
+                "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:111122223333:task-definition/fam:1",
+                "family": "fam",
+                "revision": 1,
+                "networkMode": "awsvpc",
+                "containerDefinitions": [
+                  {
+                    "name": "app",
+                    "image": "nginx",
+                    "environment": [
+                      {
+                        "name": "AWS_ACCESS_KEY_ID",
+                        "value": "AKIAIOSFODNN7EXAMPLE"
+                      },
+                      {
+                        "name": "AWS_SECRET_ACCESS_KEY",
+                        "value": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+                      }
+                    ],
+                    "family": "fam"
+                  }
+                ],
+                "dclo_id": "ap-northeast-2.ecs.taskdefinition.fam",
+                "Tags": {},
+                "taskRole_EvaluationResults": {},
+                "executionRole_EvaluationResults": {}
+              }
+            ],
+            "describe_clusters": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "detect_secrets 스캔 자체는 동작함을 확인 — environment 키가 있으면 룰이 잡는다"
+    }
+  ]
+}

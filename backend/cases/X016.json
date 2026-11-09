@@ -1,0 +1,389 @@
+{
+  "finding": "X016",
+  "rule": "REME-0100500018",
+  "service": "rds",
+  "status": "reproducible",
+  "note": "rds.py:1697-1723 클러스터 경로는 \"\"\" 문자열 안에 있지만 판단기준(Aurora 는 자동 백업을 끌 수 없음)상 의도된 제외다. 실제 결함은 인스턴스 경로가 DBClusters={} 에 막혀(rds.py:1732, F038 과 같은 원인) 어떤 계정에서도 N/A 만 나오는 것 — 단독 인스턴스의 BackupRetentionPeriod=0 을 놓친다.",
+  "scenarios": [
+    {
+      "id": "mixed-account-no-backup",
+      "role": "bug",
+      "condition": "Aurora 클러스터(멤버 인스턴스 포함) + 단독 mysql 인스턴스 BackupRetentionPeriod=0 (DBClusters={})",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "aurora-1-i1",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:aurora-1-i1",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "1.0",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "aurora-1-i1.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:aurora-mysql",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.aurora-mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "DBClusters": {
+                  "DBClusterIdentifier": "aurora-1",
+                  "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                  "Engine": "aurora-mysql",
+                  "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                  "Status": "available",
+                  "Port": 3306,
+                  "MultiAZ": false,
+                  "StorageEncrypted": true,
+                  "DeletionProtection": true,
+                  "BackupRetentionPeriod": 7,
+                  "DBSubnetGroup": "dbsg-1",
+                  "DBClusterParameterGroup": "cpg-aurora-1",
+                  "DBClusterMembers": [
+                    {
+                      "DBInstanceIdentifier": "aurora-1-i1",
+                      "IsClusterWriter": true,
+                      "DBClusterParameterGroupStatus": "in-sync",
+                      "PromotionTier": 1
+                    }
+                  ],
+                  "Tags": {}
+                },
+                "DBClusterIdentifier": "aurora-1"
+              },
+              {
+                "DBInstanceIdentifier": "db-mysql",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-mysql",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mysql",
+                "EngineVersion": "8.0.35",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-mysql.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 0,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:mysql",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "DBClusters": {}
+              }
+            ],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1,
+        "flag_contains": [
+          "db-mysql"
+        ],
+        "flag_excludes": [
+          "aurora-1"
+        ]
+      },
+      "why": "Aurora 는 판단기준상 제외, 단독 인스턴스는 자동 백업 꺼짐 → 취약"
+    },
+    {
+      "id": "standalone-backup",
+      "role": "bug",
+      "condition": "단독 mysql 인스턴스 BackupRetentionPeriod=7 (DBClusters={})",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "db-mysql",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:db-mysql",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "mysql",
+                "EngineVersion": "8.0.35",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "db-mysql.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:mysql",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "DBClusters": {}
+              }
+            ],
+            "describe_db_clusters": [],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "자동 백업 켜짐 → 양호(N/A 가 아니다)"
+    },
+    {
+      "id": "aurora-only",
+      "role": "control",
+      "condition": "Aurora 클러스터와 그 멤버 인스턴스만 있음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "rds": {
+            "describe_db_instances": [
+              {
+                "DBInstanceIdentifier": "aurora-1-i1",
+                "DBInstanceArn": "arn:aws:rds:ap-northeast-2:111122223333:db:aurora-1-i1",
+                "DBInstanceClass": "db.t3.medium",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "1.0",
+                "DBInstanceStatus": "available",
+                "Endpoint": {
+                  "Address": "aurora-1-i1.abc.ap-northeast-2.rds.amazonaws.com",
+                  "Port": 3306,
+                  "HostedZoneId": "Z1"
+                },
+                "MultiAZ": false,
+                "PubliclyAccessible": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "MonitoringInterval": 0,
+                "OptionGroupMemberships": [
+                  {
+                    "OptionGroupName": "default:aurora-mysql",
+                    "Status": "in-sync"
+                  }
+                ],
+                "DBParameterGroups": [
+                  {
+                    "DBParameterGroupName": "default.aurora-mysql",
+                    "ParameterApplyStatus": "in-sync"
+                  }
+                ],
+                "DBSubnetGroup": {
+                  "DBSubnetGroupName": "dbsg-1",
+                  "VpcId": "vpc-1",
+                  "SubnetGroupStatus": "Complete",
+                  "Subnets": [
+                    {
+                      "SubnetIdentifier": "subnet-a",
+                      "SubnetAvailabilityZone": {
+                        "Name": "ap-northeast-2a"
+                      },
+                      "SubnetStatus": "Active"
+                    }
+                  ]
+                },
+                "Tags": {},
+                "DBClusters": {
+                  "DBClusterIdentifier": "aurora-1",
+                  "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                  "Engine": "aurora-mysql",
+                  "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                  "Status": "available",
+                  "Port": 3306,
+                  "MultiAZ": false,
+                  "StorageEncrypted": true,
+                  "DeletionProtection": true,
+                  "BackupRetentionPeriod": 7,
+                  "DBSubnetGroup": "dbsg-1",
+                  "DBClusterParameterGroup": "cpg-aurora-1",
+                  "DBClusterMembers": [
+                    {
+                      "DBInstanceIdentifier": "aurora-1-i1",
+                      "IsClusterWriter": true,
+                      "DBClusterParameterGroupStatus": "in-sync",
+                      "PromotionTier": 1
+                    }
+                  ],
+                  "Tags": {}
+                },
+                "DBClusterIdentifier": "aurora-1"
+              }
+            ],
+            "describe_db_clusters": [
+              {
+                "DBClusterIdentifier": "aurora-1",
+                "DBClusterArn": "arn:aws:rds:ap-northeast-2:111122223333:cluster:aurora-1",
+                "Engine": "aurora-mysql",
+                "EngineVersion": "8.0.mysql_aurora.3.05.2",
+                "Status": "available",
+                "Port": 3306,
+                "MultiAZ": false,
+                "StorageEncrypted": true,
+                "DeletionProtection": true,
+                "BackupRetentionPeriod": 7,
+                "DBSubnetGroup": "dbsg-1",
+                "DBClusterParameterGroup": "cpg-aurora-1",
+                "DBClusterMembers": [
+                  {
+                    "DBInstanceIdentifier": "aurora-1-i1",
+                    "IsClusterWriter": true,
+                    "DBClusterParameterGroupStatus": "in-sync",
+                    "PromotionTier": 1
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_db_snapshots": [],
+            "describe_db_cluster_snapshots": [],
+            "describe_db_cluster_parameter_groups": [],
+            "describe_db_parameter_groups": [],
+            "describe_db_subnet_groups": [],
+            "describe_option_groups": [],
+            "describe_db_engine_versions": [
+              {
+                "account_id": "111122223333"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "checked": 0
+      }
+    }
+  ]
+}

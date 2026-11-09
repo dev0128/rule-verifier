@@ -1,0 +1,267 @@
+{
+  "finding": "F120",
+  "rule": "REME-0101300002",
+  "service": "elasticbeanstalk",
+  "status": "reproducible",
+  "note": "elasticbeanstalk.py:100 — `Health == \"Green\" and HealthStatus` 일 때만 ManagedActionsEnabled 를 본다. Red · Yellow 환경은 설정과 무관하게 양호.",
+  "scenarios": [
+    {
+      "id": "red-disabled",
+      "role": "bug",
+      "condition": "Health=Red(HealthStatus=Severe) 환경, ManagedActionsEnabled=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-red",
+                "EnvironmentId": "e-env-red",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-red.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-red.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Red",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-red",
+                "HealthStatus": "Severe",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-red",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:managedactions",
+                        "OptionName": "ManagedActionsEnabled",
+                        "Value": "false"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Health 는 인스턴스 상태 색일 뿐 설정과 무관하다 — 상태가 Green 이 아니어도 설정이 꺼져 있으면 취약이어야 한다"
+    },
+    {
+      "id": "yellow-disabled",
+      "role": "bug",
+      "condition": "Health=Yellow(HealthStatus=Warning) 환경, ManagedActionsEnabled=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-yellow",
+                "EnvironmentId": "e-env-yellow",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-yellow.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-yellow.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Yellow",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-yellow",
+                "HealthStatus": "Warning",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-yellow",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:managedactions",
+                        "OptionName": "ManagedActionsEnabled",
+                        "Value": "false"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "Health 는 인스턴스 상태 색일 뿐 설정과 무관하다 — 상태가 Green 이 아니어도 설정이 꺼져 있으면 취약이어야 한다"
+    },
+    {
+      "id": "green-disabled",
+      "role": "control",
+      "condition": "Health=Green(HealthStatus=Ok), ManagedActionsEnabled=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-green",
+                "EnvironmentId": "e-env-green",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-green.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-green.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-green",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-green",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:managedactions",
+                        "OptionName": "ManagedActionsEnabled",
+                        "Value": "false"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "green-enabled",
+      "role": "control",
+      "condition": "Health=Green(HealthStatus=Ok), ManagedActionsEnabled=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elasticbeanstalk": {
+            "describe_environments": [
+              {
+                "EnvironmentName": "env-green",
+                "EnvironmentId": "e-env-green",
+                "ApplicationName": "app",
+                "VersionLabel": "v1",
+                "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                "PlatformArn": "arn:aws:elasticbeanstalk:ap-northeast-2::platform/Python 3.11 running on 64bit Amazon Linux 2023/4.3.0",
+                "EndpointURL": "env-green.ap-northeast-2.elb.amazonaws.com",
+                "CNAME": "env-green.ap-northeast-2.elasticbeanstalk.com",
+                "Status": "Ready",
+                "AbortableOperationInProgress": false,
+                "Health": "Green",
+                "Tier": {
+                  "Name": "WebServer",
+                  "Type": "Standard",
+                  "Version": "1.0"
+                },
+                "EnvironmentArn": "arn:aws:elasticbeanstalk:ap-northeast-2:111122223333:environment/app/env-green",
+                "HealthStatus": "Ok",
+                "ConfigurationSettings": [
+                  {
+                    "SolutionStackName": "64bit Amazon Linux 2023 v4.3.0 running Python 3.11",
+                    "ApplicationName": "app",
+                    "EnvironmentName": "env-green",
+                    "DeploymentStatus": "deployed",
+                    "OptionSettings": [
+                      {
+                        "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+                        "OptionName": "SystemType",
+                        "Value": "enhanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:environment",
+                        "OptionName": "EnvironmentType",
+                        "Value": "LoadBalanced"
+                      },
+                      {
+                        "Namespace": "aws:elasticbeanstalk:managedactions",
+                        "OptionName": "ManagedActionsEnabled",
+                        "Value": "true"
+                      }
+                    ]
+                  }
+                ],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

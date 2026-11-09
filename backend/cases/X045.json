@@ -1,0 +1,206 @@
+{
+  "finding": "X045",
+  "rule": "REME-0100600002",
+  "service": "ec2",
+  "status": "reproducible",
+  "note": "Raw/ec2.py:150-157 — describe_instance_attribute(userData) 실패 시 instance_attribute 가 {} 로 남고 룰 ec2.py:89-107 은 빈 User Data 를 스캔해 양호. ELB-004 도 Raw/elbv2.py:54-59 describe_load_balancer_attributes 실패 시 Attributes=[] → 룰 elb.py:203-209 해당 속성이 없으니 양호. 성공 응답에는 InstanceId(인스턴스) · 속성 목록(ALB)이 항상 들어 있어 raw 에서 실패를 구분할 수 있다 → 룰에서 N/A 로 고칠 수 있다(bug 역할).",
+  "scenarios": [
+    {
+      "id": "userdata-call-failed",
+      "role": "bug",
+      "condition": "describe_instance_attribute 가 AccessDenied 로 실패 — instance_attribute={} (성공 응답이면 InstanceId 가 들어 있음)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_instances": [
+              {
+                "InstanceId": "i-fail",
+                "InstanceType": "t3.micro",
+                "State": {
+                  "Name": "running"
+                },
+                "instance_attribute": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "flag": 0,
+        "good": 0
+      },
+      "why": "User Data 를 읽지 못했으므로 중요 정보가 있는지 모른다 — 양호가 아니라 판정 불가(N/A)"
+    },
+    {
+      "id": "userdata-with-key",
+      "role": "control",
+      "condition": "User Data 에 AWS 액세스 키 ID 하드코딩",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_instances": [
+              {
+                "InstanceId": "i-key",
+                "InstanceType": "t3.micro",
+                "State": {
+                  "Name": "running"
+                },
+                "instance_attribute": {
+                  "InstanceId": "i-key",
+                  "UserData": {
+                    "Value": "IyEvYmluL2Jhc2gKZXhwb3J0IEFXU19BQ0NFU1NfS0VZX0lEPUFLSUFaM01TSlY0V1dOS1dXNUZHCg=="
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "userdata-empty",
+      "role": "control",
+      "condition": "User Data 없음 (성공 응답: InstanceId 있고 UserData={})",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ec2": {
+            "describe_instances": [
+              {
+                "InstanceId": "i-empty",
+                "InstanceType": "t3.micro",
+                "State": {
+                  "Name": "running"
+                },
+                "instance_attribute": {
+                  "InstanceId": "i-empty",
+                  "UserData": {}
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "elb004-attributes-failed",
+      "role": "bug",
+      "condition": "ALB describe_load_balancer_attributes 실패 — Attributes=[]",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "alb-fail",
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111122223333:loadbalancer/app/alb-fail/abc",
+                "Type": "application",
+                "Scheme": "internet-facing",
+                "Attributes": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "flag": 0,
+        "good": 0
+      },
+      "why": "drop_invalid_header_fields 설정을 모른다 — 판정 불가(N/A)",
+      "rule": "REME-0100800004",
+      "service": "elb"
+    },
+    {
+      "id": "elb004-drop-false",
+      "role": "control",
+      "condition": "ALB routing.http.drop_invalid_header_fields.enabled=false",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "alb-1",
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111122223333:loadbalancer/app/alb-1/abc",
+                "Type": "application",
+                "Scheme": "internet-facing",
+                "Attributes": [
+                  {
+                    "Key": "deletion_protection.enabled",
+                    "Value": "false"
+                  },
+                  {
+                    "Key": "routing.http.drop_invalid_header_fields.enabled",
+                    "Value": "false"
+                  },
+                  {
+                    "Key": "idle_timeout.timeout_seconds",
+                    "Value": "60"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "rule": "REME-0100800004",
+      "service": "elb"
+    },
+    {
+      "id": "elb004-drop-true",
+      "role": "control",
+      "condition": "ALB routing.http.drop_invalid_header_fields.enabled=true",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "alb-1",
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111122223333:loadbalancer/app/alb-1/abc",
+                "Type": "application",
+                "Scheme": "internet-facing",
+                "Attributes": [
+                  {
+                    "Key": "deletion_protection.enabled",
+                    "Value": "false"
+                  },
+                  {
+                    "Key": "routing.http.drop_invalid_header_fields.enabled",
+                    "Value": "true"
+                  },
+                  {
+                    "Key": "idle_timeout.timeout_seconds",
+                    "Value": "60"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "rule": "REME-0100800004",
+      "service": "elb"
+    }
+  ]
+}

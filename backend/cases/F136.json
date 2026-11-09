@@ -1,0 +1,229 @@
+{
+  "finding": "F136",
+  "rule": "REME-0100800003",
+  "service": "elb",
+  "status": "reproducible",
+  "note": "elb.py:154-157 — Reference-Security-Policy 가 정확히 ELBSecurityPolicy-TLS-1-2-2017-01 일 때만 양호. TLS1.2 전용인 TLS-1-2-Ext-2018-06 등 다른 안전 정책을 취약 처리한다(ELB-008 의 권장 목록에는 Ext-2018-06 이 들어 있다).",
+  "scenarios": [
+    {
+      "id": "tls12-ext-2018",
+      "role": "bug",
+      "condition": "Classic ELB HTTPS 리스너, Reference-Security-Policy=ELBSecurityPolicy-TLS-1-2-Ext-2018-06",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elb": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "clb-ext",
+                "DNSName": "clb-ext-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": [
+                      "p1"
+                    ]
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [
+                  {
+                    "PolicyName": "ELBSecurityPolicy-TLS-1-2-Ext-2018-06-copy",
+                    "PolicyTypeName": "SSLNegotiationPolicyType",
+                    "PolicyAttributeDescriptions": [
+                      {
+                        "AttributeName": "Reference-Security-Policy",
+                        "AttributeValue": "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"
+                      },
+                      {
+                        "AttributeName": "Protocol-TLSv1.2",
+                        "AttributeValue": "true"
+                      }
+                    ]
+                  }
+                ],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": true,
+                    "S3BucketName": "elb-logs",
+                    "EmitInterval": 60
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "ELBSecurityPolicy-TLS-1-2-Ext-2018-06 은 TLS1.2 만 허용하는 AWS 사전 정의 정책 — 안전한 정책"
+    },
+    {
+      "id": "tls12-2017",
+      "role": "control",
+      "condition": "Reference-Security-Policy=ELBSecurityPolicy-TLS-1-2-2017-01",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elb": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "clb-2017",
+                "DNSName": "clb-2017-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": [
+                      "p1"
+                    ]
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [
+                  {
+                    "PolicyName": "ELBSecurityPolicy-TLS-1-2-2017-01-copy",
+                    "PolicyTypeName": "SSLNegotiationPolicyType",
+                    "PolicyAttributeDescriptions": [
+                      {
+                        "AttributeName": "Reference-Security-Policy",
+                        "AttributeValue": "ELBSecurityPolicy-TLS-1-2-2017-01"
+                      },
+                      {
+                        "AttributeName": "Protocol-TLSv1.2",
+                        "AttributeValue": "true"
+                      }
+                    ]
+                  }
+                ],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": true,
+                    "S3BucketName": "elb-logs",
+                    "EmitInterval": 60
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "legacy-2016",
+      "role": "control",
+      "condition": "Reference-Security-Policy=ELBSecurityPolicy-2016-08 (TLS1.0 허용)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elb": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerName": "clb-2016",
+                "DNSName": "clb-2016-1.ap-northeast-2.elb.amazonaws.com",
+                "Scheme": "internet-facing",
+                "ListenerDescriptions": [
+                  {
+                    "Listener": {
+                      "Protocol": "HTTPS",
+                      "LoadBalancerPort": 443,
+                      "InstanceProtocol": "HTTP",
+                      "InstancePort": 80,
+                      "SSLCertificateId": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                    },
+                    "PolicyNames": [
+                      "p1"
+                    ]
+                  }
+                ],
+                "VPCId": "vpc-1",
+                "Instances": [],
+                "Tags": {},
+                "PolicyDescriptions": [
+                  {
+                    "PolicyName": "ELBSecurityPolicy-2016-08-copy",
+                    "PolicyTypeName": "SSLNegotiationPolicyType",
+                    "PolicyAttributeDescriptions": [
+                      {
+                        "AttributeName": "Reference-Security-Policy",
+                        "AttributeValue": "ELBSecurityPolicy-2016-08"
+                      },
+                      {
+                        "AttributeName": "Protocol-TLSv1.2",
+                        "AttributeValue": "true"
+                      }
+                    ]
+                  }
+                ],
+                "LoadBalancerAttributes": {
+                  "CrossZoneLoadBalancing": {
+                    "Enabled": true
+                  },
+                  "AccessLog": {
+                    "Enabled": true,
+                    "S3BucketName": "elb-logs",
+                    "EmitInterval": 60
+                  },
+                  "ConnectionDraining": {
+                    "Enabled": true,
+                    "Timeout": 300
+                  },
+                  "ConnectionSettings": {
+                    "IdleTimeout": 60
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

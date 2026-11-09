@@ -1,0 +1,112 @@
+{
+  "finding": "F149",
+  "rule": "REME-0103700002",
+  "service": "transfer",
+  "status": "reproducible",
+  "note": "transfer.py:84-88 — StructuredLogDestinations 만 본다. 기존 방식인 LoggingRole(서버가 CloudWatch Logs 에 기록하도록 지정한 IAM 역할)로 로깅하는 서버를 취약으로 판정.",
+  "scenarios": [
+    {
+      "id": "logging-role-only",
+      "role": "bug",
+      "condition": "LoggingRole 설정(기존 CloudWatch 로깅), StructuredLogDestinations=[]",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "transfer": {
+            "describe_server": [
+              {
+                "Arn": "arn:aws:transfer:ap-northeast-2:111111111111:server/s-legacy",
+                "ServerId": "s-legacy",
+                "Domain": "S3",
+                "EndpointType": "VPC",
+                "IdentityProviderType": "SERVICE_MANAGED",
+                "Protocols": [
+                  "SFTP"
+                ],
+                "State": "ONLINE",
+                "UserCount": 1,
+                "Tags": {},
+                "SecurityPolicyName": "TransferSecurityPolicy-2024-01",
+                "LoggingRole": "arn:aws:iam::111111111111:role/transfer-logging",
+                "StructuredLogDestinations": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "flag": 0,
+        "good": 1
+      },
+      "why": "LoggingRole 을 지정하면 서버 활동이 CloudWatch Logs(/aws/transfer/<server-id>)에 기록된다 — 판단기준 'CloudWatch 로그 활성화' 충족"
+    },
+    {
+      "id": "structured-logging",
+      "role": "control",
+      "condition": "StructuredLogDestinations 에 로그 그룹 지정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "transfer": {
+            "describe_server": [
+              {
+                "Arn": "arn:aws:transfer:ap-northeast-2:111111111111:server/s-structured",
+                "ServerId": "s-structured",
+                "Domain": "S3",
+                "EndpointType": "VPC",
+                "IdentityProviderType": "SERVICE_MANAGED",
+                "Protocols": [
+                  "SFTP"
+                ],
+                "State": "ONLINE",
+                "UserCount": 1,
+                "Tags": {},
+                "SecurityPolicyName": "TransferSecurityPolicy-2024-01",
+                "StructuredLogDestinations": [
+                  "arn:aws:logs:ap-northeast-2:111111111111:log-group:/aws/transfer/s-1:*"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "no-logging",
+      "role": "control",
+      "condition": "LoggingRole 없음, StructuredLogDestinations 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "transfer": {
+            "describe_server": [
+              {
+                "Arn": "arn:aws:transfer:ap-northeast-2:111111111111:server/s-nolog",
+                "ServerId": "s-nolog",
+                "Domain": "S3",
+                "EndpointType": "VPC",
+                "IdentityProviderType": "SERVICE_MANAGED",
+                "Protocols": [
+                  "SFTP"
+                ],
+                "State": "ONLINE",
+                "UserCount": 1,
+                "Tags": {},
+                "SecurityPolicyName": "TransferSecurityPolicy-2024-01"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

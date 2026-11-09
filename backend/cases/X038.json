@@ -1,0 +1,246 @@
+{
+  "finding": "X038",
+  "rule": "REME-0101600002",
+  "service": "appmesh",
+  "status": "reproducible",
+  "note": "appmesh.py:78 — flag 초기값이 True 이고 게이트웨이 리스너에 healthCheck 가 있을 때만 False 로 바꾼다. 가상 게이트웨이가 없는 메시는 점검할 게이트웨이가 없는데도 취약(AMH-001·003·004 는 같은 경우 양호).",
+  "scenarios": [
+    {
+      "id": "no-gateway",
+      "role": "bug",
+      "condition": "가상 게이트웨이가 없는 메시",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "m1",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m1",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "flag": 0
+      },
+      "why": "항목은 '가상 게이트웨이' 의 상태 확인 — 게이트웨이가 없으면 점검 대상이 없으므로 취약일 수 없다(N/A, 또는 다른 AMH 항목처럼 양호)"
+    },
+    {
+      "id": "health-on",
+      "role": "control",
+      "condition": "가상 게이트웨이 리스너에 healthCheck 설정",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "m2",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m2",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "m2",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m2/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          },
+                          "healthCheck": {
+                            "healthyThreshold": 2,
+                            "intervalMillis": 5000,
+                            "path": "/ping",
+                            "port": 8080,
+                            "protocol": "http",
+                            "timeoutMillis": 2000,
+                            "unhealthyThreshold": 2
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "health-off",
+      "role": "control",
+      "condition": "가상 게이트웨이 리스너에 healthCheck 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "appmesh": {
+            "describe_mesh": [
+              {
+                "meshName": "m3",
+                "metadata": {
+                  "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m3",
+                  "createdAt": "2024-01-01T00:00:00+09:00",
+                  "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                  "meshOwner": "111111111111",
+                  "resourceOwner": "111111111111",
+                  "uid": "u-1",
+                  "version": 1
+                },
+                "spec": {
+                  "egressFilter": {
+                    "type": "DROP_ALL"
+                  }
+                },
+                "status": {
+                  "status": "ACTIVE"
+                },
+                "virtualGateway": [
+                  {
+                    "meshName": "m3",
+                    "virtualGatewayName": "gw1",
+                    "metadata": {
+                      "arn": "arn:aws:appmesh:ap-northeast-2:111111111111:mesh/m3/virtualGateway/gw1",
+                      "createdAt": "2024-01-01T00:00:00+09:00",
+                      "lastUpdatedAt": "2024-01-01T00:00:00+09:00",
+                      "meshOwner": "111111111111",
+                      "resourceOwner": "111111111111",
+                      "uid": "u-1",
+                      "version": 1
+                    },
+                    "spec": {
+                      "listeners": [
+                        {
+                          "portMapping": {
+                            "port": 8080,
+                            "protocol": "http"
+                          }
+                        }
+                      ],
+                      "logging": {
+                        "accessLog": {
+                          "file": {
+                            "path": "/dev/stdout"
+                          }
+                        }
+                      },
+                      "backendDefaults": {
+                        "clientPolicy": {
+                          "tls": {
+                            "enforce": true,
+                            "validation": {
+                              "trust": {
+                                "acm": {
+                                  "certificateAuthorityArns": [
+                                    "arn:aws:acm-pca:ap-northeast-2:111111111111:certificate-authority/ca1"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "status": "ACTIVE"
+                    },
+                    "Tags": {}
+                  }
+                ],
+                "virtualService": [],
+                "virtualNode": [],
+                "virtualRouter": []
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

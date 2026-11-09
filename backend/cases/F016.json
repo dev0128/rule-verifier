@@ -1,0 +1,127 @@
+{
+  "finding": "F016",
+  "rule": "REME-0100100011",
+  "service": "iam",
+  "status": "reproducible",
+  "note": "iam.py:829 `_select_value.remove(\"accessAdvisor\")` — 수집 _generate_service_last_accessed_details(Raw/iam.py:235-249)가 사용자 하나에서 실패하면(get_response {} → JobId KeyError, 클래스 exception_handler 가 루프 전체 중단) 그 뒤 사용자에 accessAdvisor 키가 없고, 판정에 쓰지 않는 표시용 키 때문에 ValueError 로 룰 전체가 죽는다. 판정 정보(policies·inline_policies)는 raw 에 남아 있어 룰에서 고칠 수 있다(bug).",
+  "scenarios": [
+    {
+      "id": "advisor-missing-second-user",
+      "role": "bug",
+      "condition": "사용자 2명 — a 는 관리형 정책 직접 연결(accessAdvisor 있음), b 는 직접 연결 없음이고 accessAdvisor 수집이 중단돼 키가 없음",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_users": [
+              {
+                "UserName": "user-a",
+                "UserId": "AIDAUSERA",
+                "Arn": "arn:aws:iam::111111111111:user/user-a",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [
+                  {
+                    "PolicyName": "AmazonS3ReadOnlyAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                }
+              },
+              {
+                "UserName": "user-b",
+                "UserId": "AIDAUSERB",
+                "Arn": "arn:aws:iam::111111111111:user/user-b",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {}
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "user-a"
+        ]
+      },
+      "why": "accessAdvisor 는 판정과 무관한 표시용 키다. 사용자에게 직접 붙은 정책 유무로 a 취약, b 양호가 나와야 한다"
+    },
+    {
+      "id": "advisor-present",
+      "role": "control",
+      "condition": "같은 두 사용자, 둘 다 accessAdvisor 있음",
+      "args": [],
+      "raw": {
+        "globals": {
+          "iam": {
+            "list_users": [
+              {
+                "UserName": "user-a",
+                "UserId": "AIDAUSERA",
+                "Arn": "arn:aws:iam::111111111111:user/user-a",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [
+                  {
+                    "PolicyName": "AmazonS3ReadOnlyAccess",
+                    "PolicyArn": "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+                  }
+                ],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                }
+              },
+              {
+                "UserName": "user-b",
+                "UserId": "AIDAUSERB",
+                "Arn": "arn:aws:iam::111111111111:user/user-b",
+                "Path": "/",
+                "CreateDate": "2020-01-01 00:00:00+00:00",
+                "policies": [],
+                "inline_policies": [],
+                "Tags": {},
+                "accessAdvisor": {
+                  "JobStatus": "COMPLETED",
+                  "JobType": "ACTION_LEVEL",
+                  "ServicesLastAccessed": [],
+                  "IsTruncated": false,
+                  "totalPage": 1
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "user-a"
+        ]
+      }
+    }
+  ]
+}

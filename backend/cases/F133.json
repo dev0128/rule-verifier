@@ -1,0 +1,304 @@
+{
+  "finding": "F133",
+  "rule": "REME-0100800012",
+  "service": "elb",
+  "status": "reproducible",
+  "note": "Raw/Service/wafv2.py:12 · waf.py:13 — wafv2/waf-regional 클라이언트를 us-east-1 로만 만들어 list_web_acls(REGIONAL) 가 us-east-1 ACL 만 돌려준다. 다른 리전 ALB 에 연결된 Regional Web ACL 은 raw 에 없다(collection). 룰 elb.py:696 은 Type 필터가 없어 WAF 를 붙일 수 없는 NLB/GWLB 도 점검·취약 처리한다(bug).",
+  "scenarios": [
+    {
+      "id": "seoul-alb-with-acl",
+      "role": "collection",
+      "condition": "서울 ALB 에 서울 리전 Regional Web ACL 이 연결돼 있지만, 수집된 wafv2 ACL 은 CLOUDFRONT(us-east-1) 뿐",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-seoul/50dc6c495c0c9188",
+                "DNSName": "alb-seoul-123.ap-northeast-2.elb.amazonaws.com",
+                "LoadBalancerName": "alb-seoul",
+                "Scheme": "internet-facing",
+                "VpcId": "vpc-1",
+                "State": {
+                  "Code": "active"
+                },
+                "Type": "application",
+                "IpAddressType": "ipv4",
+                "Attributes": [],
+                "Listeners": [
+                  {
+                    "Port": 443,
+                    "Protocol": "HTTPS",
+                    "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
+                    "Certificates": [
+                      {
+                        "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                      }
+                    ],
+                    "DefaultActions": [
+                      {
+                        "Type": "forward",
+                        "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:targetgroup/tg/0123456789abcdef",
+                        "Order": 1
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:listener/app/alb-seoul/50dc6c495c0c9188/0000000000000000",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-seoul/50dc6c495c0c9188"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_target_groups": []
+          }
+        },
+        "globals": {
+          "wafv2": {
+            "list_web_acls": [
+              {
+                "Name": "cf-acl",
+                "Id": "cf1",
+                "ARN": "arn:aws:wafv2:us-east-1:111111111111:global/webacl/cf-acl/cf1",
+                "Scope": "CLOUDFRONT",
+                "ResourceArns": [],
+                "WebACL": {},
+                "LoggingConfiguration": {}
+              }
+            ]
+          },
+          "waf": {
+            "list_web_acls": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "실제로는 WAF 가 연동된 ALB 이므로 양호. 수집기가 서울 Regional ACL 을 조회하지 않아 raw 로는 알 수 없다"
+    },
+    {
+      "id": "seoul-nlb",
+      "role": "bug",
+      "condition": "서울 NLB(TCP:443) 1개, WAF 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/net/nlb-seoul/50dc6c495c0c9188",
+                "DNSName": "nlb-seoul-123.ap-northeast-2.elb.amazonaws.com",
+                "LoadBalancerName": "nlb-seoul",
+                "Scheme": "internet-facing",
+                "VpcId": "vpc-1",
+                "State": {
+                  "Code": "active"
+                },
+                "Type": "network",
+                "IpAddressType": "ipv4",
+                "Attributes": [],
+                "Listeners": [
+                  {
+                    "Port": 443,
+                    "Protocol": "TCP",
+                    "DefaultActions": [
+                      {
+                        "Type": "forward",
+                        "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:targetgroup/tg/0123456789abcdef",
+                        "Order": 1
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:listener/net/nlb-seoul/50dc6c495c0c9188/0000000000000000",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/net/nlb-seoul/50dc6c495c0c9188"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_target_groups": []
+          }
+        },
+        "globals": {
+          "wafv2": {
+            "list_web_acls": [
+              {
+                "Name": "cf-acl",
+                "Id": "cf1",
+                "ARN": "arn:aws:wafv2:us-east-1:111111111111:global/webacl/cf-acl/cf1",
+                "Scope": "CLOUDFRONT",
+                "ResourceArns": [],
+                "WebACL": {},
+                "LoggingConfiguration": {}
+              }
+            ]
+          },
+          "waf": {
+            "list_web_acls": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "checked": 0
+      },
+      "why": "항목은 'ALB 사용 시' WAF 연동 — NLB 는 WAF 를 연결할 수 없는 리소스이므로 점검 대상이 아니다"
+    },
+    {
+      "id": "use1-alb-with-acl",
+      "role": "control",
+      "condition": "us-east-1 ALB 에 us-east-1 Regional Web ACL 연결 (수집기가 보는 리전)",
+      "args": [],
+      "raw": {
+        "us-east-1": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:111111111111:loadbalancer/app/alb-use1/50dc6c495c0c9188",
+                "DNSName": "alb-use1-123.us-east-1.elb.amazonaws.com",
+                "LoadBalancerName": "alb-use1",
+                "Scheme": "internet-facing",
+                "VpcId": "vpc-1",
+                "State": {
+                  "Code": "active"
+                },
+                "Type": "application",
+                "IpAddressType": "ipv4",
+                "Attributes": [],
+                "Listeners": [
+                  {
+                    "Port": 443,
+                    "Protocol": "HTTPS",
+                    "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
+                    "Certificates": [
+                      {
+                        "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                      }
+                    ],
+                    "DefaultActions": [
+                      {
+                        "Type": "forward",
+                        "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:targetgroup/tg/0123456789abcdef",
+                        "Order": 1
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:us-east-1:111111111111:listener/app/alb-use1/50dc6c495c0c9188/0000000000000000",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:111111111111:loadbalancer/app/alb-use1/50dc6c495c0c9188"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_target_groups": []
+          }
+        },
+        "globals": {
+          "wafv2": {
+            "list_web_acls": [
+              {
+                "Name": "cf-acl",
+                "Id": "cf1",
+                "ARN": "arn:aws:wafv2:us-east-1:111111111111:global/webacl/cf-acl/cf1",
+                "Scope": "CLOUDFRONT",
+                "ResourceArns": [],
+                "WebACL": {},
+                "LoggingConfiguration": {}
+              },
+              {
+                "Name": "use1-acl",
+                "Id": "r1",
+                "ARN": "arn:aws:wafv2:us-east-1:111111111111:regional/webacl/use1-acl/r1",
+                "Scope": "REGIONAL",
+                "ResourceArns": [
+                  "arn:aws:elasticloadbalancing:us-east-1:111111111111:loadbalancer/app/alb-use1/50dc6c495c0c9188"
+                ],
+                "WebACL": {},
+                "LoggingConfiguration": {}
+              }
+            ]
+          },
+          "waf": {
+            "list_web_acls": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    },
+    {
+      "id": "seoul-alb-no-acl",
+      "role": "control",
+      "condition": "서울 ALB, 어떤 Web ACL 에도 연결되지 않음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "elbv2": {
+            "describe_load_balancers": [
+              {
+                "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-seoul/50dc6c495c0c9188",
+                "DNSName": "alb-seoul-123.ap-northeast-2.elb.amazonaws.com",
+                "LoadBalancerName": "alb-seoul",
+                "Scheme": "internet-facing",
+                "VpcId": "vpc-1",
+                "State": {
+                  "Code": "active"
+                },
+                "Type": "application",
+                "IpAddressType": "ipv4",
+                "Attributes": [],
+                "Listeners": [
+                  {
+                    "Port": 443,
+                    "Protocol": "HTTPS",
+                    "SslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
+                    "Certificates": [
+                      {
+                        "CertificateArn": "arn:aws:acm:ap-northeast-2:111111111111:certificate/abc"
+                      }
+                    ],
+                    "DefaultActions": [
+                      {
+                        "Type": "forward",
+                        "TargetGroupArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:targetgroup/tg/0123456789abcdef",
+                        "Order": 1
+                      }
+                    ],
+                    "ListenerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:listener/app/alb-seoul/50dc6c495c0c9188/0000000000000000",
+                    "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-northeast-2:111111111111:loadbalancer/app/alb-seoul/50dc6c495c0c9188"
+                  }
+                ],
+                "Tags": {}
+              }
+            ],
+            "describe_target_groups": []
+          }
+        },
+        "globals": {
+          "wafv2": {
+            "list_web_acls": [
+              {
+                "Name": "cf-acl",
+                "Id": "cf1",
+                "ARN": "arn:aws:wafv2:us-east-1:111111111111:global/webacl/cf-acl/cf1",
+                "Scope": "CLOUDFRONT",
+                "ResourceArns": [],
+                "WebACL": {},
+                "LoggingConfiguration": {}
+              }
+            ]
+          },
+          "waf": {
+            "list_web_acls": []
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    }
+  ]
+}

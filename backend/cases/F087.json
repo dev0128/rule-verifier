@@ -1,0 +1,159 @@
+{
+  "finding": "F087",
+  "rule": "REME-0103200005",
+  "service": "ssm",
+  "status": "reproducible",
+  "note": "ssm.py:294 — Permission.AccountIds 가 비어 있지 않으면 취약. 특정 계정과의 공유도 '퍼블릭' 으로 판정한다. 퍼블릭 공유는 AccountIds 에 'all' 이 있을 때다(DescribeDocumentPermission).",
+  "scenarios": [
+    {
+      "id": "shared-to-account",
+      "role": "bug",
+      "condition": "문서를 특정 계정 222222222222 에만 공유(AccountIds=['222222222222'])",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ssm": {
+            "describe_instance_information": [],
+            "describe_parameters": [],
+            "describe_sessions": [],
+            "list_documents": [
+              {
+                "Name": "doc-shared",
+                "Owner": "111122223333",
+                "DocumentType": "Command",
+                "DocumentFormat": "JSON",
+                "SchemaVersion": "2.2",
+                "DocumentVersion": "1",
+                "PlatformTypes": [
+                  "Linux"
+                ],
+                "Tags": {},
+                "Document": {
+                  "Name": "doc-shared",
+                  "DocumentType": "Command",
+                  "Content": {
+                    "schemaVersion": "2.2",
+                    "mainSteps": []
+                  }
+                },
+                "Permission": {
+                  "AccountIds": [
+                    "222222222222"
+                  ],
+                  "AccountSharingInfoList": [
+                    {
+                      "AccountId": "222222222222",
+                      "SharedDocumentVersion": "$DEFAULT"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      },
+      "why": "특정 계정 공유는 퍼블릭이 아니다 — 퍼블릭은 AccountIds 에 'all' 이 있을 때"
+    },
+    {
+      "id": "public",
+      "role": "control",
+      "condition": "퍼블릭 공유(AccountIds=['all'])",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ssm": {
+            "describe_instance_information": [],
+            "describe_parameters": [],
+            "describe_sessions": [],
+            "list_documents": [
+              {
+                "Name": "doc-public",
+                "Owner": "111122223333",
+                "DocumentType": "Command",
+                "DocumentFormat": "JSON",
+                "SchemaVersion": "2.2",
+                "DocumentVersion": "1",
+                "PlatformTypes": [
+                  "Linux"
+                ],
+                "Tags": {},
+                "Document": {
+                  "Name": "doc-public",
+                  "DocumentType": "Command",
+                  "Content": {
+                    "schemaVersion": "2.2",
+                    "mainSteps": []
+                  }
+                },
+                "Permission": {
+                  "AccountIds": [
+                    "all"
+                  ],
+                  "AccountSharingInfoList": [
+                    {
+                      "AccountId": "all",
+                      "SharedDocumentVersion": "$DEFAULT"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "not-shared",
+      "role": "control",
+      "condition": "공유 없음(AccountIds=[])",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "ssm": {
+            "describe_instance_information": [],
+            "describe_parameters": [],
+            "describe_sessions": [],
+            "list_documents": [
+              {
+                "Name": "doc-private",
+                "Owner": "111122223333",
+                "DocumentType": "Command",
+                "DocumentFormat": "JSON",
+                "SchemaVersion": "2.2",
+                "DocumentVersion": "1",
+                "PlatformTypes": [
+                  "Linux"
+                ],
+                "Tags": {},
+                "Document": {
+                  "Name": "doc-private",
+                  "DocumentType": "Command",
+                  "Content": {
+                    "schemaVersion": "2.2",
+                    "mainSteps": []
+                  }
+                },
+                "Permission": {
+                  "AccountIds": [],
+                  "AccountSharingInfoList": []
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

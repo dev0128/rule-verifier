@@ -1,0 +1,229 @@
+{
+  "finding": "X025",
+  "rule": "REME-0103000005",
+  "service": "sns",
+  "status": "reproducible",
+  "note": "Analyze/sns.py:303-307 — Statement 의 Effect 를 보지 않고 Principal.AWS 에 'arn' 이 있으면 취약. 타 계정을 막는 Deny 문도 교차 계정 허용으로 잡는다. LAM-006(awslambda.py:386-390)도 같은 코드 모양이지만 Lambda 리소스 정책은 AddPermission 으로만 만들어져 Effect 가 항상 Allow 라 Deny 문이 실제로 생기지 않는다 — Lambda 쪽은 재현 입력을 만들 수 없어 SNS 만 둔다.",
+  "scenarios": [
+    {
+      "id": "deny-other-account",
+      "role": "bug",
+      "condition": "기본 정책 + 타 계정(999999999999 root)의 SNS:Publish 를 Deny 하는 문",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t1",
+                "TopicName": "t1",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t1",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Sid": "__default_statement_ID",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "*"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t1",
+                        "Condition": {
+                          "StringEquals": {
+                            "AWS:SourceOwner": "111122223333"
+                          }
+                        }
+                      },
+                      {
+                        "Effect": "Deny",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::999999999999:root"
+                        },
+                        "Action": [
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t1"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1,
+        "flag": 0
+      },
+      "why": "Deny 는 액세스를 막는 문이므로 교차 계정 액세스 허용이 아니다"
+    },
+    {
+      "id": "allow-other-account",
+      "role": "control",
+      "condition": "기본 정책 + 타 계정 root 에 SNS:Publish Allow",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t1",
+                "TopicName": "t1",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t1",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Sid": "__default_statement_ID",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "*"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t1",
+                        "Condition": {
+                          "StringEquals": {
+                            "AWS:SourceOwner": "111122223333"
+                          }
+                        }
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "arn:aws:iam::999999999999:root"
+                        },
+                        "Action": [
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t1"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "default-only",
+      "role": "control",
+      "condition": "기본 주제 정책만",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "sns": {
+            "list_topics": [
+              {
+                "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t1",
+                "TopicName": "t1",
+                "Attributes": {
+                  "Owner": "111122223333",
+                  "TopicArn": "arn:aws:sns:ap-northeast-2:111122223333:t1",
+                  "DisplayName": "",
+                  "SubscriptionsConfirmed": "0",
+                  "SubscriptionsPending": "0",
+                  "SubscriptionsDeleted": "0",
+                  "EffectiveDeliveryPolicy": {
+                    "http": {
+                      "defaultHealthyRetryPolicy": {
+                        "numRetries": 3
+                      }
+                    }
+                  },
+                  "Policy": {
+                    "Version": "2008-10-17",
+                    "Id": "__default_policy_ID",
+                    "Statement": [
+                      {
+                        "Sid": "__default_statement_ID",
+                        "Effect": "Allow",
+                        "Principal": {
+                          "AWS": "*"
+                        },
+                        "Action": [
+                          "SNS:GetTopicAttributes",
+                          "SNS:SetTopicAttributes",
+                          "SNS:AddPermission",
+                          "SNS:RemovePermission",
+                          "SNS:DeleteTopic",
+                          "SNS:Subscribe",
+                          "SNS:ListSubscriptionsByTopic",
+                          "SNS:Publish"
+                        ],
+                        "Resource": "arn:aws:sns:ap-northeast-2:111122223333:t1",
+                        "Condition": {
+                          "StringEquals": {
+                            "AWS:SourceOwner": "111122223333"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "finding": "F007",
+  "rule": "REME-0101900002",
+  "service": "backup",
+  "status": "reproducible",
+  "note": "backup.py:98 `if Rules.get(\"backup_vault\", {}).get(\"Locked\") == False:` — describe_backup_vault 가 한 번 실패하면(Raw/backup.py:67-76, 루프 전체 중단) 그 규칙과 뒤 규칙들에 backup_vault 가 없고, None 은 False 와 달라 양호로 집계된다. DescribeBackupVault 성공 응답에는 Locked 가 있으므로 raw 에서 구분 가능 → 룰에서 N/A 로 고칠 수 있다.",
+  "scenarios": [
+    {
+      "id": "vault-info-missing",
+      "role": "bug",
+      "condition": "백업 규칙에 backup_vault 정보 없음 (describe_backup_vault 실패로 수집 중단)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "backup": {
+            "list_backup_plans": [
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-a-id",
+                "BackupPlanId": "plan-a-id",
+                "BackupPlanName": "plan-a",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z",
+                "Rules": [
+                  {
+                    "RuleName": "daily",
+                    "TargetBackupVaultName": "vault-1",
+                    "ScheduleExpression": "cron(0 5 ? * * *)",
+                    "RuleId": "daily-rid",
+                    "Lifecycle": {
+                      "MoveToColdStorageAfterDays": 30,
+                      "DeleteAfterDays": 120
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "N/A",
+        "flag": 0,
+        "good": 0
+      },
+      "why": "볼트 잠금 여부를 모르는데 양호로 볼 수 없다 — 판정 불가(N/A)"
+    },
+    {
+      "id": "unlocked",
+      "role": "control",
+      "condition": "볼트 잠금 없음 (Locked=false)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "backup": {
+            "list_backup_plans": [
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-a-id",
+                "BackupPlanId": "plan-a-id",
+                "BackupPlanName": "plan-a",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z",
+                "Rules": [
+                  {
+                    "RuleName": "daily",
+                    "TargetBackupVaultName": "vault-1",
+                    "ScheduleExpression": "cron(0 5 ? * * *)",
+                    "RuleId": "daily-rid",
+                    "Lifecycle": {
+                      "MoveToColdStorageAfterDays": 30,
+                      "DeleteAfterDays": 120
+                    },
+                    "backup_vault": {
+                      "BackupVaultName": "vault-1",
+                      "BackupVaultArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-vault:vault-1",
+                      "NumberOfRecoveryPoints": 3,
+                      "Locked": false
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "locked",
+      "role": "control",
+      "condition": "볼트 잠금 (Locked=true)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "backup": {
+            "list_backup_plans": [
+              {
+                "BackupPlanArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-plan:plan-a-id",
+                "BackupPlanId": "plan-a-id",
+                "BackupPlanName": "plan-a",
+                "VersionId": "v1",
+                "CreationDate": "2026-01-01T00:00:00.000Z",
+                "Rules": [
+                  {
+                    "RuleName": "daily",
+                    "TargetBackupVaultName": "vault-1",
+                    "ScheduleExpression": "cron(0 5 ? * * *)",
+                    "RuleId": "daily-rid",
+                    "Lifecycle": {
+                      "MoveToColdStorageAfterDays": 30,
+                      "DeleteAfterDays": 120
+                    },
+                    "backup_vault": {
+                      "BackupVaultName": "vault-1",
+                      "BackupVaultArn": "arn:aws:backup:ap-northeast-2:111122223333:backup-vault:vault-1",
+                      "NumberOfRecoveryPoints": 3,
+                      "Locked": true,
+                      "MinRetentionDays": 7,
+                      "MaxRetentionDays": 365
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

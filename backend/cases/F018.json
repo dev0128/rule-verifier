@@ -1,0 +1,204 @@
+{
+  "finding": "F018",
+  "rule": "REME-0102300001",
+  "service": "awsconfig",
+  "status": "reproducible",
+  "effect": "crash",
+  "note": "Raw/awsconfig.py:80-83 — 규칙마다 `item['EvaluationResults'] = []` 후 paginate 하는데 try 가 없어, 한 규칙 조회가 실패하면(스로틀링 · NoSuchConfigRuleException · 권한) 클래스 exception_handler 가 메서드 전체를 삼킨다. 실패한 규칙은 [](또는 일부 페이지), 그 뒤 규칙에는 EvaluationResults 키가 없다. 룰 Analyze/awsconfig.py:35 `result_temp_i['EvaluationResults']` KeyError 로 룰 전체 N/A. 결과가 통째로 사라지므로 카탈로그 effect(wrong_logic)를 crash 로 바로잡음.",
+  "scenarios": [
+    {
+      "id": "later-rule-missing-key",
+      "role": "bug",
+      "condition": "규칙 3개 — rule-a 수집 완료(NON_COMPLIANT 1건), rule-b 에서 조회 실패(EvaluationResults=[]), rule-c 는 중단돼 EvaluationResults 키 없음",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "config": {
+            "describe_config_rules": [
+              {
+                "ConfigRuleName": "rule-a",
+                "ConfigRuleArn": "arn:aws:config:ap-northeast-2:111111111111:config-rule/config-rule-rule-a",
+                "ConfigRuleId": "config-rule-rule-a",
+                "Source": {
+                  "Owner": "AWS",
+                  "SourceIdentifier": "S3_BUCKET_VERSIONING_ENABLED"
+                },
+                "InputParameters": {},
+                "ConfigRuleState": "ACTIVE",
+                "EvaluationResults": [
+                  {
+                    "EvaluationResultIdentifier": {
+                      "EvaluationResultQualifier": {
+                        "ConfigRuleName": "rule-a",
+                        "ResourceType": "AWS::S3::Bucket",
+                        "ResourceId": "bucket-1"
+                      },
+                      "OrderingTimestamp": "2026-11-01T00:00:00+00:00"
+                    },
+                    "ComplianceType": "NON_COMPLIANT",
+                    "ResultRecordedTime": "2026-11-01T00:00:00+00:00",
+                    "ConfigRuleInvokedTime": "2026-11-01T00:00:00+00:00"
+                  }
+                ]
+              },
+              {
+                "ConfigRuleName": "rule-b",
+                "ConfigRuleArn": "arn:aws:config:ap-northeast-2:111111111111:config-rule/config-rule-rule-b",
+                "ConfigRuleId": "config-rule-rule-b",
+                "Source": {
+                  "Owner": "AWS",
+                  "SourceIdentifier": "S3_BUCKET_VERSIONING_ENABLED"
+                },
+                "InputParameters": {},
+                "ConfigRuleState": "ACTIVE",
+                "EvaluationResults": []
+              },
+              {
+                "ConfigRuleName": "rule-c",
+                "ConfigRuleArn": "arn:aws:config:ap-northeast-2:111111111111:config-rule/config-rule-rule-c",
+                "ConfigRuleId": "config-rule-rule-c",
+                "Source": {
+                  "Owner": "AWS",
+                  "SourceIdentifier": "S3_BUCKET_VERSIONING_ENABLED"
+                },
+                "InputParameters": {},
+                "ConfigRuleState": "ACTIVE"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 3,
+        "flag": 1,
+        "flag_contains": [
+          "rule-a"
+        ],
+        "na_contains": [
+          "rule-c"
+        ]
+      },
+      "why": "수집이 안 된 규칙(rule-c) 하나 때문에 룰 전체가 죽으면 안 된다 — 결과가 없는 규칙은 N/A 로 빼고, 수집된 rule-a 의 NON_COMPLIANT 는 취약으로 판정해야 한다. rule-b 는 [] 라 '평가 결과 없음' 과 구별되지 않아 기대에 넣지 않는다"
+    },
+    {
+      "id": "all-collected-noncompliant",
+      "role": "control",
+      "condition": "규칙 2개 모두 수집 — rule-a NON_COMPLIANT, rule-b COMPLIANT",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "config": {
+            "describe_config_rules": [
+              {
+                "ConfigRuleName": "rule-a",
+                "ConfigRuleArn": "arn:aws:config:ap-northeast-2:111111111111:config-rule/config-rule-rule-a",
+                "ConfigRuleId": "config-rule-rule-a",
+                "Source": {
+                  "Owner": "AWS",
+                  "SourceIdentifier": "S3_BUCKET_VERSIONING_ENABLED"
+                },
+                "InputParameters": {},
+                "ConfigRuleState": "ACTIVE",
+                "EvaluationResults": [
+                  {
+                    "EvaluationResultIdentifier": {
+                      "EvaluationResultQualifier": {
+                        "ConfigRuleName": "rule-a",
+                        "ResourceType": "AWS::S3::Bucket",
+                        "ResourceId": "bucket-1"
+                      },
+                      "OrderingTimestamp": "2026-11-01T00:00:00+00:00"
+                    },
+                    "ComplianceType": "NON_COMPLIANT",
+                    "ResultRecordedTime": "2026-11-01T00:00:00+00:00",
+                    "ConfigRuleInvokedTime": "2026-11-01T00:00:00+00:00"
+                  }
+                ]
+              },
+              {
+                "ConfigRuleName": "rule-b",
+                "ConfigRuleArn": "arn:aws:config:ap-northeast-2:111111111111:config-rule/config-rule-rule-b",
+                "ConfigRuleId": "config-rule-rule-b",
+                "Source": {
+                  "Owner": "AWS",
+                  "SourceIdentifier": "S3_BUCKET_VERSIONING_ENABLED"
+                },
+                "InputParameters": {},
+                "ConfigRuleState": "ACTIVE",
+                "EvaluationResults": [
+                  {
+                    "EvaluationResultIdentifier": {
+                      "EvaluationResultQualifier": {
+                        "ConfigRuleName": "rule-b",
+                        "ResourceType": "AWS::S3::Bucket",
+                        "ResourceId": "bucket-2"
+                      },
+                      "OrderingTimestamp": "2026-11-01T00:00:00+00:00"
+                    },
+                    "ComplianceType": "COMPLIANT",
+                    "ResultRecordedTime": "2026-11-01T00:00:00+00:00",
+                    "ConfigRuleInvokedTime": "2026-11-01T00:00:00+00:00"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "checked": 2,
+        "flag": 1,
+        "good": 1,
+        "flag_contains": [
+          "rule-a"
+        ]
+      }
+    },
+    {
+      "id": "all-compliant",
+      "role": "control",
+      "condition": "규칙 1개, COMPLIANT 만",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "config": {
+            "describe_config_rules": [
+              {
+                "ConfigRuleName": "rule-a",
+                "ConfigRuleArn": "arn:aws:config:ap-northeast-2:111111111111:config-rule/config-rule-rule-a",
+                "ConfigRuleId": "config-rule-rule-a",
+                "Source": {
+                  "Owner": "AWS",
+                  "SourceIdentifier": "S3_BUCKET_VERSIONING_ENABLED"
+                },
+                "InputParameters": {},
+                "ConfigRuleState": "ACTIVE",
+                "EvaluationResults": [
+                  {
+                    "EvaluationResultIdentifier": {
+                      "EvaluationResultQualifier": {
+                        "ConfigRuleName": "rule-a",
+                        "ResourceType": "AWS::S3::Bucket",
+                        "ResourceId": "bucket-1"
+                      },
+                      "OrderingTimestamp": "2026-11-01T00:00:00+00:00"
+                    },
+                    "ComplianceType": "COMPLIANT",
+                    "ResultRecordedTime": "2026-11-01T00:00:00+00:00",
+                    "ConfigRuleInvokedTime": "2026-11-01T00:00:00+00:00"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}

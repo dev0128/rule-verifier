@@ -1,0 +1,99 @@
+{
+  "finding": "F103",
+  "rule": "REME-0101000011",
+  "service": "awslambda",
+  "status": "reproducible",
+  "note": "awslambda.py:724-732 — 환경 변수 값만 json.dumps 로 파일에 써서 detect-secrets 로 스캔한다. 변수명(DB_PASSWORD 등)이 빠져 KeywordDetector 가 동작하지 않고, 고엔트로피·알려진 패턴 값만 잡힌다.",
+  "scenarios": [
+    {
+      "id": "password-by-name",
+      "role": "bug",
+      "condition": "환경 변수 DB_PASSWORD='Sup3rS3cret!', MYSQL_PWD='admin1234' (이름으로만 비밀임을 알 수 있는 평문 비밀번호)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Environment": {
+                  "Variables": {
+                    "DB_PASSWORD": "Sup3rS3cret!",
+                    "MYSQL_PWD": "admin1234"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      },
+      "why": "비밀번호가 환경 변수에 평문으로 하드코딩돼 있다 — 항목명 그대로 취약"
+    },
+    {
+      "id": "aws-access-key",
+      "role": "control",
+      "condition": "환경 변수에 AWS 액세스 키 ID 패턴 값 (AKIA…)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Environment": {
+                  "Variables": {
+                    "KEY_ID": "AKIAZ3MSJV4WWNKWW5FG"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Vuln",
+        "flag": 1
+      }
+    },
+    {
+      "id": "plain-config",
+      "role": "control",
+      "condition": "비밀이 아닌 설정 값만 (LOG_LEVEL=INFO, STAGE=prod)",
+      "args": [],
+      "raw": {
+        "ap-northeast-2": {
+          "lambda": {
+            "list_functions": [
+              {
+                "FunctionName": "f1",
+                "FunctionArn": "arn:aws:lambda:ap-northeast-2:111122223333:function:f1",
+                "Runtime": "python3.12",
+                "PackageType": "Zip",
+                "Environment": {
+                  "Variables": {
+                    "LOG_LEVEL": "INFO",
+                    "STAGE": "prod"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "verdict": "Secure",
+        "good": 1
+      }
+    }
+  ]
+}
