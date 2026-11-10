@@ -1,0 +1,146 @@
+{
+ "events.DescribeRule": {
+  "service": "events",
+  "operation": "DescribeRule",
+  "method": "describe_rule",
+  "doc": "Describes the specified rule. DescribeRule does not list the targets of a rule. To see the targets associated with a rule, use ListTargetsByRule .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/events/client/describe_rule.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/DescribeRule"
+  },
+  "paginated": false,
+  "input_required": [
+   "Name"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Name": {
+     "type": "string",
+     "doc": "The name of the rule."
+    },
+    "Arn": {
+     "type": "string",
+     "doc": "The Amazon Resource Name (ARN) of the rule."
+    },
+    "EventPattern": {
+     "type": "string",
+     "doc": "The event pattern. For more information, see Events and Event Patterns in the Amazon EventBridge User Guide ."
+    },
+    "ScheduleExpression": {
+     "type": "string",
+     "doc": "The scheduling expression. For example, \"cron(0 20 * * ? *)\", \"rate(5 minutes)\"."
+    },
+    "State": {
+     "type": "string",
+     "doc": "Specifies whether the rule is enabled or disabled.",
+     "enum": [
+      "ENABLED",
+      "DISABLED",
+      "ENABLED_WITH_ALL_CLOUDTRAIL_MANAGEMENT_EVENTS"
+     ]
+    },
+    "Description": {
+     "type": "string",
+     "doc": "The description of the rule."
+    },
+    "RoleArn": {
+     "type": "string",
+     "doc": "The Amazon Resource Name (ARN) of the IAM role associated with the rule."
+    },
+    "ManagedBy": {
+     "type": "string",
+     "doc": "If this is a managed rule, created by an Amazon Web Services service on your behalf, this field displays the principal name of the Amazon Web Services service that created the rule."
+    },
+    "EventBusName": {
+     "type": "string",
+     "doc": "The name of the event bus associated with the rule."
+    },
+    "CreatedBy": {
+     "type": "string",
+     "doc": "The account ID of the user that created the rule. If you use PutRule to put a rule on an event bus in another account, the other account is the owner of the rule, and the rule ARN includes the account ID for that account. However, the value for CreatedBy is the account ID as the account that created the rule in the other account."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "events.describe_rule"
+  ]
+ },
+ "events.ListRules": {
+  "service": "events",
+  "operation": "ListRules",
+  "method": "list_rules",
+  "doc": "Lists your Amazon EventBridge rules. You can either list all the rules or you can provide a prefix to match to the rule names. The maximum number of results per page for requests is 100. ListRules does not list the targets of a rule. To see the targets associated with a rule, use ListTargetsByRule .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/events/client/list_rules.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eventbridge-2015-10-07/ListRules"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Rules": {
+     "type": "list",
+     "doc": "The rules that match the specified criteria.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about a rule in Amazon EventBridge.",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "The name of the rule."
+       },
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the rule."
+       },
+       "EventPattern": {
+        "type": "string",
+        "doc": "The event pattern of the rule. For more information, see Events and Event Patterns in the Amazon EventBridge User Guide ."
+       },
+       "State": {
+        "type": "string",
+        "doc": "The state of the rule. Valid values include: DISABLED : The rule is disabled. EventBridge does not match any events against the rule. ENABLED : The rule is enabled. EventBridge matches events against the rule, except for Amazon Web Services management events delivered through CloudTrail. ENABLED_WITH_ALL_CLOUDTRAIL_MANAGEMENT_EVENTS : The rule is enabled for all events, including Amazon Web Services management events delivered through CloudTrail. Management events provide visibility into manage…",
+        "enum": [
+         "ENABLED",
+         "DISABLED",
+         "ENABLED_WITH_ALL_CLOUDTRAIL_MANAGEMENT_EVENTS"
+        ]
+       },
+       "Description": {
+        "type": "string",
+        "doc": "The description of the rule."
+       },
+       "ScheduleExpression": {
+        "type": "string",
+        "doc": "The scheduling expression. For example, \"cron(0 20 * * ? *)\", \"rate(5 minutes)\". For more information, see Creating an Amazon EventBridge rule that runs on a schedule ."
+       },
+       "RoleArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the role that is used for target invocation. If you're setting an event bus in another account as the target and that account granted permission to your account through an organization instead of directly by the account ID, you must specify a RoleArn with proper permissions in the Target structure, instead of here in this parameter."
+       },
+       "ManagedBy": {
+        "type": "string",
+        "doc": "If the rule was created on behalf of your account by an Amazon Web Services service, this field displays the principal name of the service that created the rule."
+       },
+       "EventBusName": {
+        "type": "string",
+        "doc": "The name or ARN of the event bus associated with the rule. If you omit this, the default event bus is used."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "A token indicating there are more results available. If there are no more results, no token is included in the response. The value of nextToken is a unique pagination token for each page. To retrieve the next page of results, make the call again using the returned token. Keep all other arguments unchanged. Using an expired pagination token results in an HTTP 400 InvalidToken error."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "events.describe_rule"
+  ]
+ }
+}

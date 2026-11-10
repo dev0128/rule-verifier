@@ -1,0 +1,243 @@
+{
+ "ssm-incidents.GetReplicationSet": {
+  "service": "ssm-incidents",
+  "operation": "GetReplicationSet",
+  "method": "get_replication_set",
+  "doc": "Retrieve your Incident Manager replication set.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm-incidents/client/get_replication_set.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetReplicationSet"
+  },
+  "paginated": false,
+  "input_required": [
+   "arn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "replicationSet": {
+     "type": "structure",
+     "doc": "Details of the replication set.",
+     "members": {
+      "arn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of the replication set."
+      },
+      "createdBy": {
+       "type": "string",
+       "doc": "Details about who created the replication set.",
+       "required": true
+      },
+      "createdTime": {
+       "type": "timestamp",
+       "doc": "When the replication set was created.",
+       "required": true
+      },
+      "deletionProtected": {
+       "type": "boolean",
+       "doc": "Determines if the replication set deletion protection is enabled or not. If deletion protection is enabled, you can't delete the last Amazon Web Services Region in the replication set.",
+       "required": true
+      },
+      "lastModifiedBy": {
+       "type": "string",
+       "doc": "Who last modified the replication set.",
+       "required": true
+      },
+      "lastModifiedTime": {
+       "type": "timestamp",
+       "doc": "When the replication set was last updated.",
+       "required": true
+      },
+      "regionMap": {
+       "type": "map",
+       "doc": "The map between each Amazon Web Services Region in your replication set and the KMS key that's used to encrypt the data in that Region.",
+       "key": {
+        "type": "string"
+       },
+       "value": {
+        "type": "structure",
+        "doc": "Information about a Amazon Web Services Region in your replication set.",
+        "members": {
+         "sseKmsKeyId": {
+          "type": "string",
+          "doc": "The ID of the KMS key used to encrypt the data in this Amazon Web Services Region."
+         },
+         "status": {
+          "type": "string",
+          "doc": "The status of the Amazon Web Services Region in the replication set.",
+          "enum": [
+           "ACTIVE",
+           "CREATING",
+           "DELETING",
+           "FAILED"
+          ],
+          "required": true
+         },
+         "statusMessage": {
+          "type": "string",
+          "doc": "Information displayed about the status of the Amazon Web Services Region."
+         },
+         "statusUpdateDateTime": {
+          "type": "timestamp",
+          "doc": "The timestamp for when Incident Manager updated the status of the Amazon Web Services Region.",
+          "required": true
+         }
+        }
+       },
+       "required": true
+      },
+      "status": {
+       "type": "string",
+       "doc": "The status of the replication set. If the replication set is still pending, you can't use Incident Manager functionality.",
+       "enum": [
+        "ACTIVE",
+        "CREATING",
+        "UPDATING",
+        "DELETING",
+        "FAILED"
+       ],
+       "required": true
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ssm.get_replication_set",
+   "ssm.list_response_plans"
+  ],
+  "rules": [
+   "REME-0103200004"
+  ]
+ },
+ "ssm-incidents.ListReplicationSets": {
+  "service": "ssm-incidents",
+  "operation": "ListReplicationSets",
+  "method": "list_replication_sets",
+  "doc": "Lists details about the replication set configured in your account.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm-incidents/client/list_replication_sets.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListReplicationSets"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "nextToken": {
+     "type": "string",
+     "doc": "The pagination token to use when requesting the next set of items. If there are no additional items to return, the string is null."
+    },
+    "replicationSetArns": {
+     "type": "list",
+     "doc": "The Amazon Resource Name (ARN) of the list replication set.",
+     "item": {
+      "type": "string"
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ssm.get_replication_set"
+  ],
+  "rules": [
+   "REME-0103200004"
+  ]
+ },
+ "ssm-incidents.ListResponsePlans": {
+  "service": "ssm-incidents",
+  "operation": "ListResponsePlans",
+  "method": "list_response_plans",
+  "doc": "Lists all response plans in your account.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm-incidents/client/list_response_plans.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListResponsePlans"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "nextToken": {
+     "type": "string",
+     "doc": "The pagination token to use when requesting the next set of items. If there are no additional items to return, the string is null."
+    },
+    "responsePlanSummaries": {
+     "type": "list",
+     "doc": "Details of each response plan.",
+     "item": {
+      "type": "structure",
+      "doc": "Details of the response plan that are used when creating an incident.",
+      "members": {
+       "arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the response plan.",
+        "required": true
+       },
+       "displayName": {
+        "type": "string",
+        "doc": "The human readable name of the response plan. This can include spaces."
+       },
+       "name": {
+        "type": "string",
+        "doc": "The name of the response plan. This can't include spaces.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ssm.get_replication_set",
+   "ssm.list_response_plans"
+  ],
+  "rules": [
+   "REME-0103200004"
+  ]
+ },
+ "ssm-incidents.ListTagsForResource": {
+  "service": "ssm-incidents",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "Lists the tags that are attached to the specified response plan or incident.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm-incidents/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListTagsForResource"
+  },
+  "paginated": false,
+  "input_required": [
+   "resourceArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "tags": {
+     "type": "map",
+     "doc": "A list of tags for the response plan or incident.",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ssm.get_replication_set",
+   "ssm.list_response_plans"
+  ],
+  "rules": [
+   "REME-0103200004"
+  ]
+ }
+}

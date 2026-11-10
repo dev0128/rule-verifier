@@ -1,0 +1,89 @@
+{
+ "organizations.DescribeOrganization": {
+  "service": "organizations",
+  "operation": "DescribeOrganization",
+  "method": "describe_organization",
+  "doc": "Retrieves information about the organization that the user's account belongs to. This operation can be called from any account in the organization. Even if a policy type is shown as available in the organization, you can disable it separately at the root level with DisablePolicyType . Use ListRoots to see the status of policy types for a specified root.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/organizations/client/describe_organization.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DescribeOrganization"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Organization": {
+     "type": "structure",
+     "doc": "A structure that contains information about the organization. The AvailablePolicyTypes part of the response is deprecated, and you shouldn't use it in your apps. It doesn't include any policy type supported by Organizations other than SCPs. In the China (Ningxia) Region, no policy type is included. To determine which policy types are enabled in your organization, use the ListRoots operation.",
+     "members": {
+      "Id": {
+       "type": "string",
+       "doc": "The unique identifier (ID) of an organization. The regex pattern for an organization ID string requires \"o-\" followed by from 10 to 32 lowercase letters or digits."
+      },
+      "Arn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of an organization. For more information about ARNs in Organizations, see ARN Formats Supported by Organizations in the Amazon Web Services Service Authorization Reference ."
+      },
+      "FeatureSet": {
+       "type": "string",
+       "doc": "Specifies the functionality that currently is available to the organization. If set to \"ALL\", then all features are enabled and policies can be applied to accounts in the organization. If set to \"CONSOLIDATED_BILLING\", then only consolidated billing functionality is available. For more information, see Enabling all features in your organization in the Organizations User Guide .",
+       "enum": [
+        "ALL",
+        "CONSOLIDATED_BILLING"
+       ]
+      },
+      "MasterAccountArn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of the account that is designated as the management account for the organization. For more information about ARNs in Organizations, see ARN Formats Supported by Organizations in the Amazon Web Services Service Authorization Reference ."
+      },
+      "MasterAccountId": {
+       "type": "string",
+       "doc": "The unique identifier (ID) of the management account of an organization. The regex pattern for an account ID string requires exactly 12 digits."
+      },
+      "MasterAccountEmail": {
+       "type": "string",
+       "doc": "The email address that is associated with the Amazon Web Services account that is designated as the management account for the organization."
+      },
+      "AvailablePolicyTypes": {
+       "type": "list",
+       "doc": "Do not use. This field is deprecated and doesn't provide complete information about the policies in your organization. To determine the policies that are enabled and available for use in your organization, use the ListRoots operation instead.",
+       "item": {
+        "type": "structure",
+        "doc": "Contains information about a policy type and its status in the associated root.",
+        "members": {
+         "Type": {
+          "type": "string",
+          "doc": "The name of the policy type.",
+          "enum": [
+           "SERVICE_CONTROL_POLICY",
+           "RESOURCE_CONTROL_POLICY",
+           "TAG_POLICY",
+           "BACKUP_POLICY",
+           "AISERVICES_OPT_OUT_POLICY",
+           "CHATBOT_POLICY",
+           "DECLARATIVE_POLICY_EC2"
+          ]
+         },
+         "Status": {
+          "type": "string",
+          "doc": "The status of the policy type as it relates to the associated root. To attach a policy of the specified type to a root or to an OU or account in that root, it must be available in the organization and enabled for that root.",
+          "enum": [
+           "ENABLED",
+           "PENDING_ENABLE",
+           "PENDING_DISABLE"
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "organizations.describe_organization"
+  ]
+ }
+}

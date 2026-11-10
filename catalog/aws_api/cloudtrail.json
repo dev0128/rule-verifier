@@ -1,0 +1,662 @@
+{
+ "cloudtrail.DescribeTrails": {
+  "service": "cloudtrail",
+  "operation": "DescribeTrails",
+  "method": "describe_trails",
+  "doc": "Retrieves settings for one or more trails associated with the current Region for your account.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail/client/describe_trails.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/DescribeTrails"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Returns the objects or data listed below if successful. Otherwise, returns an error.",
+   "members": {
+    "trailList": {
+     "type": "list",
+     "doc": "The list of trail objects. Trail objects with string values are only returned if values for the objects exist in a trail's configuration. For example, SNSTopicName and SNSTopicARN are only returned in results if a trail is configured to send SNS notifications. Similarly, KMSKeyId only appears in results if a trail's log files are encrypted with KMS customer managed keys.",
+     "item": {
+      "type": "structure",
+      "doc": "The settings for a trail.",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "Name of the trail set by calling CreateTrail . The maximum length is 128 characters."
+       },
+       "S3BucketName": {
+        "type": "string",
+        "doc": "Name of the Amazon S3 bucket into which CloudTrail delivers your trail files. See Amazon S3 Bucket naming rules ."
+       },
+       "S3KeyPrefix": {
+        "type": "string",
+        "doc": "Specifies the Amazon S3 key prefix that comes after the name of the bucket you have designated for log file delivery. For more information, see Finding Your CloudTrail Log Files . The maximum length is 200 characters."
+       },
+       "SnsTopicName": {
+        "type": "string",
+        "doc": "This field is no longer in use. Use SnsTopicARN ."
+       },
+       "SnsTopicARN": {
+        "type": "string",
+        "doc": "Specifies the ARN of the Amazon SNS topic that CloudTrail uses to send notifications when log files are delivered. The following is the format of a topic ARN. arn:aws:sns:us-east-2:123456789012:MyTopic"
+       },
+       "IncludeGlobalServiceEvents": {
+        "type": "boolean",
+        "doc": "Set to True to include Amazon Web Services API calls from Amazon Web Services global services such as IAM. Otherwise, False ."
+       },
+       "IsMultiRegionTrail": {
+        "type": "boolean",
+        "doc": "Specifies whether the trail exists only in one Region or exists in all Regions."
+       },
+       "HomeRegion": {
+        "type": "string",
+        "doc": "The Region in which the trail was created."
+       },
+       "TrailARN": {
+        "type": "string",
+        "doc": "Specifies the ARN of the trail. The following is the format of a trail ARN. arn:aws:cloudtrail:us-east-2:123456789012:trail/MyTrail"
+       },
+       "LogFileValidationEnabled": {
+        "type": "boolean",
+        "doc": "Specifies whether log file validation is enabled."
+       },
+       "CloudWatchLogsLogGroupArn": {
+        "type": "string",
+        "doc": "Specifies an Amazon Resource Name (ARN), a unique identifier that represents the log group to which CloudTrail logs will be delivered."
+       },
+       "CloudWatchLogsRoleArn": {
+        "type": "string",
+        "doc": "Specifies the role for the CloudWatch Logs endpoint to assume to write to a user's log group."
+       },
+       "KmsKeyId": {
+        "type": "string",
+        "doc": "Specifies the KMS key ID that encrypts the logs delivered by CloudTrail. The value is a fully specified ARN to a KMS key in the following format. arn:aws:kms:us-east-2:123456789012:key/12345678-1234-1234-1234-123456789012"
+       },
+       "HasCustomEventSelectors": {
+        "type": "boolean",
+        "doc": "Specifies if the trail has custom event selectors."
+       },
+       "HasInsightSelectors": {
+        "type": "boolean",
+        "doc": "Specifies whether a trail has insight types specified in an InsightSelector list."
+       },
+       "IsOrganizationTrail": {
+        "type": "boolean",
+        "doc": "Specifies whether the trail is an organization trail."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "trailList[].RecursiveLogging"
+  ],
+  "raw_keys": [
+   "cloudtrail.describe_trails"
+  ],
+  "rules": [
+   "REME-0101000009",
+   "REME-0106200001",
+   "REME-0106200002",
+   "REME-0106200003",
+   "REME-0106200004",
+   "REME-0106200005",
+   "REME-0106200006",
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015"
+  ]
+ },
+ "cloudtrail.GetEventSelectors": {
+  "service": "cloudtrail",
+  "operation": "GetEventSelectors",
+  "method": "get_event_selectors",
+  "doc": "Describes the settings for the event selectors that you configured for your trail. The information returned for your event selectors includes the following: If your event selector includes read-only events, write-only events, or all events. This applies to management events, data events, and network activity events. If your event selector includes management events. If your event selector includes network activity events, the event sources for which you are logging network activity events. If your event selector includes data events, the resources on which you are logging data events. For more information about logging management, data, and network activity events, see the following topics in the CloudTrail User Guide : Logging management events Logging data events Logging network activity events",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail/client/get_event_selectors.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/GetEventSelectors"
+  },
+  "paginated": false,
+  "input_required": [
+   "TrailName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "TrailARN": {
+     "type": "string",
+     "doc": "The specified trail ARN that has the event selectors."
+    },
+    "EventSelectors": {
+     "type": "list",
+     "doc": "The event selectors that are configured for the trail.",
+     "item": {
+      "type": "structure",
+      "doc": "Use event selectors to further specify the management and data event settings for your trail. By default, trails created without specific event selectors will be configured to log all read and write management events, and no data events. When an event occurs in your account, CloudTrail evaluates the event selector for all trails. For each trail, if the event matches any event selector, the trail processes and logs the event. If the event doesn't match any event selector, the trail doesn't log t…",
+      "members": {
+       "ReadWriteType": {
+        "type": "string",
+        "doc": "Specify if you want your trail to log read-only events, write-only events, or all. For example, the EC2 GetConsoleOutput is a read-only API operation and RunInstances is a write-only API operation. By default, the value is All .",
+        "enum": [
+         "ReadOnly",
+         "WriteOnly",
+         "All"
+        ]
+       },
+       "IncludeManagementEvents": {
+        "type": "boolean",
+        "doc": "Specify if you want your event selector to include management events for your trail. For more information, see Management Events in the CloudTrail User Guide . By default, the value is true . The first copy of management events is free. You are charged for additional copies of management events that you are logging on any subsequent trail in the same Region. For more information about CloudTrail pricing, see CloudTrail Pricing ."
+       },
+       "DataResources": {
+        "type": "list",
+        "doc": "CloudTrail supports data event logging for Amazon S3 objects in standard S3 buckets, Lambda functions, and Amazon DynamoDB tables with basic event selectors. You can specify up to 250 resources for an individual event selector, but the total number of data resources cannot exceed 250 across all event selectors in a trail. This limit does not apply if you configure resource logging for all data events. For more information, see Data Events and Limits in CloudTrail in the CloudTrail User Guide . …",
+        "item": {
+         "type": "structure",
+         "doc": "You can configure the DataResource in an EventSelector to log data events for the following three resource types: AWS::DynamoDB::Table AWS::Lambda::Function AWS::S3::Object To log data events for all other resource types including objects stored in directory buckets , you must use AdvancedEventSelectors . You must also use AdvancedEventSelectors if you want to filter on the eventName field. Configure the DataResource to specify the resource type and resource ARNs for which you want to log data …",
+         "members": {
+          "Type": {
+           "type": "string",
+           "doc": "The resource type in which you want to log data events. You can specify the following basic event selector resource types: AWS::DynamoDB::Table AWS::Lambda::Function AWS::S3::Object Additional resource types are available through advanced event selectors. For more information, see AdvancedEventSelector ."
+          },
+          "Values": {
+           "type": "list",
+           "doc": "An array of Amazon Resource Name (ARN) strings or partial ARN strings for the specified resource type. To log data events for all objects in all S3 buckets in your Amazon Web Services account, specify the prefix as arn:aws:s3 . This also enables logging of data event activity performed by any user or role in your Amazon Web Services account, even if that activity is performed on a bucket that belongs to another Amazon Web Services account. To log data events for all objects in an S3 bucket, spe…",
+           "item": {
+            "type": "string"
+           }
+          }
+         }
+        }
+       },
+       "ExcludeManagementEventSources": {
+        "type": "list",
+        "doc": "An optional list of service event sources from which you do not want management events to be logged on your trail. In this release, the list can be empty (disables the filter), or it can filter out Key Management Service or Amazon RDS Data API events by containing kms.amazonaws.com or rdsdata.amazonaws.com . By default, ExcludeManagementEventSources is empty, and KMS and Amazon RDS Data API events are logged to your trail. You can exclude management event sources only in Regions that support th…",
+        "item": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    },
+    "AdvancedEventSelectors": {
+     "type": "list",
+     "doc": "The advanced event selectors that are configured for the trail.",
+     "item": {
+      "type": "structure",
+      "doc": "Advanced event selectors let you create fine-grained selectors for CloudTrail management, data, and network activity events. They help you control costs by logging only those events that are important to you. For more information about configuring advanced event selectors, see the Logging data events , Logging network activity events , and Logging management events topics in the CloudTrail User Guide . You cannot apply both event selectors and advanced event selectors to a trail. For informatio…",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "An optional, descriptive name for an advanced event selector, such as \"Log data events for only two S3 buckets\"."
+       },
+       "FieldSelectors": {
+        "type": "list",
+        "doc": "Contains all selector statements in an advanced event selector.",
+        "item": {
+         "type": "structure",
+         "doc": "A single selector statement in an advanced event selector.",
+         "members": {
+          "Field": {
+           "type": "string",
+           "doc": "A field in a CloudTrail event record on which to filter events to be logged. For event data stores for CloudTrail Insights events, Config configuration items, Audit Manager evidence, or events outside of Amazon Web Services, the field is used only for selecting events as filtering is not supported. For more information, see AdvancedFieldSelector in the CloudTrail API Reference . Selectors don't support the use of wildcards like * . To match multiple values with a single condition, you may use S…",
+           "required": true
+          },
+          "Equals": {
+           "type": "list",
+           "doc": "An operator that includes events that match the exact value of the event record field specified as the value of Field . This is the only valid operator that you can use with the readOnly , eventCategory , and resources.type fields.",
+           "item": {
+            "type": "string"
+           }
+          },
+          "StartsWith": {
+           "type": "list",
+           "doc": "An operator that includes events that match the first few characters of the event record field specified as the value of Field .",
+           "item": {
+            "type": "string"
+           }
+          },
+          "EndsWith": {
+           "type": "list",
+           "doc": "An operator that includes events that match the last few characters of the event record field specified as the value of Field .",
+           "item": {
+            "type": "string"
+           }
+          },
+          "NotEquals": {
+           "type": "list",
+           "doc": "An operator that excludes events that match the exact value of the event record field specified as the value of Field .",
+           "item": {
+            "type": "string"
+           }
+          },
+          "NotStartsWith": {
+           "type": "list",
+           "doc": "An operator that excludes events that match the first few characters of the event record field specified as the value of Field .",
+           "item": {
+            "type": "string"
+           }
+          },
+          "NotEndsWith": {
+           "type": "list",
+           "doc": "An operator that excludes events that match the last few characters of the event record field specified as the value of Field .",
+           "item": {
+            "type": "string"
+           }
+          }
+         }
+        },
+        "required": true
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "cloudtrail.describe_trails"
+  ],
+  "rules": [
+   "REME-0101000009",
+   "REME-0106200001",
+   "REME-0106200002",
+   "REME-0106200003",
+   "REME-0106200004",
+   "REME-0106200005",
+   "REME-0106200006",
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015"
+  ]
+ },
+ "cloudtrail.GetInsightSelectors": {
+  "service": "cloudtrail",
+  "operation": "GetInsightSelectors",
+  "method": "get_insight_selectors",
+  "doc": "Describes the settings for the Insights event selectors that you configured for your trail or event data store. GetInsightSelectors shows if CloudTrail Insights event logging is enabled on the trail or event data store, and if it is, which Insights types are enabled. If you run GetInsightSelectors on a trail or event data store that does not have Insights events enabled, the operation throws the exception InsightNotEnabledException Specify either the EventDataStore parameter to get Insights event selectors for an event data store, or the TrailName parameter to the get Insights event selectors for a trail. You cannot specify these parameters together. For more information, see Working with CloudTrail Insights in the CloudTrail User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail/client/get_insight_selectors.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/GetInsightSelectors"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "TrailARN": {
+     "type": "string",
+     "doc": "The Amazon Resource Name (ARN) of a trail for which you want to get Insights selectors."
+    },
+    "InsightSelectors": {
+     "type": "list",
+     "doc": "A JSON string that contains the Insight types you want to log on a trail or event data store. ApiErrorRateInsight and ApiCallRateInsight are supported as Insights types.",
+     "item": {
+      "type": "structure",
+      "doc": "A JSON string that contains a list of Insights types that are logged on a trail or event data store.",
+      "members": {
+       "InsightType": {
+        "type": "string",
+        "doc": "The type of Insights events to log on a trail or event data store. ApiCallRateInsight and ApiErrorRateInsight are valid Insight types. The ApiCallRateInsight Insights type analyzes write-only management API calls that are aggregated per minute against a baseline API call volume. The ApiErrorRateInsight Insights type analyzes management API calls that result in error codes. The error is shown if the API call is unsuccessful.",
+        "enum": [
+         "ApiCallRateInsight",
+         "ApiErrorRateInsight"
+        ]
+       }
+      }
+     }
+    },
+    "EventDataStoreArn": {
+     "type": "string",
+     "doc": "The ARN of the source event data store that enabled Insights events."
+    },
+    "InsightsDestination": {
+     "type": "string",
+     "doc": "The ARN of the destination event data store that logs Insights events."
+    }
+   }
+  },
+  "added_in_latest": [
+   "InsightSelectors[].EventCategories"
+  ],
+  "raw_keys": [
+   "cloudtrail.describe_trails"
+  ],
+  "rules": [
+   "REME-0101000009",
+   "REME-0106200001",
+   "REME-0106200002",
+   "REME-0106200003",
+   "REME-0106200004",
+   "REME-0106200005",
+   "REME-0106200006",
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015"
+  ]
+ },
+ "cloudtrail.GetTrailStatus": {
+  "service": "cloudtrail",
+  "operation": "GetTrailStatus",
+  "method": "get_trail_status",
+  "doc": "Returns a JSON-formatted list of information about the specified trail. Fields include information on delivery errors, Amazon SNS and Amazon S3 errors, and start and stop logging times for each trail. This operation returns trail status from a single Region. To return trail status from all Regions, you must call the operation on each Region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail/client/get_trail_status.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/GetTrailStatus"
+  },
+  "paginated": false,
+  "input_required": [
+   "Name"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Returns the objects or data listed below if successful. Otherwise, returns an error.",
+   "members": {
+    "IsLogging": {
+     "type": "boolean",
+     "doc": "Whether the CloudTrail trail is currently logging Amazon Web Services API calls."
+    },
+    "LatestDeliveryError": {
+     "type": "string",
+     "doc": "Displays any Amazon S3 error that CloudTrail encountered when attempting to deliver log files to the designated bucket. For more information, see Error Responses in the Amazon S3 API Reference. This error occurs only when there is a problem with the destination S3 bucket, and does not occur for requests that time out. To resolve the issue, fix the bucket policy so that CloudTrail can write to the bucket; or create a new bucket and call UpdateTrail to specify the new bucket."
+    },
+    "LatestNotificationError": {
+     "type": "string",
+     "doc": "Displays any Amazon SNS error that CloudTrail encountered when attempting to send a notification. For more information about Amazon SNS errors, see the Amazon SNS Developer Guide ."
+    },
+    "LatestDeliveryTime": {
+     "type": "timestamp",
+     "doc": "Specifies the date and time that CloudTrail last delivered log files to an account's Amazon S3 bucket."
+    },
+    "LatestNotificationTime": {
+     "type": "timestamp",
+     "doc": "Specifies the date and time of the most recent Amazon SNS notification that CloudTrail has written a new log file to an account's Amazon S3 bucket."
+    },
+    "StartLoggingTime": {
+     "type": "timestamp",
+     "doc": "Specifies the most recent date and time when CloudTrail started recording API calls for an Amazon Web Services account."
+    },
+    "StopLoggingTime": {
+     "type": "timestamp",
+     "doc": "Specifies the most recent date and time when CloudTrail stopped recording API calls for an Amazon Web Services account."
+    },
+    "LatestCloudWatchLogsDeliveryError": {
+     "type": "string",
+     "doc": "Displays any CloudWatch Logs error that CloudTrail encountered when attempting to deliver logs to CloudWatch Logs."
+    },
+    "LatestCloudWatchLogsDeliveryTime": {
+     "type": "timestamp",
+     "doc": "Displays the most recent date and time when CloudTrail delivered logs to CloudWatch Logs."
+    },
+    "LatestDigestDeliveryTime": {
+     "type": "timestamp",
+     "doc": "Specifies the date and time that CloudTrail last delivered a digest file to an account's Amazon S3 bucket."
+    },
+    "LatestDigestDeliveryError": {
+     "type": "string",
+     "doc": "Displays any Amazon S3 error that CloudTrail encountered when attempting to deliver a digest file to the designated bucket. For more information, see Error Responses in the Amazon S3 API Reference. This error occurs only when there is a problem with the destination S3 bucket, and does not occur for requests that time out. To resolve the issue, fix the bucket policy so that CloudTrail can write to the bucket; or create a new bucket and call UpdateTrail to specify the new bucket."
+    },
+    "LatestDeliveryAttemptTime": {
+     "type": "string",
+     "doc": "This field is no longer in use."
+    },
+    "LatestNotificationAttemptTime": {
+     "type": "string",
+     "doc": "This field is no longer in use."
+    },
+    "LatestNotificationAttemptSucceeded": {
+     "type": "string",
+     "doc": "This field is no longer in use."
+    },
+    "LatestDeliveryAttemptSucceeded": {
+     "type": "string",
+     "doc": "This field is no longer in use."
+    },
+    "TimeLoggingStarted": {
+     "type": "string",
+     "doc": "This field is no longer in use."
+    },
+    "TimeLoggingStopped": {
+     "type": "string",
+     "doc": "This field is no longer in use."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "cloudtrail.describe_trails"
+  ],
+  "rules": [
+   "REME-0101000009",
+   "REME-0106200001",
+   "REME-0106200002",
+   "REME-0106200003",
+   "REME-0106200004",
+   "REME-0106200005",
+   "REME-0106200006",
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015"
+  ]
+ },
+ "cloudtrail.ListTags": {
+  "service": "cloudtrail",
+  "operation": "ListTags",
+  "method": "list_tags",
+  "doc": "Lists the tags for the specified trails, event data stores, dashboards, or channels in the current Region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail/client/list_tags.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/ListTags"
+  },
+  "paginated": true,
+  "input_required": [
+   "ResourceIdList"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Returns the objects or data listed below if successful. Otherwise, returns an error.",
+   "members": {
+    "ResourceTagList": {
+     "type": "list",
+     "doc": "A list of resource tags.",
+     "item": {
+      "type": "structure",
+      "doc": "A resource tag.",
+      "members": {
+       "ResourceId": {
+        "type": "string",
+        "doc": "Specifies the ARN of the resource."
+       },
+       "TagsList": {
+        "type": "list",
+        "doc": "A list of tags.",
+        "item": {
+         "type": "structure",
+         "doc": "A custom key-value pair associated with a resource such as a CloudTrail trail, event data store, dashboard, or channel.",
+         "members": {
+          "Key": {
+           "type": "string",
+           "doc": "The key in a key-value pair. The key must be must be no longer than 128 Unicode characters. The key must be unique for the resource to which it applies.",
+           "required": true
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The value in a key-value pair of a tag. The value must be no longer than 256 Unicode characters."
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "Reserved for future use."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "cloudtrail.describe_trails"
+  ],
+  "rules": [
+   "REME-0101000009",
+   "REME-0106200001",
+   "REME-0106200002",
+   "REME-0106200003",
+   "REME-0106200004",
+   "REME-0106200005",
+   "REME-0106200006",
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015"
+  ]
+ },
+ "cloudtrail.LookupEvents": {
+  "service": "cloudtrail",
+  "operation": "LookupEvents",
+  "method": "lookup_events",
+  "doc": "Looks up management events or CloudTrail Insights events that are captured by CloudTrail. You can look up events that occurred in a Region within the last 90 days. LookupEvents returns recent Insights events for trails that enable Insights. To view Insights events for an event data store, you can run queries on your Insights event data store, and you can also view the Lake dashboard for Insights. Lookup supports the following attributes for management events: Amazon Web Services access key Event ID Event name Event source Read only Resource name Resource type User name Lookup supports the following attributes for Insights events: Event ID Event name Event source All attributes are optional. The default number of results returned is 50, with a maximum of 50 possible. The response includes a token that you can use to get the next page of results. The rate of lookup requests is limited to two per second, per account, per Region. If this limit is exceeded, a throttling error occurs.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail/client/lookup_events.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudtrail-2013-11-01/LookupEvents"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains a response to a LookupEvents action.",
+   "members": {
+    "Events": {
+     "type": "list",
+     "doc": "A list of events returned based on the lookup attributes specified and the CloudTrail event. The events list is sorted by time. The most recent event is listed first.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an event that was returned by a lookup request. The result includes a representation of a CloudTrail event.",
+      "members": {
+       "EventId": {
+        "type": "string",
+        "doc": "The CloudTrail ID of the event returned."
+       },
+       "EventName": {
+        "type": "string",
+        "doc": "The name of the event returned."
+       },
+       "ReadOnly": {
+        "type": "string",
+        "doc": "Information about whether the event is a write event or a read event."
+       },
+       "AccessKeyId": {
+        "type": "string",
+        "doc": "The Amazon Web Services access key ID that was used to sign the request. If the request was made with temporary security credentials, this is the access key ID of the temporary credentials."
+       },
+       "EventTime": {
+        "type": "timestamp",
+        "doc": "The date and time of the event returned."
+       },
+       "EventSource": {
+        "type": "string",
+        "doc": "The Amazon Web Services service to which the request was made."
+       },
+       "Username": {
+        "type": "string",
+        "doc": "A user name or role name of the requester that called the API in the event returned."
+       },
+       "Resources": {
+        "type": "list",
+        "doc": "A list of resources referenced by the event returned.",
+        "item": {
+         "type": "structure",
+         "doc": "Specifies the type and name of a resource referenced by an event.",
+         "members": {
+          "ResourceType": {
+           "type": "string",
+           "doc": "The type of a resource referenced by the event returned. When the resource type cannot be determined, null is returned. Some examples of resource types are: Instance for EC2, Trail for CloudTrail, DBInstance for Amazon RDS, and AccessKey for IAM. To learn more about how to look up and filter events by the resource types supported for a service, see Filtering CloudTrail Events ."
+          },
+          "ResourceName": {
+           "type": "string",
+           "doc": "The name of the resource referenced by the event returned. These are user-created names whose values will depend on the environment. For example, the resource name might be \"auto-scaling-test-group\" for an Auto Scaling Group or \"i-1234567\" for an EC2 Instance."
+          }
+         }
+        }
+       },
+       "CloudTrailEvent": {
+        "type": "string",
+        "doc": "A JSON string that contains a representation of the event returned."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The token to use to get the next page of results after a previous API call. If the token does not appear, there are no more results to return. The token must be passed in with the same parameters as the previous call. For example, if the original call specified an AttributeKey of 'Username' with a value of 'root', the call with NextToken should include those same parameters."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "cloudtrail.lookup_events"
+  ]
+ }
+}

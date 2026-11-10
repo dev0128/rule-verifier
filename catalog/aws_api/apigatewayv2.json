@@ -1,0 +1,432 @@
+{
+ "apigatewayv2.GetApis": {
+  "service": "apigatewayv2",
+  "operation": "GetApis",
+  "method": "get_apis",
+  "doc": "Gets a collection of Api resources.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/apigatewayv2/client/get_apis.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetApis"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Success",
+   "members": {
+    "Items": {
+     "type": "list",
+     "doc": "The elements from this collection.",
+     "item": {
+      "type": "structure",
+      "doc": "Represents an API.",
+      "members": {
+       "ApiEndpoint": {
+        "type": "string",
+        "doc": "The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com. The stage name is typically appended to this URI to form a complete path to a deployed API stage."
+       },
+       "ApiGatewayManaged": {
+        "type": "boolean",
+        "doc": "Specifies whether an API is managed by API Gateway. You can't update or delete a managed API by using API Gateway. A managed API can be deleted only through the tooling or service that created it."
+       },
+       "ApiId": {
+        "type": "string",
+        "doc": "The API ID."
+       },
+       "ApiKeySelectionExpression": {
+        "type": "string",
+        "doc": "An API key selection expression. Supported only for WebSocket APIs. See API Key Selection Expressions ."
+       },
+       "CorsConfiguration": {
+        "type": "structure",
+        "doc": "A CORS configuration. Supported only for HTTP APIs.",
+        "members": {
+         "AllowCredentials": {
+          "type": "boolean",
+          "doc": "Specifies whether credentials are included in the CORS request. Supported only for HTTP APIs."
+         },
+         "AllowHeaders": {
+          "type": "list",
+          "doc": "Represents a collection of allowed headers. Supported only for HTTP APIs.",
+          "item": {
+           "type": "string"
+          }
+         },
+         "AllowMethods": {
+          "type": "list",
+          "doc": "Represents a collection of allowed HTTP methods. Supported only for HTTP APIs.",
+          "item": {
+           "type": "string",
+           "doc": "A string with a length between [1-64]."
+          }
+         },
+         "AllowOrigins": {
+          "type": "list",
+          "doc": "Represents a collection of allowed origins. Supported only for HTTP APIs.",
+          "item": {
+           "type": "string"
+          }
+         },
+         "ExposeHeaders": {
+          "type": "list",
+          "doc": "Represents a collection of exposed headers. Supported only for HTTP APIs.",
+          "item": {
+           "type": "string"
+          }
+         },
+         "MaxAge": {
+          "type": "integer",
+          "doc": "The number of seconds that the browser should cache preflight request results. Supported only for HTTP APIs."
+         }
+        }
+       },
+       "CreatedDate": {
+        "type": "timestamp",
+        "doc": "The timestamp when the API was created."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "The description of the API."
+       },
+       "DisableSchemaValidation": {
+        "type": "boolean",
+        "doc": "Avoid validating models when creating a deployment. Supported only for WebSocket APIs."
+       },
+       "DisableExecuteApiEndpoint": {
+        "type": "boolean",
+        "doc": "Specifies whether clients can invoke your API by using the default execute-api endpoint. By default, clients can invoke your API with the default https://{api_id}.execute-api.{region}.amazonaws.com endpoint. To require that clients use a custom domain name to invoke your API, disable the default endpoint."
+       },
+       "ImportInfo": {
+        "type": "list",
+        "doc": "The validation information during API import. This may include particular properties of your OpenAPI definition which are ignored during import. Supported only for HTTP APIs.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "Name": {
+        "type": "string",
+        "doc": "The name of the API.",
+        "required": true
+       },
+       "ProtocolType": {
+        "type": "string",
+        "doc": "The API protocol.",
+        "enum": [
+         "WEBSOCKET",
+         "HTTP"
+        ],
+        "required": true
+       },
+       "RouteSelectionExpression": {
+        "type": "string",
+        "doc": "The route selection expression for the API. For HTTP APIs, the routeSelectionExpression must be ${request.method} ${request.path}. If not provided, this will be the default for HTTP APIs. This property is required for WebSocket APIs.",
+        "required": true
+       },
+       "Tags": {
+        "type": "map",
+        "doc": "A collection of tags associated with the API.",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string",
+         "doc": "A string with a length between [0-1600]."
+        }
+       },
+       "Version": {
+        "type": "string",
+        "doc": "A version identifier for the API."
+       },
+       "Warnings": {
+        "type": "list",
+        "doc": "The warning messages reported when failonwarnings is turned on during API import.",
+        "item": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The next page of elements from this collection. Not valid for the last element of the collection."
+    }
+   }
+  },
+  "added_in_latest": [
+   "Items[].IpAddressType"
+  ],
+  "raw_keys": [
+   "apigateway.v2_apis"
+  ],
+  "rules": [
+   "REME-0101200001",
+   "REME-0101200002",
+   "REME-0101200006"
+  ]
+ },
+ "apigatewayv2.GetIntegrationResponses": {
+  "service": "apigatewayv2",
+  "operation": "GetIntegrationResponses",
+  "method": "get_integration_responses",
+  "doc": "Gets the IntegrationResponses for an Integration.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/apigatewayv2/client/get_integration_responses.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegrationResponses"
+  },
+  "paginated": true,
+  "input_required": [
+   "IntegrationId",
+   "ApiId"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Success",
+   "members": {
+    "Items": {
+     "type": "list",
+     "doc": "The elements from this collection.",
+     "item": {
+      "type": "structure",
+      "doc": "Represents an integration response.",
+      "members": {
+       "ContentHandlingStrategy": {
+        "type": "string",
+        "doc": "Supported only for WebSocket APIs. Specifies how to handle response payload content type conversions. Supported values are CONVERT_TO_BINARY and CONVERT_TO_TEXT, with the following behaviors: CONVERT_TO_BINARY: Converts a response payload from a Base64-encoded string to the corresponding binary blob. CONVERT_TO_TEXT: Converts a response payload from a binary blob to a Base64-encoded string. If this property is not defined, the response payload will be passed through from the integration respons…",
+        "enum": [
+         "CONVERT_TO_BINARY",
+         "CONVERT_TO_TEXT"
+        ]
+       },
+       "IntegrationResponseId": {
+        "type": "string",
+        "doc": "The integration response ID."
+       },
+       "IntegrationResponseKey": {
+        "type": "string",
+        "doc": "The integration response key.",
+        "required": true
+       },
+       "ResponseParameters": {
+        "type": "map",
+        "doc": "A key-value map specifying response parameters that are passed to the method response from the backend. The key is a method response header parameter name and the mapped value is an integration response header value, a static value enclosed within a pair of single quotes, or a JSON expression from the integration response body. The mapping key must match the pattern of method.response.header.{name}, where name is a valid and unique header name. The mapped non-static value must match the pattern…",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string",
+         "doc": "A string with a length between [1-512]."
+        }
+       },
+       "ResponseTemplates": {
+        "type": "map",
+        "doc": "The collection of response templates for the integration response as a string-to-string map of key-value pairs. Response templates are represented as a key/value map, with a content-type as the key and a template as the value.",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string",
+         "doc": "A string with a length between [0-32768]."
+        }
+       },
+       "TemplateSelectionExpression": {
+        "type": "string",
+        "doc": "The template selection expressions for the integration response."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The next page of elements from this collection. Not valid for the last element of the collection."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "apigateway.v2_apis"
+  ],
+  "rules": [
+   "REME-0101200001",
+   "REME-0101200002",
+   "REME-0101200006"
+  ]
+ },
+ "apigatewayv2.GetIntegrations": {
+  "service": "apigatewayv2",
+  "operation": "GetIntegrations",
+  "method": "get_integrations",
+  "doc": "Gets the Integrations for an API.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/apigatewayv2/client/get_integrations.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegrations"
+  },
+  "paginated": true,
+  "input_required": [
+   "ApiId"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Success",
+   "members": {
+    "Items": {
+     "type": "list",
+     "doc": "The elements from this collection.",
+     "item": {
+      "type": "structure",
+      "doc": "Represents an integration.",
+      "members": {
+       "ApiGatewayManaged": {
+        "type": "boolean",
+        "doc": "Specifies whether an integration is managed by API Gateway. If you created an API using using quick create, the resulting integration is managed by API Gateway. You can update a managed integration, but you can't delete it."
+       },
+       "ConnectionId": {
+        "type": "string",
+        "doc": "The ID of the VPC link for a private integration. Supported only for HTTP APIs."
+       },
+       "ConnectionType": {
+        "type": "string",
+        "doc": "The type of the network connection to the integration endpoint. Specify INTERNET for connections through the public routable internet or VPC_LINK for private connections between API Gateway and resources in a VPC. The default value is INTERNET.",
+        "enum": [
+         "INTERNET",
+         "VPC_LINK"
+        ]
+       },
+       "ContentHandlingStrategy": {
+        "type": "string",
+        "doc": "Supported only for WebSocket APIs. Specifies how to handle response payload content type conversions. Supported values are CONVERT_TO_BINARY and CONVERT_TO_TEXT, with the following behaviors: CONVERT_TO_BINARY: Converts a response payload from a Base64-encoded string to the corresponding binary blob. CONVERT_TO_TEXT: Converts a response payload from a binary blob to a Base64-encoded string. If this property is not defined, the response payload will be passed through from the integration respons…",
+        "enum": [
+         "CONVERT_TO_BINARY",
+         "CONVERT_TO_TEXT"
+        ]
+       },
+       "CredentialsArn": {
+        "type": "string",
+        "doc": "Specifies the credentials required for the integration, if any. For AWS integrations, three options are available. To specify an IAM Role for API Gateway to assume, use the role's Amazon Resource Name (ARN). To require that the caller's identity be passed through from the request, specify the string arn:aws:iam::*:user/*. To use resource-based permissions on supported AWS services, specify null."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "Represents the description of an integration."
+       },
+       "IntegrationId": {
+        "type": "string",
+        "doc": "Represents the identifier of an integration."
+       },
+       "IntegrationMethod": {
+        "type": "string",
+        "doc": "Specifies the integration's HTTP method type."
+       },
+       "IntegrationResponseSelectionExpression": {
+        "type": "string",
+        "doc": "The integration response selection expression for the integration. Supported only for WebSocket APIs. See Integration Response Selection Expressions ."
+       },
+       "IntegrationSubtype": {
+        "type": "string",
+        "doc": "Supported only for HTTP API AWS_PROXY integrations. Specifies the AWS service action to invoke. To learn more, see Integration subtype reference ."
+       },
+       "IntegrationType": {
+        "type": "string",
+        "doc": "The integration type of an integration. One of the following: AWS: for integrating the route or method request with an AWS service action, including the Lambda function-invoking action. With the Lambda function-invoking action, this is referred to as the Lambda custom integration. With any other AWS service action, this is known as AWS integration. Supported only for WebSocket APIs. AWS_PROXY: for integrating the route or method request with a Lambda function or other AWS service action. This i…",
+        "enum": [
+         "AWS",
+         "HTTP",
+         "MOCK",
+         "HTTP_PROXY",
+         "AWS_PROXY"
+        ]
+       },
+       "IntegrationUri": {
+        "type": "string",
+        "doc": "For a Lambda integration, specify the URI of a Lambda function. For an HTTP integration, specify a fully-qualified URL. For an HTTP API private integration, specify the ARN of an Application Load Balancer listener, Network Load Balancer listener, or AWS Cloud Map service. If you specify the ARN of an AWS Cloud Map service, API Gateway uses DiscoverInstances to identify resources. You can use query parameters to target specific resources. To learn more, see DiscoverInstances . For private integr…"
+       },
+       "PassthroughBehavior": {
+        "type": "string",
+        "doc": "Specifies the pass-through behavior for incoming requests based on the Content-Type header in the request, and the available mapping templates specified as the requestTemplates property on the Integration resource. There are three valid values: WHEN_NO_MATCH, WHEN_NO_TEMPLATES, and NEVER. Supported only for WebSocket APIs. WHEN_NO_MATCH passes the request body for unmapped content types through to the integration backend without transformation. NEVER rejects unmapped content types with an HTTP …",
+        "enum": [
+         "WHEN_NO_MATCH",
+         "NEVER",
+         "WHEN_NO_TEMPLATES"
+        ]
+       },
+       "PayloadFormatVersion": {
+        "type": "string",
+        "doc": "Specifies the format of the payload sent to an integration. Required for HTTP APIs. Supported values for Lambda proxy integrations are 1.0 and 2.0. For all other integrations, 1.0 is the only supported value. To learn more, see Working with AWS Lambda proxy integrations for HTTP APIs ."
+       },
+       "RequestParameters": {
+        "type": "map",
+        "doc": "For WebSocket APIs, a key-value map specifying request parameters that are passed from the method request to the backend. The key is an integration request parameter name and the associated value is a method request parameter value or static value that must be enclosed within single quotes and pre-encoded as required by the backend. The method request parameter value must match the pattern of method.request. {location} . {name} , where {location} is querystring, path, or header; and {name} must…",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string",
+         "doc": "A string with a length between [1-512]."
+        }
+       },
+       "RequestTemplates": {
+        "type": "map",
+        "doc": "Represents a map of Velocity templates that are applied on the request payload based on the value of the Content-Type header sent by the client. The content type value is the key in this map, and the template (as a String) is the value. Supported only for WebSocket APIs.",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string",
+         "doc": "A string with a length between [0-32768]."
+        }
+       },
+       "ResponseParameters": {
+        "type": "map",
+        "doc": "Supported only for HTTP APIs. You use response parameters to transform the HTTP response from a backend integration before returning the response to clients. Specify a key-value map from a selection key to response parameters. The selection key must be a valid HTTP status code within the range of 200-599. Response parameters are a key-value map. The key must match pattern <action>:<header>.<location> or overwrite.statuscode. The action can be append, overwrite or remove. The value can be a stat…",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "map",
+         "doc": "For WebSocket APIs, a key-value map specifying request parameters that are passed from the method request to the backend. The key is an integration request parameter name and the associated value is a method request parameter value or static value that must be enclosed within single quotes and pre-encoded as required by the backend. The method request parameter value must match the pattern of method.request. {location} . {name} , where {location} is querystring, path, or header; and {name} must…",
+         "key": {
+          "type": "string"
+         },
+         "value": {
+          "type": "string",
+          "doc": "A string with a length between [1-512]."
+         }
+        }
+       },
+       "TemplateSelectionExpression": {
+        "type": "string",
+        "doc": "The template selection expression for the integration. Supported only for WebSocket APIs."
+       },
+       "TimeoutInMillis": {
+        "type": "integer",
+        "doc": "Custom timeout between 50 and 29,000 milliseconds for WebSocket APIs and between 50 and 30,000 milliseconds for HTTP APIs. The default timeout is 29 seconds for WebSocket APIs and 30 seconds for HTTP APIs."
+       },
+       "TlsConfig": {
+        "type": "structure",
+        "doc": "The TLS configuration for a private integration. If you specify a TLS configuration, private integration traffic uses the HTTPS protocol. Supported only for HTTP APIs.",
+        "members": {
+         "ServerNameToVerify": {
+          "type": "string",
+          "doc": "If you specify a server name, API Gateway uses it to verify the hostname on the integration's certificate. The server name is also included in the TLS handshake to support Server Name Indication (SNI) or virtual hosting."
+         }
+        }
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The next page of elements from this collection. Not valid for the last element of the collection."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "apigateway.v2_apis"
+  ],
+  "rules": [
+   "REME-0101200001",
+   "REME-0101200002",
+   "REME-0101200006"
+  ]
+ }
+}

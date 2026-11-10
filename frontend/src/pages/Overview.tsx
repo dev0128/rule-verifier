@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api, waitJob, type FindingRow, type Job, type Variant } from '../api'
-import { EFFECT_CLASS, EFFECT_LABEL, EFFECT_ORDER, EffectBadge, EffectBar, JobLine, Loading, STATUS, StatusBadge, statusKey, useAsync } from '../ui'
+import { EFFECT_CLASS, EFFECT_LABEL, EFFECT_ORDER, EffectBadge, EffectBar, HelpLink, JobLine, Loading, STATUS, StatusBadge, TransitionChip, statusKey, useAsync } from '../ui'
 
 type Overview = {
   total_findings: number
@@ -29,6 +29,7 @@ export default function OverviewPage() {
   const category = sp.get('cat') ?? ''
   const level = sp.get('lv') ?? ''
   const st = sp.get('st') ?? ''
+  const tr = sp.get('tr') ?? ''
   const set = (k: string, v: string) => {
     const n = new URLSearchParams(sp)
     if (v) n.set(k, v)
@@ -47,13 +48,21 @@ export default function OverviewPage() {
       if (level && f.level !== level) return false
       if (st) {
         const [vid, key] = st.split(':')
-        const k = statusKey(f.results[vid], f.has_case, f.results[base], vid === base)
+        const k = statusKey(f.results[vid], f.has_case, f.results[base], vid === base, f.has_fix?.[vid])
         if (k !== key) return false
       }
+      if (tr === '항상' && !/항상|절대|모든|전부/.test(f.outcome)) return false
+      if (tr && tr !== '항상' && !(f.transitions[base] ?? []).includes(tr)) return false
       if (!ql) return true
-      return [f.id, f.code, f.codes.join(' '), f.name, f.summary, f.rule].join(' ').toLowerCase().includes(ql)
+      return [f.id, f.code, f.codes.join(' '), f.name, f.outcome, f.summary, f.rule].join(' ').toLowerCase().includes(ql)
     })
-  }, [cat.data, q, effect, category, level, st, base])
+  }, [cat.data, q, effect, category, level, st, tr, base])
+  // 결과 전이 select — 운영 엔진 케이스 결과에 나온 전이를 많은 순으로
+  const trOptions = useMemo(() => {
+    const n: Record<string, number> = {}
+    for (const f of cat.data?.findings ?? []) for (const t of f.transitions[base] ?? []) n[t] = (n[t] ?? 0) + 1
+    return Object.entries(n).sort((a, b) => b[1] - a[1])
+  }, [cat.data, base])
 
   const runAll = async () => {
     const j = await api.post<Job>('/api/cases/run', {})
@@ -93,17 +102,17 @@ export default function OverviewPage() {
           <div className="hint">룰 {o.total_rules}개 · 재현 케이스 {o.with_case}건</div>
         </div>
         <div className="card kpi">
-          <div className="label">운영 엔진에서 재현</div>
+          <div className="label" title="결함이 드러나는 입력을 현재 운영 엔진으로 돌렸을 때 틀리게 나온 결함">현재 운영 엔진에 결함 있음<HelpLink to="status" /></div>
           <div className="value" style={{ color: 'var(--bad)' }}>{reproduced}</div>
           <div className="hint">
-            결함 {baseStatus.defect ?? 0} · 수집 결함 {baseStatus.collection_only ?? 0} · 재현 안 됨 {baseStatus.not_reproducible ?? 0}
+            {STATUS.defect.label} {baseStatus.defect ?? 0} · {STATUS.collection_only.label} {baseStatus.collection_only ?? 0} · {STATUS.not_reproducible.label} {baseStatus.not_reproducible ?? 0}
           </div>
         </div>
         {imp && (
           <div className="card kpi">
             <div className="label">{imp.label}에서 개선됨</div>
             <div className="value" style={{ color: 'var(--good)' }}>{improvedCount}</div>
-            <div className="hint">오버레이 수정 룰 {(o.variants[1]?.overlay_rules ?? []).filter((r) => r.rule).length}개</div>
+            <div className="hint">개선 로직이 있는 결함 {cat.data.findings.filter((f) => f.has_fix?.[imp.id]).length}건 · 나머지는 {STATUS.no_fix.label}<HelpLink to="status" /></div>
           </div>
         )}
         {EFFECT_ORDER.slice(0, 2).map((e) => (
@@ -183,12 +192,19 @@ export default function OverviewPage() {
             <option key={l} value={l}>{l}</option>
           ))}
         </select>
+        <select value={tr} onChange={(e) => set('tr', e.target.value)}>
+          <option value="">결과 전체</option>
+          <option value="항상">항상 · 절대 · 전부 (입력과 무관)</option>
+          <optgroup label="올바른 결과 → 운영 엔진 결과">
+            {trOptions.map(([t, n]) => <option key={t} value={t}>{t} ({n})</option>)}
+          </optgroup>
+        </select>
         <select value={st} onChange={(e) => set('st', e.target.value)}>
           <option value="">상태 전체</option>
           {variants.map((v) => (
             <optgroup key={v.id} label={v.label}>
-              {['defect', 'collection_only', 'ok', 'improved', 'not_reproducible', 'case_broken', 'no_case', 'not_run']
-                .filter((k) => (v.id === base ? k !== 'improved' : true))
+              {['defect', 'no_fix', 'collection_only', 'ok', 'improved', 'not_reproducible', 'case_broken', 'no_case', 'not_run']
+                .filter((k) => (v.id === base ? k !== 'improved' && k !== 'no_fix' : true))
                 .map((k) => (
                   <option key={k} value={`${v.id}:${k}`}>{v.label} · {STATUS[k].label}</option>
                 ))}
@@ -205,10 +221,10 @@ export default function OverviewPage() {
               <th>룰</th>
               <th>항목명</th>
               <th>등급</th>
-              <th>유형</th>
-              <th>결함 요약</th>
+              <th>유형<HelpLink to="effect" title="오탐 · 미탐 · 점검 누락 … 뜻" /></th>
+              <th title="어떤 상황에서 어떤 결과가 나오는지 한 줄. 칩은 재현 케이스에서 운영 엔진이 낸 판정(올바른 결과 → 엔진 결과). 마우스를 올리면 결함 요약">결과<HelpLink to="chip" title="취약→양호 같은 칩의 뜻" /></th>
               {variants.map((v) => (
-                <th key={v.id}>{v.label}</th>
+                <th key={v.id}>{v.label}<HelpLink to="status" title="결함 있음 · 개선됨 · 개선 로직 없음 … 뜻" /></th>
               ))}
             </tr>
           </thead>
@@ -223,10 +239,15 @@ export default function OverviewPage() {
                 <td style={{ minWidth: 180 }}>{f.name}</td>
                 <td>{f.level}</td>
                 <td><EffectBadge effect={f.effect} /></td>
-                <td className="small" style={{ minWidth: 300 }}>{f.summary}</td>
+                <td className="small" style={{ minWidth: 280 }} title={f.summary}>
+                  <div style={{ fontWeight: 600 }}>{f.outcome || f.summary}</div>
+                  {(f.transitions[base] ?? []).length > 0 && (
+                    <div style={{ marginTop: 3 }}>{f.transitions[base].map((t) => <TransitionChip key={t} t={t} />)}</div>
+                  )}
+                </td>
                 {variants.map((v, i) => (
                   <td key={v.id} className="nowrap">
-                    <StatusBadge k={statusKey(f.results[v.id], f.has_case, f.results[base], i === 0)} />
+                    <StatusBadge k={statusKey(f.results[v.id], f.has_case, f.results[base], i === 0, f.has_fix?.[v.id])} />
                   </td>
                 ))}
               </tr>

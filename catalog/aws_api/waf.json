@@ -1,0 +1,258 @@
+{
+ "waf.GetWebACL": {
+  "service": "waf",
+  "operation": "GetWebACL",
+  "method": "get_web_acl",
+  "doc": "This is AWS WAF Classic documentation. For more information, see AWS WAF Classic in the developer guide. For the latest version of AWS WAF , use the AWS WAFV2 API and see the AWS WAF Developer Guide . With the latest version, AWS WAF has a single set of endpoints for regional and global use. Returns the WebACL that is specified by WebACLId .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/waf/client/get_web_acl.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/waf-2015-08-24/GetWebACL"
+  },
+  "paginated": false,
+  "input_required": [
+   "WebACLId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "WebACL": {
+     "type": "structure",
+     "doc": "Information about the WebACL that you specified in the GetWebACL request. For more information, see the following topics: WebACL : Contains DefaultAction , MetricName , Name , an array of Rule objects, and WebACLId DefaultAction (Data type is WafAction ): Contains Type Rules : Contains an array of ActivatedRule objects, which contain Action , Priority , and RuleId Action : Contains Type",
+     "members": {
+      "WebACLId": {
+       "type": "string",
+       "doc": "A unique identifier for a WebACL . You use WebACLId to get information about a WebACL (see GetWebACL ), update a WebACL (see UpdateWebACL ), and delete a WebACL from AWS WAF (see DeleteWebACL ). WebACLId is returned by CreateWebACL and by ListWebACLs .",
+       "required": true
+      },
+      "Name": {
+       "type": "string",
+       "doc": "A friendly name or description of the WebACL . You can't change the name of a WebACL after you create it."
+      },
+      "MetricName": {
+       "type": "string",
+       "doc": "A friendly name or description for the metrics for this WebACL . The name can contain only alphanumeric characters (A-Z, a-z, 0-9), with maximum length 128 and minimum length one. It can't contain whitespace or metric names reserved for AWS WAF, including \"All\" and \"Default_Action.\" You can't change MetricName after you create the WebACL ."
+      },
+      "DefaultAction": {
+       "type": "structure",
+       "doc": "The action to perform if none of the Rules contained in the WebACL match. The action is specified by the WafAction object.",
+       "members": {
+        "Type": {
+         "type": "string",
+         "doc": "Specifies how you want AWS WAF to respond to requests that match the settings in a Rule . Valid settings include the following: ALLOW : AWS WAF allows requests BLOCK : AWS WAF blocks requests COUNT : AWS WAF increments a counter of the requests that match all of the conditions in the rule. AWS WAF then continues to inspect the web request based on the remaining rules in the web ACL. You can't specify COUNT for the default action for a WebACL .",
+         "enum": [
+          "BLOCK",
+          "ALLOW",
+          "COUNT"
+         ],
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "Rules": {
+       "type": "list",
+       "doc": "An array that contains the action for each Rule in a WebACL , the priority of the Rule , and the ID of the Rule .",
+       "item": {
+        "type": "structure",
+        "doc": "This is AWS WAF Classic documentation. For more information, see AWS WAF Classic in the developer guide. For the latest version of AWS WAF , use the AWS WAFV2 API and see the AWS WAF Developer Guide . With the latest version, AWS WAF has a single set of endpoints for regional and global use. The ActivatedRule object in an UpdateWebACL request specifies a Rule that you want to insert or delete, the priority of the Rule in the WebACL , and the action that you want AWS WAF to take when a web reque…",
+        "members": {
+         "Priority": {
+          "type": "integer",
+          "doc": "Specifies the order in which the Rules in a WebACL are evaluated. Rules with a lower value for Priority are evaluated before Rules with a higher value. The value must be a unique integer. If you add multiple Rules to a WebACL , the values don't need to be consecutive.",
+          "required": true
+         },
+         "RuleId": {
+          "type": "string",
+          "doc": "The RuleId for a Rule . You use RuleId to get more information about a Rule (see GetRule ), update a Rule (see UpdateRule ), insert a Rule into a WebACL or delete a one from a WebACL (see UpdateWebACL ), or delete a Rule from AWS WAF (see DeleteRule ). RuleId is returned by CreateRule and by ListRules .",
+          "required": true
+         },
+         "Action": {
+          "type": "structure",
+          "doc": "Specifies the action that CloudFront or AWS WAF takes when a web request matches the conditions in the Rule . Valid values for Action include the following: ALLOW : CloudFront responds with the requested object. BLOCK : CloudFront responds with an HTTP 403 (Forbidden) status code. COUNT : AWS WAF increments a counter of requests that match the conditions in the rule and then continues to inspect the web request based on the remaining rules in the web ACL. ActivatedRule|OverrideAction applies on…",
+          "members": {
+           "Type": {
+            "type": "string",
+            "doc": "Specifies how you want AWS WAF to respond to requests that match the settings in a Rule . Valid settings include the following: ALLOW : AWS WAF allows requests BLOCK : AWS WAF blocks requests COUNT : AWS WAF increments a counter of the requests that match all of the conditions in the rule. AWS WAF then continues to inspect the web request based on the remaining rules in the web ACL. You can't specify COUNT for the default action for a WebACL .",
+            "enum": [
+             "BLOCK",
+             "ALLOW",
+             "COUNT"
+            ],
+            "required": true
+           }
+          }
+         },
+         "OverrideAction": {
+          "type": "structure",
+          "doc": "Use the OverrideAction to test your RuleGroup . Any rule in a RuleGroup can potentially block a request. If you set the OverrideAction to None , the RuleGroup will block a request if any individual rule in the RuleGroup matches the request and is configured to block that request. However if you first want to test the RuleGroup , set the OverrideAction to Count . The RuleGroup will then override any block action specified by individual rules contained within the group. Instead of blocking matchi…",
+          "members": {
+           "Type": {
+            "type": "string",
+            "doc": "COUNT overrides the action specified by the individual rule within a RuleGroup . If set to NONE , the rule's action will take place.",
+            "enum": [
+             "NONE",
+             "COUNT"
+            ],
+            "required": true
+           }
+          }
+         },
+         "Type": {
+          "type": "string",
+          "doc": "The rule type, either REGULAR , as defined by Rule , RATE_BASED , as defined by RateBasedRule , or GROUP , as defined by RuleGroup . The default is REGULAR. Although this field is optional, be aware that if you try to add a RATE_BASED rule to a web ACL without setting the type, the UpdateWebACL request will fail because the request tries to add a REGULAR rule with the specified ID, which does not exist.",
+          "enum": [
+           "REGULAR",
+           "RATE_BASED",
+           "GROUP"
+          ]
+         },
+         "ExcludedRules": {
+          "type": "list",
+          "doc": "An array of rules to exclude from a rule group. This is applicable only when the ActivatedRule refers to a RuleGroup . Sometimes it is necessary to troubleshoot rule groups that are blocking traffic unexpectedly (false positives). One troubleshooting technique is to identify the specific rule within the rule group that is blocking the legitimate traffic and then disable (exclude) that particular rule. You can exclude rules from both your own rule groups and AWS Marketplace rule groups that have…",
+          "item": {
+           "type": "structure",
+           "doc": "This is AWS WAF Classic documentation. For more information, see AWS WAF Classic in the developer guide. For the latest version of AWS WAF , use the AWS WAFV2 API and see the AWS WAF Developer Guide . With the latest version, AWS WAF has a single set of endpoints for regional and global use. The rule to exclude from a rule group. This is applicable only when the ActivatedRule refers to a RuleGroup . The rule must belong to the RuleGroup that is specified by the ActivatedRule .",
+           "members": {
+            "RuleId": {
+             "type": "string",
+             "doc": "The unique identifier for the rule to exclude from the rule group.",
+             "required": true
+            }
+           }
+          }
+         }
+        }
+       },
+       "required": true
+      },
+      "WebACLArn": {
+       "type": "string",
+       "doc": "Tha Amazon Resource Name (ARN) of the web ACL."
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "waf.list_web_acls"
+  ],
+  "rules": [
+   "REME-0100800012",
+   "REME-0102800001",
+   "REME-0102800002"
+  ]
+ },
+ "waf.ListTagsForResource": {
+  "service": "waf",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "This is AWS WAF Classic documentation. For more information, see AWS WAF Classic in the developer guide. For the latest version of AWS WAF , use the AWS WAFV2 API and see the AWS WAF Developer Guide . With the latest version, AWS WAF has a single set of endpoints for regional and global use. Retrieves the tags associated with the specified AWS resource. Tags are key:value pairs that you can use to categorize and manage your resources, for purposes like billing. For example, you might set the tag key to \"customer\" and the value to the customer name or ID. You can specify one or more tags to add to each AWS resource, up to 50 tags for a resource. Tagging is only available through the API, SDKs, and CLI. You can't manage or view tags through the AWS WAF Classic console. You can tag the AWS resources that you manage through AWS WAF Classic: web ACLs, rule groups, and rules.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/waf/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/waf-2015-08-24/ListTagsForResource"
+  },
+  "paginated": false,
+  "input_required": [
+   "ResourceARN"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextMarker": {
+     "type": "string",
+     "doc": ""
+    },
+    "TagInfoForResource": {
+     "type": "structure",
+     "doc": "",
+     "members": {
+      "ResourceARN": {
+       "type": "string",
+       "doc": ""
+      },
+      "TagList": {
+       "type": "list",
+       "doc": "",
+       "item": {
+        "type": "structure",
+        "doc": "This is AWS WAF Classic documentation. For more information, see AWS WAF Classic in the developer guide. For the latest version of AWS WAF , use the AWS WAFV2 API and see the AWS WAF Developer Guide . With the latest version, AWS WAF has a single set of endpoints for regional and global use. A tag associated with an AWS resource. Tags are key:value pairs that you can use to categorize and manage your resources, for purposes like billing. For example, you might set the tag key to \"customer\" and …",
+        "members": {
+         "Key": {
+          "type": "string",
+          "doc": "",
+          "required": true
+         },
+         "Value": {
+          "type": "string",
+          "doc": "",
+          "required": true
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "waf.list_web_acls"
+  ],
+  "rules": [
+   "REME-0100800012",
+   "REME-0102800001",
+   "REME-0102800002"
+  ]
+ },
+ "waf.ListWebACLs": {
+  "service": "waf",
+  "operation": "ListWebACLs",
+  "method": "list_web_acls",
+  "doc": "This is AWS WAF Classic documentation. For more information, see AWS WAF Classic in the developer guide. For the latest version of AWS WAF , use the AWS WAFV2 API and see the AWS WAF Developer Guide . With the latest version, AWS WAF has a single set of endpoints for regional and global use. Returns an array of WebACLSummary objects in the response.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/waf/client/list_web_acls.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/waf-2015-08-24/ListWebACLs"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextMarker": {
+     "type": "string",
+     "doc": "If you have more WebACL objects than the number that you specified for Limit in the request, the response includes a NextMarker value. To list more WebACL objects, submit another ListWebACLs request, and specify the NextMarker value from the response in the NextMarker value in the next request."
+    },
+    "WebACLs": {
+     "type": "list",
+     "doc": "An array of WebACLSummary objects.",
+     "item": {
+      "type": "structure",
+      "doc": "This is AWS WAF Classic documentation. For more information, see AWS WAF Classic in the developer guide. For the latest version of AWS WAF , use the AWS WAFV2 API and see the AWS WAF Developer Guide . With the latest version, AWS WAF has a single set of endpoints for regional and global use. Contains the identifier and the name or description of the WebACL .",
+      "members": {
+       "WebACLId": {
+        "type": "string",
+        "doc": "A unique identifier for a WebACL . You use WebACLId to get information about a WebACL (see GetWebACL ), update a WebACL (see UpdateWebACL ), and delete a WebACL from AWS WAF (see DeleteWebACL ). WebACLId is returned by CreateWebACL and by ListWebACLs .",
+        "required": true
+       },
+       "Name": {
+        "type": "string",
+        "doc": "A friendly name or description of the WebACL . You can't change the name of a WebACL after you create it.",
+        "required": true
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "waf.list_web_acls"
+  ],
+  "rules": [
+   "REME-0100800012",
+   "REME-0102800001",
+   "REME-0102800002"
+  ]
+ }
+}

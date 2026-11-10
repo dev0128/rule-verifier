@@ -1,0 +1,315 @@
+{
+ "guardduty.GetDetector": {
+  "service": "guardduty",
+  "operation": "GetDetector",
+  "method": "get_detector",
+  "doc": "Retrieves a GuardDuty detector specified by the detectorId. There might be regional differences because some data sources might not be available in all the Amazon Web Services Regions where GuardDuty is presently supported. For more information, see Regions and endpoints .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/guardduty/client/get_detector.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetDetector"
+  },
+  "paginated": false,
+  "input_required": [
+   "DetectorId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "CreatedAt": {
+     "type": "string",
+     "doc": "The timestamp of when the detector was created."
+    },
+    "FindingPublishingFrequency": {
+     "type": "string",
+     "doc": "The publishing frequency of the finding.",
+     "enum": [
+      "FIFTEEN_MINUTES",
+      "ONE_HOUR",
+      "SIX_HOURS"
+     ]
+    },
+    "ServiceRole": {
+     "type": "string",
+     "doc": "The GuardDuty service role.",
+     "required": true
+    },
+    "Status": {
+     "type": "string",
+     "doc": "The detector status.",
+     "enum": [
+      "ENABLED",
+      "DISABLED"
+     ],
+     "required": true
+    },
+    "UpdatedAt": {
+     "type": "string",
+     "doc": "The last-updated timestamp for the detector."
+    },
+    "DataSources": {
+     "type": "structure",
+     "doc": "Describes which data sources are enabled for the detector.",
+     "members": {
+      "CloudTrail": {
+       "type": "structure",
+       "doc": "An object that contains information on the status of CloudTrail as a data source.",
+       "members": {
+        "Status": {
+         "type": "string",
+         "doc": "Describes whether CloudTrail is enabled as a data source for the detector.",
+         "enum": [
+          "ENABLED",
+          "DISABLED"
+         ],
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "DNSLogs": {
+       "type": "structure",
+       "doc": "An object that contains information on the status of DNS logs as a data source.",
+       "members": {
+        "Status": {
+         "type": "string",
+         "doc": "Denotes whether DNS logs is enabled as a data source.",
+         "enum": [
+          "ENABLED",
+          "DISABLED"
+         ],
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "FlowLogs": {
+       "type": "structure",
+       "doc": "An object that contains information on the status of VPC flow logs as a data source.",
+       "members": {
+        "Status": {
+         "type": "string",
+         "doc": "Denotes whether VPC flow logs is enabled as a data source.",
+         "enum": [
+          "ENABLED",
+          "DISABLED"
+         ],
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "S3Logs": {
+       "type": "structure",
+       "doc": "An object that contains information on the status of S3 Data event logs as a data source.",
+       "members": {
+        "Status": {
+         "type": "string",
+         "doc": "A value that describes whether S3 data event logs are automatically enabled for new members of the organization.",
+         "enum": [
+          "ENABLED",
+          "DISABLED"
+         ],
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "Kubernetes": {
+       "type": "structure",
+       "doc": "An object that contains information on the status of all Kubernetes data sources.",
+       "members": {
+        "AuditLogs": {
+         "type": "structure",
+         "doc": "Describes whether Kubernetes audit logs are enabled as a data source.",
+         "members": {
+          "Status": {
+           "type": "string",
+           "doc": "A value that describes whether Kubernetes audit logs are enabled as a data source.",
+           "enum": [
+            "ENABLED",
+            "DISABLED"
+           ],
+           "required": true
+          }
+         },
+         "required": true
+        }
+       }
+      },
+      "MalwareProtection": {
+       "type": "structure",
+       "doc": "Describes the configuration of Malware Protection data sources.",
+       "members": {
+        "ScanEc2InstanceWithFindings": {
+         "type": "structure",
+         "doc": "Describes the configuration of Malware Protection for EC2 instances with findings.",
+         "members": {
+          "EbsVolumes": {
+           "type": "structure",
+           "doc": "Describes the configuration of scanning EBS volumes as a data source.",
+           "members": {
+            "Status": {
+             "type": "string",
+             "doc": "Describes whether scanning EBS volumes is enabled as a data source.",
+             "enum": [
+              "ENABLED",
+              "DISABLED"
+             ]
+            },
+            "Reason": {
+             "type": "string",
+             "doc": "Specifies the reason why scanning EBS volumes (Malware Protection) was not enabled as a data source."
+            }
+           }
+          }
+         }
+        },
+        "ServiceRole": {
+         "type": "string",
+         "doc": "The GuardDuty Malware Protection service role."
+        }
+       }
+      }
+     }
+    },
+    "Tags": {
+     "type": "map",
+     "doc": "The tags of the detector resource.",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     }
+    },
+    "Features": {
+     "type": "list",
+     "doc": "Describes the features that have been enabled for the detector.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about a GuardDuty feature. Specifying both EKS Runtime Monitoring ( EKS_RUNTIME_MONITORING ) and Runtime Monitoring ( RUNTIME_MONITORING ) will cause an error. You can add only one of these two features because Runtime Monitoring already includes the threat detection for Amazon EKS resources. For more information, see Runtime Monitoring .",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "Indicates the name of the feature that can be enabled for the detector.",
+        "enum": [
+         "FLOW_LOGS",
+         "CLOUD_TRAIL",
+         "DNS_LOGS",
+         "S3_DATA_EVENTS",
+         "EKS_AUDIT_LOGS",
+         "EBS_MALWARE_PROTECTION",
+         "RDS_LOGIN_EVENTS",
+         "EKS_RUNTIME_MONITORING",
+         "LAMBDA_NETWORK_LOGS",
+         "RUNTIME_MONITORING"
+        ]
+       },
+       "Status": {
+        "type": "string",
+        "doc": "Indicates the status of the feature that is enabled for the detector.",
+        "enum": [
+         "ENABLED",
+         "DISABLED"
+        ]
+       },
+       "UpdatedAt": {
+        "type": "timestamp",
+        "doc": "The timestamp at which the feature object was updated."
+       },
+       "AdditionalConfiguration": {
+        "type": "list",
+        "doc": "Additional configuration for a resource.",
+        "item": {
+         "type": "structure",
+         "doc": "Information about the additional configuration.",
+         "members": {
+          "Name": {
+           "type": "string",
+           "doc": "Name of the additional configuration.",
+           "enum": [
+            "EKS_ADDON_MANAGEMENT",
+            "ECS_FARGATE_AGENT_MANAGEMENT",
+            "EC2_AGENT_MANAGEMENT"
+           ]
+          },
+          "Status": {
+           "type": "string",
+           "doc": "Status of the additional configuration.",
+           "enum": [
+            "ENABLED",
+            "DISABLED"
+           ]
+          },
+          "UpdatedAt": {
+           "type": "timestamp",
+           "doc": "The timestamp at which the additional configuration was last updated. This is in UTC format."
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "Features[].AdditionalConfiguration[].ManagedBy",
+   "Features[].ManagedBy"
+  ],
+  "raw_keys": [
+   "guardduty.get_detector"
+  ],
+  "rules": [
+   "REME-0103600001",
+   "REME-0103600002",
+   "REME-0103600003",
+   "REME-0103600004",
+   "REME-0103600005",
+   "REME-0103600006",
+   "REME-0103600007"
+  ]
+ },
+ "guardduty.ListDetectors": {
+  "service": "guardduty",
+  "operation": "ListDetectors",
+  "method": "list_detectors",
+  "doc": "Lists detectorIds of all the existing Amazon GuardDuty detector resources.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/guardduty/client/list_detectors.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListDetectors"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "DetectorIds": {
+     "type": "list",
+     "doc": "A list of detector IDs.",
+     "item": {
+      "type": "string"
+     },
+     "required": true
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The pagination parameter to be used on the next list operation to retrieve more items."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "guardduty.get_detector"
+  ],
+  "rules": [
+   "REME-0103600001",
+   "REME-0103600002",
+   "REME-0103600003",
+   "REME-0103600004",
+   "REME-0103600005",
+   "REME-0103600006",
+   "REME-0103600007"
+  ]
+ }
+}

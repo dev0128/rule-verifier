@@ -1,0 +1,155 @@
+{
+ "sns.GetTopicAttributes": {
+  "service": "sns",
+  "operation": "GetTopicAttributes",
+  "method": "get_topic_attributes",
+  "doc": "Returns all of the properties of a topic. Topic properties returned might differ based on the authorization of the user.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sns/client/get_topic_attributes.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/GetTopicAttributes"
+  },
+  "paginated": false,
+  "input_required": [
+   "TopicArn"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Response for GetTopicAttributes action.",
+   "members": {
+    "Attributes": {
+     "type": "map",
+     "doc": "A map of the topic's attributes. Attributes in this map include the following: DeliveryPolicy – The JSON serialization of the topic's delivery policy. DisplayName – The human-readable name used in the From field for notifications to email and email-json endpoints. EffectiveDeliveryPolicy – The JSON serialization of the effective delivery policy, taking system defaults into account. Owner – The Amazon Web Services account ID of the topic's owner. Policy – The JSON serialization of the topic's ac…",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "sns.list_topics"
+  ],
+  "rules": [
+   "REME-0103000001",
+   "REME-0103000002",
+   "REME-0103000003",
+   "REME-0103000004",
+   "REME-0103000005"
+  ]
+ },
+ "sns.ListSubscriptionsByTopic": {
+  "service": "sns",
+  "operation": "ListSubscriptionsByTopic",
+  "method": "list_subscriptions_by_topic",
+  "doc": "Returns a list of the subscriptions to a specific topic. Each call returns a limited list of subscriptions, up to 100. If there are more subscriptions, a NextToken is also returned. Use the NextToken parameter in a new ListSubscriptionsByTopic call to get further results. This action is throttled at 30 transactions per second (TPS).",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sns/client/list_subscriptions_by_topic.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/ListSubscriptionsByTopic"
+  },
+  "paginated": true,
+  "input_required": [
+   "TopicArn"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Response for ListSubscriptionsByTopic action.",
+   "members": {
+    "Subscriptions": {
+     "type": "list",
+     "doc": "A list of subscriptions.",
+     "item": {
+      "type": "structure",
+      "doc": "A wrapper type for the attributes of an Amazon SNS subscription.",
+      "members": {
+       "SubscriptionArn": {
+        "type": "string",
+        "doc": "The subscription's ARN."
+       },
+       "Owner": {
+        "type": "string",
+        "doc": "The subscription's owner."
+       },
+       "Protocol": {
+        "type": "string",
+        "doc": "The subscription's protocol."
+       },
+       "Endpoint": {
+        "type": "string",
+        "doc": "The subscription's endpoint (format depends on the protocol)."
+       },
+       "TopicArn": {
+        "type": "string",
+        "doc": "The ARN of the subscription's topic."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "Token to pass along to the next ListSubscriptionsByTopic request. This element is returned if there are more subscriptions to retrieve."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "sns.list_topics"
+  ],
+  "rules": [
+   "REME-0103000001",
+   "REME-0103000002",
+   "REME-0103000003",
+   "REME-0103000004",
+   "REME-0103000005"
+  ]
+ },
+ "sns.ListTopics": {
+  "service": "sns",
+  "operation": "ListTopics",
+  "method": "list_topics",
+  "doc": "Returns a list of the requester's topics. Each call returns a limited list of topics, up to 100. If there are more topics, a NextToken is also returned. Use the NextToken parameter in a new ListTopics call to get further results. This action is throttled at 30 transactions per second (TPS).",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sns/client/list_topics.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/ListTopics"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Response for ListTopics action.",
+   "members": {
+    "Topics": {
+     "type": "list",
+     "doc": "A list of topic ARNs.",
+     "item": {
+      "type": "structure",
+      "doc": "A wrapper type for the topic's Amazon Resource Name (ARN). To retrieve a topic's attributes, use GetTopicAttributes .",
+      "members": {
+       "TopicArn": {
+        "type": "string",
+        "doc": "The topic's ARN."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "Token to pass along to the next ListTopics request. This element is returned if there are additional topics to retrieve."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "sns.list_topics"
+  ],
+  "rules": [
+   "REME-0103000001",
+   "REME-0103000002",
+   "REME-0103000003",
+   "REME-0103000004",
+   "REME-0103000005"
+  ]
+ }
+}

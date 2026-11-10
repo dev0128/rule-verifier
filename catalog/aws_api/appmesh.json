@@ -1,0 +1,2343 @@
+{
+ "appmesh.DescribeMesh": {
+  "service": "appmesh",
+  "operation": "DescribeMesh",
+  "method": "describe_mesh",
+  "doc": "Describes an existing service mesh.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/describe_mesh.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeMesh"
+  },
+  "paginated": false,
+  "input_required": [
+   "meshName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "mesh": {
+     "type": "structure",
+     "doc": "The full description of your service mesh.",
+     "members": {
+      "meshName": {
+       "type": "string",
+       "doc": "The name of the service mesh.",
+       "required": true
+      },
+      "metadata": {
+       "type": "structure",
+       "doc": "The associated metadata for the service mesh.",
+       "members": {
+        "arn": {
+         "type": "string",
+         "doc": "The full Amazon Resource Name (ARN) for the resource.",
+         "required": true
+        },
+        "createdAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+         "required": true
+        },
+        "lastUpdatedAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+         "required": true
+        },
+        "meshOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "resourceOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "uid": {
+         "type": "string",
+         "doc": "The unique identifier for the resource.",
+         "required": true
+        },
+        "version": {
+         "type": "long",
+         "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "spec": {
+       "type": "structure",
+       "doc": "The associated specification for the service mesh.",
+       "members": {
+        "egressFilter": {
+         "type": "structure",
+         "doc": "The egress filter rules for the service mesh.",
+         "members": {
+          "type": {
+           "type": "string",
+           "doc": "The egress filter type. By default, the type is DROP_ALL , which allows egress only from virtual nodes to other defined resources in the service mesh (and any traffic to *.amazonaws.com for Amazon Web Services API calls). You can set the egress filter type to ALLOW_ALL to allow egress to any endpoint inside or outside of the service mesh.",
+           "enum": [
+            "ALLOW_ALL",
+            "DROP_ALL"
+           ],
+           "required": true
+          }
+         }
+        },
+        "serviceDiscovery": {
+         "type": "structure",
+         "doc": "An object that represents the service discovery information for a service mesh.",
+         "members": {
+          "ipPreference": {
+           "type": "string",
+           "doc": "The IP version to use to control traffic within the mesh.",
+           "enum": [
+            "IPv6_PREFERRED",
+            "IPv4_PREFERRED",
+            "IPv4_ONLY",
+            "IPv6_ONLY"
+           ]
+          }
+         }
+        }
+       },
+       "required": true
+      },
+      "status": {
+       "type": "structure",
+       "doc": "The status of the service mesh.",
+       "members": {
+        "status": {
+         "type": "string",
+         "doc": "The current mesh status.",
+         "enum": [
+          "ACTIVE",
+          "INACTIVE",
+          "DELETED"
+         ]
+        }
+       },
+       "required": true
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.DescribeVirtualGateway": {
+  "service": "appmesh",
+  "operation": "DescribeVirtualGateway",
+  "method": "describe_virtual_gateway",
+  "doc": "Describes an existing virtual gateway.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/describe_virtual_gateway.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualGateway"
+  },
+  "paginated": false,
+  "input_required": [
+   "meshName",
+   "virtualGatewayName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "virtualGateway": {
+     "type": "structure",
+     "doc": "The full description of your virtual gateway.",
+     "members": {
+      "meshName": {
+       "type": "string",
+       "doc": "The name of the service mesh that the virtual gateway resides in.",
+       "required": true
+      },
+      "metadata": {
+       "type": "structure",
+       "doc": "An object that represents metadata for a resource.",
+       "members": {
+        "arn": {
+         "type": "string",
+         "doc": "The full Amazon Resource Name (ARN) for the resource.",
+         "required": true
+        },
+        "createdAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+         "required": true
+        },
+        "lastUpdatedAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+         "required": true
+        },
+        "meshOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "resourceOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "uid": {
+         "type": "string",
+         "doc": "The unique identifier for the resource.",
+         "required": true
+        },
+        "version": {
+         "type": "long",
+         "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "spec": {
+       "type": "structure",
+       "doc": "The specifications of the virtual gateway.",
+       "members": {
+        "backendDefaults": {
+         "type": "structure",
+         "doc": "A reference to an object that represents the defaults for backends.",
+         "members": {
+          "clientPolicy": {
+           "type": "structure",
+           "doc": "A reference to an object that represents a client policy.",
+           "members": {
+            "tls": {
+             "type": "structure",
+             "doc": "A reference to an object that represents a Transport Layer Security (TLS) client policy.",
+             "members": {
+              "certificate": {
+               "type": "structure",
+               "doc": "A reference to an object that represents a virtual gateway's client's Transport Layer Security (TLS) certificate.",
+               "members": {
+                "file": {
+                 "type": "structure",
+                 "doc": "An object that represents a local file certificate. The certificate must meet specific requirements and you must have proxy authorization enabled. For more information, see Transport Layer Security (TLS) .",
+                 "members": {
+                  "certificateChain": {
+                   "type": "string",
+                   "doc": "The certificate chain for the certificate.",
+                   "required": true
+                  },
+                  "privateKey": {
+                   "type": "string",
+                   "doc": "The private key for a certificate stored on the file system of the mesh endpoint that the proxy is running on.",
+                   "required": true
+                  }
+                 }
+                },
+                "sds": {
+                 "type": "structure",
+                 "doc": "A reference to an object that represents a virtual gateway's client's Secret Discovery Service certificate.",
+                 "members": {
+                  "secretName": {
+                   "type": "string",
+                   "doc": "A reference to an object that represents the name of the secret secret requested from the Secret Discovery Service provider representing Transport Layer Security (TLS) materials like a certificate or certificate chain.",
+                   "required": true
+                  }
+                 }
+                }
+               }
+              },
+              "enforce": {
+               "type": "boolean",
+               "doc": "Whether the policy is enforced. The default is True , if a value isn't specified."
+              },
+              "ports": {
+               "type": "list",
+               "doc": "One or more ports that the policy is enforced for.",
+               "item": {
+                "type": "integer"
+               }
+              },
+              "validation": {
+               "type": "structure",
+               "doc": "A reference to an object that represents a Transport Layer Security (TLS) validation context.",
+               "members": {
+                "subjectAlternativeNames": {
+                 "type": "structure",
+                 "doc": "A reference to an object that represents the SANs for a virtual gateway's listener's Transport Layer Security (TLS) validation context.",
+                 "members": {
+                  "match": {
+                   "type": "structure",
+                   "doc": "An object that represents the criteria for determining a SANs match.",
+                   "members": {
+                    "exact": {
+                     "type": "list",
+                     "doc": "The values sent must match the specified values exactly.",
+                     "ref": "SubjectAlternativeNameList",
+                     "required": true
+                    }
+                   },
+                   "required": true
+                  }
+                 }
+                },
+                "trust": {
+                 "type": "structure",
+                 "doc": "A reference to where to retrieve the trust chain when validating a peer’s Transport Layer Security (TLS) certificate.",
+                 "members": {
+                  "acm": {
+                   "type": "structure",
+                   "doc": "A reference to an object that represents a Transport Layer Security (TLS) validation context trust for an Certificate Manager certificate.",
+                   "members": {
+                    "certificateAuthorityArns": {
+                     "type": "list",
+                     "doc": "One or more ACM Amazon Resource Name (ARN)s.",
+                     "ref": "VirtualGatewayCertificateAuthorityArns",
+                     "required": true
+                    }
+                   }
+                  },
+                  "file": {
+                   "type": "structure",
+                   "doc": "An object that represents a Transport Layer Security (TLS) validation context trust for a local file.",
+                   "members": {
+                    "certificateChain": {
+                     "type": "string",
+                     "doc": "The certificate trust chain for a certificate stored on the file system of the virtual node that the proxy is running on.",
+                     "required": true
+                    }
+                   }
+                  },
+                  "sds": {
+                   "type": "structure",
+                   "doc": "A reference to an object that represents a virtual gateway's Transport Layer Security (TLS) Secret Discovery Service validation context trust.",
+                   "members": {
+                    "secretName": {
+                     "type": "string",
+                     "doc": "A reference to an object that represents the name of the secret for a virtual gateway's Transport Layer Security (TLS) Secret Discovery Service validation context trust.",
+                     "required": true
+                    }
+                   }
+                  }
+                 },
+                 "required": true
+                }
+               },
+               "required": true
+              }
+             }
+            }
+           }
+          }
+         }
+        },
+        "listeners": {
+         "type": "list",
+         "doc": "The listeners that the mesh endpoint is expected to receive inbound traffic from. You can specify one listener.",
+         "item": {
+          "type": "structure",
+          "doc": "An object that represents a listener for a virtual gateway.",
+          "members": {
+           "connectionPool": {
+            "type": "structure",
+            "doc": "The connection pool information for the virtual gateway listener.",
+            "members": {
+             "grpc": {
+              "type": "structure",
+              "doc": "An object that represents a type of connection pool.",
+              "members": {
+               "maxRequests": {
+                "type": "integer",
+                "doc": "Maximum number of inflight requests Envoy can concurrently support across hosts in upstream cluster.",
+                "required": true
+               }
+              }
+             },
+             "http": {
+              "type": "structure",
+              "doc": "An object that represents a type of connection pool.",
+              "members": {
+               "maxConnections": {
+                "type": "integer",
+                "doc": "Maximum number of outbound TCP connections Envoy can establish concurrently with all hosts in upstream cluster.",
+                "required": true
+               },
+               "maxPendingRequests": {
+                "type": "integer",
+                "doc": "Number of overflowing requests after max_connections Envoy will queue to upstream cluster."
+               }
+              }
+             },
+             "http2": {
+              "type": "structure",
+              "doc": "An object that represents a type of connection pool.",
+              "members": {
+               "maxRequests": {
+                "type": "integer",
+                "doc": "Maximum number of inflight requests Envoy can concurrently support across hosts in upstream cluster.",
+                "required": true
+               }
+              }
+             }
+            }
+           },
+           "healthCheck": {
+            "type": "structure",
+            "doc": "The health check information for the listener.",
+            "members": {
+             "healthyThreshold": {
+              "type": "integer",
+              "doc": "The number of consecutive successful health checks that must occur before declaring the listener healthy.",
+              "required": true
+             },
+             "intervalMillis": {
+              "type": "long",
+              "doc": "The time period in milliseconds between each health check execution.",
+              "required": true
+             },
+             "path": {
+              "type": "string",
+              "doc": "The destination path for the health check request. This value is only used if the specified protocol is HTTP or HTTP/2. For any other protocol, this value is ignored."
+             },
+             "port": {
+              "type": "integer",
+              "doc": "The destination port for the health check request. This port must match the port defined in the PortMapping for the listener."
+             },
+             "protocol": {
+              "type": "string",
+              "doc": "The protocol for the health check request. If you specify grpc , then your service must conform to the GRPC Health Checking Protocol .",
+              "enum": [
+               "http",
+               "http2",
+               "grpc"
+              ],
+              "required": true
+             },
+             "timeoutMillis": {
+              "type": "long",
+              "doc": "The amount of time to wait when receiving a response from the health check, in milliseconds.",
+              "required": true
+             },
+             "unhealthyThreshold": {
+              "type": "integer",
+              "doc": "The number of consecutive failed health checks that must occur before declaring a virtual gateway unhealthy.",
+              "required": true
+             }
+            }
+           },
+           "portMapping": {
+            "type": "structure",
+            "doc": "The port mapping information for the listener.",
+            "members": {
+             "port": {
+              "type": "integer",
+              "doc": "The port used for the port mapping. Specify one protocol.",
+              "required": true
+             },
+             "protocol": {
+              "type": "string",
+              "doc": "The protocol used for the port mapping.",
+              "enum": [
+               "http",
+               "http2",
+               "grpc"
+              ],
+              "required": true
+             }
+            },
+            "required": true
+           },
+           "tls": {
+            "type": "structure",
+            "doc": "A reference to an object that represents the Transport Layer Security (TLS) properties for the listener.",
+            "members": {
+             "certificate": {
+              "type": "structure",
+              "doc": "An object that represents a Transport Layer Security (TLS) certificate.",
+              "members": {
+               "acm": {
+                "type": "structure",
+                "doc": "A reference to an object that represents an Certificate Manager certificate.",
+                "members": {
+                 "certificateArn": {
+                  "type": "string",
+                  "doc": "The Amazon Resource Name (ARN) for the certificate. The certificate must meet specific requirements and you must have proxy authorization enabled. For more information, see Transport Layer Security (TLS) .",
+                  "required": true
+                 }
+                }
+               },
+               "file": {
+                "type": "structure",
+                "doc": "A reference to an object that represents a local file certificate.",
+                "members": {
+                 "certificateChain": {
+                  "type": "string",
+                  "doc": "The certificate chain for the certificate.",
+                  "required": true
+                 },
+                 "privateKey": {
+                  "type": "string",
+                  "doc": "The private key for a certificate stored on the file system of the mesh endpoint that the proxy is running on.",
+                  "required": true
+                 }
+                }
+               },
+               "sds": {
+                "type": "structure",
+                "doc": "A reference to an object that represents a virtual gateway's listener's Secret Discovery Service certificate.",
+                "members": {
+                 "secretName": {
+                  "type": "string",
+                  "doc": "A reference to an object that represents the name of the secret secret requested from the Secret Discovery Service provider representing Transport Layer Security (TLS) materials like a certificate or certificate chain.",
+                  "required": true
+                 }
+                }
+               }
+              },
+              "required": true
+             },
+             "mode": {
+              "type": "string",
+              "doc": "Specify one of the following modes. STRICT – Listener only accepts connections with TLS enabled. PERMISSIVE – Listener accepts connections with or without TLS enabled. DISABLED – Listener only accepts connections without TLS.",
+              "enum": [
+               "STRICT",
+               "PERMISSIVE",
+               "DISABLED"
+              ],
+              "required": true
+             },
+             "validation": {
+              "type": "structure",
+              "doc": "A reference to an object that represents a virtual gateway's listener's Transport Layer Security (TLS) validation context.",
+              "members": {
+               "subjectAlternativeNames": {
+                "type": "structure",
+                "doc": "A reference to an object that represents the SANs for a virtual gateway listener's Transport Layer Security (TLS) validation context.",
+                "members": {
+                 "match": {
+                  "type": "structure",
+                  "doc": "An object that represents the criteria for determining a SANs match.",
+                  "members": {
+                   "exact": {
+                    "type": "list",
+                    "doc": "The values sent must match the specified values exactly.",
+                    "ref": "SubjectAlternativeNameList",
+                    "required": true
+                   }
+                  },
+                  "required": true
+                 }
+                }
+               },
+               "trust": {
+                "type": "structure",
+                "doc": "A reference to where to retrieve the trust chain when validating a peer’s Transport Layer Security (TLS) certificate.",
+                "members": {
+                 "file": {
+                  "type": "structure",
+                  "doc": "An object that represents a Transport Layer Security (TLS) validation context trust for a local file.",
+                  "members": {
+                   "certificateChain": {
+                    "type": "string",
+                    "doc": "The certificate trust chain for a certificate stored on the file system of the virtual node that the proxy is running on.",
+                    "required": true
+                   }
+                  }
+                 },
+                 "sds": {
+                  "type": "structure",
+                  "doc": "A reference to an object that represents a virtual gateway's listener's Transport Layer Security (TLS) Secret Discovery Service validation context trust.",
+                  "members": {
+                   "secretName": {
+                    "type": "string",
+                    "doc": "A reference to an object that represents the name of the secret for a virtual gateway's Transport Layer Security (TLS) Secret Discovery Service validation context trust.",
+                    "required": true
+                   }
+                  }
+                 }
+                },
+                "required": true
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "required": true
+        },
+        "logging": {
+         "type": "structure",
+         "doc": "An object that represents logging information.",
+         "members": {
+          "accessLog": {
+           "type": "structure",
+           "doc": "The access log configuration.",
+           "members": {
+            "file": {
+             "type": "structure",
+             "doc": "The file object to send virtual gateway access logs to.",
+             "members": {
+              "format": {
+               "type": "structure",
+               "doc": "The specified format for the virtual gateway access logs. It can be either json_format or text_format .",
+               "members": {
+                "json": {
+                 "type": "list",
+                 "doc": "",
+                 "item": {
+                  "type": "structure",
+                  "doc": "An object that represents the key value pairs for the JSON.",
+                  "members": {
+                   "key": {
+                    "type": "string",
+                    "doc": "The specified key for the JSON.",
+                    "required": true
+                   },
+                   "value": {
+                    "type": "string",
+                    "doc": "The specified value for the JSON.",
+                    "required": true
+                   }
+                  }
+                 }
+                },
+                "text": {
+                 "type": "string",
+                 "doc": ""
+                }
+               }
+              },
+              "path": {
+               "type": "string",
+               "doc": "The file path to write access logs to. You can use /dev/stdout to send access logs to standard out and configure your Envoy container to use a log driver, such as awslogs , to export the access logs to a log storage service such as Amazon CloudWatch Logs. You can also specify a path in the Envoy container's file system to write the files to disk.",
+               "required": true
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "required": true
+      },
+      "status": {
+       "type": "structure",
+       "doc": "The current status of the virtual gateway.",
+       "members": {
+        "status": {
+         "type": "string",
+         "doc": "The current status.",
+         "enum": [
+          "ACTIVE",
+          "INACTIVE",
+          "DELETED"
+         ],
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "virtualGatewayName": {
+       "type": "string",
+       "doc": "The name of the virtual gateway.",
+       "required": true
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.DescribeVirtualNode": {
+  "service": "appmesh",
+  "operation": "DescribeVirtualNode",
+  "method": "describe_virtual_node",
+  "doc": "Describes an existing virtual node.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/describe_virtual_node.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualNode"
+  },
+  "paginated": false,
+  "input_required": [
+   "meshName",
+   "virtualNodeName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "virtualNode": {
+     "type": "structure",
+     "doc": "The full description of your virtual node.",
+     "members": {
+      "meshName": {
+       "type": "string",
+       "doc": "The name of the service mesh that the virtual node resides in.",
+       "required": true
+      },
+      "metadata": {
+       "type": "structure",
+       "doc": "The associated metadata for the virtual node.",
+       "members": {
+        "arn": {
+         "type": "string",
+         "doc": "The full Amazon Resource Name (ARN) for the resource.",
+         "required": true
+        },
+        "createdAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+         "required": true
+        },
+        "lastUpdatedAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+         "required": true
+        },
+        "meshOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "resourceOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "uid": {
+         "type": "string",
+         "doc": "The unique identifier for the resource.",
+         "required": true
+        },
+        "version": {
+         "type": "long",
+         "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "spec": {
+       "type": "structure",
+       "doc": "The specifications of the virtual node.",
+       "members": {
+        "backendDefaults": {
+         "type": "structure",
+         "doc": "A reference to an object that represents the defaults for backends.",
+         "members": {
+          "clientPolicy": {
+           "type": "structure",
+           "doc": "A reference to an object that represents a client policy.",
+           "members": {
+            "tls": {
+             "type": "structure",
+             "doc": "A reference to an object that represents a Transport Layer Security (TLS) client policy.",
+             "members": {
+              "certificate": {
+               "type": "structure",
+               "doc": "A reference to an object that represents a client's TLS certificate.",
+               "members": {
+                "file": {
+                 "type": "structure",
+                 "doc": "An object that represents a local file certificate. The certificate must meet specific requirements and you must have proxy authorization enabled. For more information, see Transport Layer Security (TLS) .",
+                 "members": {
+                  "certificateChain": {
+                   "type": "string",
+                   "doc": "The certificate chain for the certificate.",
+                   "required": true
+                  },
+                  "privateKey": {
+                   "type": "string",
+                   "doc": "The private key for a certificate stored on the file system of the virtual node that the proxy is running on.",
+                   "required": true
+                  }
+                 }
+                },
+                "sds": {
+                 "type": "structure",
+                 "doc": "A reference to an object that represents a client's TLS Secret Discovery Service certificate.",
+                 "members": {
+                  "secretName": {
+                   "type": "string",
+                   "doc": "A reference to an object that represents the name of the secret requested from the Secret Discovery Service provider representing Transport Layer Security (TLS) materials like a certificate or certificate chain.",
+                   "required": true
+                  }
+                 }
+                }
+               }
+              },
+              "enforce": {
+               "type": "boolean",
+               "doc": "Whether the policy is enforced. The default is True , if a value isn't specified."
+              },
+              "ports": {
+               "type": "list",
+               "doc": "One or more ports that the policy is enforced for.",
+               "item": {
+                "type": "integer"
+               }
+              },
+              "validation": {
+               "type": "structure",
+               "doc": "A reference to an object that represents a TLS validation context.",
+               "members": {
+                "subjectAlternativeNames": {
+                 "type": "structure",
+                 "doc": "A reference to an object that represents the SANs for a Transport Layer Security (TLS) validation context. If you don't specify SANs on the terminating mesh endpoint, the Envoy proxy for that node doesn't verify the SAN on a peer client certificate. If you don't specify SANs on the originating mesh endpoint, the SAN on the certificate provided by the terminating endpoint must match the mesh endpoint service discovery configuration. Since SPIRE vended certificates have a SPIFFE ID as a name, you…",
+                 "members": {
+                  "match": {
+                   "type": "structure",
+                   "doc": "An object that represents the criteria for determining a SANs match.",
+                   "members": {
+                    "exact": {
+                     "type": "list",
+                     "doc": "The values sent must match the specified values exactly.",
+                     "ref": "SubjectAlternativeNameList",
+                     "required": true
+                    }
+                   },
+                   "required": true
+                  }
+                 }
+                },
+                "trust": {
+                 "type": "structure",
+                 "doc": "A reference to where to retrieve the trust chain when validating a peer’s Transport Layer Security (TLS) certificate.",
+                 "members": {
+                  "acm": {
+                   "type": "structure",
+                   "doc": "A reference to an object that represents a Transport Layer Security (TLS) validation context trust for an Certificate Manager certificate.",
+                   "members": {
+                    "certificateAuthorityArns": {
+                     "type": "list",
+                     "doc": "One or more ACM Amazon Resource Name (ARN)s.",
+                     "ref": "CertificateAuthorityArns",
+                     "required": true
+                    }
+                   }
+                  },
+                  "file": {
+                   "type": "structure",
+                   "doc": "An object that represents a Transport Layer Security (TLS) validation context trust for a local file.",
+                   "members": {
+                    "certificateChain": {
+                     "type": "string",
+                     "doc": "The certificate trust chain for a certificate stored on the file system of the virtual node that the proxy is running on.",
+                     "required": true
+                    }
+                   }
+                  },
+                  "sds": {
+                   "type": "structure",
+                   "doc": "A reference to an object that represents a Transport Layer Security (TLS) Secret Discovery Service validation context trust.",
+                   "members": {
+                    "secretName": {
+                     "type": "string",
+                     "doc": "A reference to an object that represents the name of the secret for a Transport Layer Security (TLS) Secret Discovery Service validation context trust.",
+                     "required": true
+                    }
+                   }
+                  }
+                 },
+                 "required": true
+                }
+               },
+               "required": true
+              }
+             }
+            }
+           }
+          }
+         }
+        },
+        "backends": {
+         "type": "list",
+         "doc": "The backends that the virtual node is expected to send outbound traffic to.",
+         "item": {
+          "type": "structure",
+          "doc": "An object that represents the backends that a virtual node is expected to send outbound traffic to.",
+          "members": {
+           "virtualService": {
+            "type": "structure",
+            "doc": "Specifies a virtual service to use as a backend.",
+            "members": {
+             "clientPolicy": {
+              "type": "structure",
+              "doc": "A reference to an object that represents the client policy for a backend.",
+              "members": {
+               "tls": {
+                "type": "structure",
+                "doc": "A reference to an object that represents a Transport Layer Security (TLS) client policy.",
+                "members": {
+                 "certificate": {
+                  "type": "structure",
+                  "doc": "A reference to an object that represents a client's TLS certificate.",
+                  "members": {
+                   "file": {
+                    "type": "structure",
+                    "doc": "An object that represents a local file certificate. The certificate must meet specific requirements and you must have proxy authorization enabled. For more information, see Transport Layer Security (TLS) .",
+                    "ref": "ListenerTlsFileCertificate"
+                   },
+                   "sds": {
+                    "type": "structure",
+                    "doc": "A reference to an object that represents a client's TLS Secret Discovery Service certificate.",
+                    "ref": "ListenerTlsSdsCertificate"
+                   }
+                  }
+                 },
+                 "enforce": {
+                  "type": "boolean",
+                  "doc": "Whether the policy is enforced. The default is True , if a value isn't specified."
+                 },
+                 "ports": {
+                  "type": "list",
+                  "doc": "One or more ports that the policy is enforced for.",
+                  "item": {
+                   "type": "integer"
+                  }
+                 },
+                 "validation": {
+                  "type": "structure",
+                  "doc": "A reference to an object that represents a TLS validation context.",
+                  "members": {
+                   "subjectAlternativeNames": {
+                    "type": "structure",
+                    "doc": "A reference to an object that represents the SANs for a Transport Layer Security (TLS) validation context. If you don't specify SANs on the terminating mesh endpoint, the Envoy proxy for that node doesn't verify the SAN on a peer client certificate. If you don't specify SANs on the originating mesh endpoint, the SAN on the certificate provided by the terminating endpoint must match the mesh endpoint service discovery configuration. Since SPIRE vended certificates have a SPIFFE ID as a name, you…",
+                    "ref": "SubjectAlternativeNames"
+                   },
+                   "trust": {
+                    "type": "structure",
+                    "doc": "A reference to where to retrieve the trust chain when validating a peer’s Transport Layer Security (TLS) certificate.",
+                    "ref": "TlsValidationContextTrust",
+                    "required": true
+                   }
+                  },
+                  "required": true
+                 }
+                }
+               }
+              }
+             },
+             "virtualServiceName": {
+              "type": "string",
+              "doc": "The name of the virtual service that is acting as a virtual node backend.",
+              "required": true
+             }
+            }
+           }
+          }
+         }
+        },
+        "listeners": {
+         "type": "list",
+         "doc": "The listener that the virtual node is expected to receive inbound traffic from. You can specify one listener.",
+         "item": {
+          "type": "structure",
+          "doc": "An object that represents a listener for a virtual node.",
+          "members": {
+           "connectionPool": {
+            "type": "structure",
+            "doc": "The connection pool information for the listener.",
+            "members": {
+             "grpc": {
+              "type": "structure",
+              "doc": "An object that represents a type of connection pool.",
+              "members": {
+               "maxRequests": {
+                "type": "integer",
+                "doc": "Maximum number of inflight requests Envoy can concurrently support across hosts in upstream cluster.",
+                "required": true
+               }
+              }
+             },
+             "http": {
+              "type": "structure",
+              "doc": "An object that represents a type of connection pool.",
+              "members": {
+               "maxConnections": {
+                "type": "integer",
+                "doc": "Maximum number of outbound TCP connections Envoy can establish concurrently with all hosts in upstream cluster.",
+                "required": true
+               },
+               "maxPendingRequests": {
+                "type": "integer",
+                "doc": "Number of overflowing requests after max_connections Envoy will queue to upstream cluster."
+               }
+              }
+             },
+             "http2": {
+              "type": "structure",
+              "doc": "An object that represents a type of connection pool.",
+              "members": {
+               "maxRequests": {
+                "type": "integer",
+                "doc": "Maximum number of inflight requests Envoy can concurrently support across hosts in upstream cluster.",
+                "required": true
+               }
+              }
+             },
+             "tcp": {
+              "type": "structure",
+              "doc": "An object that represents a type of connection pool.",
+              "members": {
+               "maxConnections": {
+                "type": "integer",
+                "doc": "Maximum number of outbound TCP connections Envoy can establish concurrently with all hosts in upstream cluster.",
+                "required": true
+               }
+              }
+             }
+            }
+           },
+           "healthCheck": {
+            "type": "structure",
+            "doc": "The health check information for the listener.",
+            "members": {
+             "healthyThreshold": {
+              "type": "integer",
+              "doc": "The number of consecutive successful health checks that must occur before declaring listener healthy.",
+              "required": true
+             },
+             "intervalMillis": {
+              "type": "long",
+              "doc": "The time period in milliseconds between each health check execution.",
+              "required": true
+             },
+             "path": {
+              "type": "string",
+              "doc": "The destination path for the health check request. This value is only used if the specified protocol is HTTP or HTTP/2. For any other protocol, this value is ignored."
+             },
+             "port": {
+              "type": "integer",
+              "doc": "The destination port for the health check request. This port must match the port defined in the PortMapping for the listener."
+             },
+             "protocol": {
+              "type": "string",
+              "doc": "The protocol for the health check request. If you specify grpc , then your service must conform to the GRPC Health Checking Protocol .",
+              "enum": [
+               "http",
+               "tcp",
+               "http2",
+               "grpc"
+              ],
+              "required": true
+             },
+             "timeoutMillis": {
+              "type": "long",
+              "doc": "The amount of time to wait when receiving a response from the health check, in milliseconds.",
+              "required": true
+             },
+             "unhealthyThreshold": {
+              "type": "integer",
+              "doc": "The number of consecutive failed health checks that must occur before declaring a virtual node unhealthy.",
+              "required": true
+             }
+            }
+           },
+           "outlierDetection": {
+            "type": "structure",
+            "doc": "The outlier detection information for the listener.",
+            "members": {
+             "baseEjectionDuration": {
+              "type": "structure",
+              "doc": "The base amount of time for which a host is ejected.",
+              "members": {
+               "unit": {
+                "type": "string",
+                "doc": "A unit of time.",
+                "enum": [
+                 "s",
+                 "ms"
+                ]
+               },
+               "value": {
+                "type": "long",
+                "doc": "A number of time units."
+               }
+              },
+              "required": true
+             },
+             "interval": {
+              "type": "structure",
+              "doc": "The time interval between ejection sweep analysis.",
+              "members": {
+               "unit": {
+                "type": "string",
+                "doc": "A unit of time.",
+                "enum": [
+                 "s",
+                 "ms"
+                ]
+               },
+               "value": {
+                "type": "long",
+                "doc": "A number of time units."
+               }
+              },
+              "required": true
+             },
+             "maxEjectionPercent": {
+              "type": "integer",
+              "doc": "Maximum percentage of hosts in load balancing pool for upstream service that can be ejected. Will eject at least one host regardless of the value.",
+              "required": true
+             },
+             "maxServerErrors": {
+              "type": "long",
+              "doc": "Number of consecutive 5xx errors required for ejection.",
+              "required": true
+             }
+            }
+           },
+           "portMapping": {
+            "type": "structure",
+            "doc": "The port mapping information for the listener.",
+            "members": {
+             "port": {
+              "type": "integer",
+              "doc": "The port used for the port mapping.",
+              "required": true
+             },
+             "protocol": {
+              "type": "string",
+              "doc": "The protocol used for the port mapping. Specify one protocol.",
+              "enum": [
+               "http",
+               "tcp",
+               "http2",
+               "grpc"
+              ],
+              "required": true
+             }
+            },
+            "required": true
+           },
+           "timeout": {
+            "type": "structure",
+            "doc": "An object that represents timeouts for different protocols.",
+            "members": {
+             "grpc": {
+              "type": "structure",
+              "doc": "An object that represents types of timeouts.",
+              "members": {
+               "idle": {
+                "type": "structure",
+                "doc": "An object that represents an idle timeout. An idle timeout bounds the amount of time that a connection may be idle. The default value is none.",
+                "members": {
+                 "unit": {
+                  "type": "string",
+                  "doc": "A unit of time.",
+                  "enum": [
+                   "s",
+                   "ms"
+                  ]
+                 },
+                 "value": {
+                  "type": "long",
+                  "doc": "A number of time units."
+                 }
+                }
+               },
+               "perRequest": {
+                "type": "structure",
+                "doc": "An object that represents a per request timeout. The default value is 15 seconds. If you set a higher timeout, then make sure that the higher value is set for each App Mesh resource in a conversation. For example, if a virtual node backend uses a virtual router provider to route to another virtual node, then the timeout should be greater than 15 seconds for the source and destination virtual node and the route.",
+                "members": {
+                 "unit": {
+                  "type": "string",
+                  "doc": "A unit of time.",
+                  "enum": [
+                   "s",
+                   "ms"
+                  ]
+                 },
+                 "value": {
+                  "type": "long",
+                  "doc": "A number of time units."
+                 }
+                }
+               }
+              }
+             },
+             "http": {
+              "type": "structure",
+              "doc": "An object that represents types of timeouts.",
+              "members": {
+               "idle": {
+                "type": "structure",
+                "doc": "An object that represents an idle timeout. An idle timeout bounds the amount of time that a connection may be idle. The default value is none.",
+                "members": {
+                 "unit": {
+                  "type": "string",
+                  "doc": "A unit of time.",
+                  "enum": [
+                   "s",
+                   "ms"
+                  ]
+                 },
+                 "value": {
+                  "type": "long",
+                  "doc": "A number of time units."
+                 }
+                }
+               },
+               "perRequest": {
+                "type": "structure",
+                "doc": "An object that represents a per request timeout. The default value is 15 seconds. If you set a higher timeout, then make sure that the higher value is set for each App Mesh resource in a conversation. For example, if a virtual node backend uses a virtual router provider to route to another virtual node, then the timeout should be greater than 15 seconds for the source and destination virtual node and the route.",
+                "members": {
+                 "unit": {
+                  "type": "string",
+                  "doc": "A unit of time.",
+                  "enum": [
+                   "s",
+                   "ms"
+                  ]
+                 },
+                 "value": {
+                  "type": "long",
+                  "doc": "A number of time units."
+                 }
+                }
+               }
+              }
+             },
+             "http2": {
+              "type": "structure",
+              "doc": "An object that represents types of timeouts.",
+              "members": {
+               "idle": {
+                "type": "structure",
+                "doc": "An object that represents an idle timeout. An idle timeout bounds the amount of time that a connection may be idle. The default value is none.",
+                "members": {
+                 "unit": {
+                  "type": "string",
+                  "doc": "A unit of time.",
+                  "enum": [
+                   "s",
+                   "ms"
+                  ]
+                 },
+                 "value": {
+                  "type": "long",
+                  "doc": "A number of time units."
+                 }
+                }
+               },
+               "perRequest": {
+                "type": "structure",
+                "doc": "An object that represents a per request timeout. The default value is 15 seconds. If you set a higher timeout, then make sure that the higher value is set for each App Mesh resource in a conversation. For example, if a virtual node backend uses a virtual router provider to route to another virtual node, then the timeout should be greater than 15 seconds for the source and destination virtual node and the route.",
+                "members": {
+                 "unit": {
+                  "type": "string",
+                  "doc": "A unit of time.",
+                  "enum": [
+                   "s",
+                   "ms"
+                  ]
+                 },
+                 "value": {
+                  "type": "long",
+                  "doc": "A number of time units."
+                 }
+                }
+               }
+              }
+             },
+             "tcp": {
+              "type": "structure",
+              "doc": "An object that represents types of timeouts.",
+              "members": {
+               "idle": {
+                "type": "structure",
+                "doc": "An object that represents an idle timeout. An idle timeout bounds the amount of time that a connection may be idle. The default value is none.",
+                "members": {
+                 "unit": {
+                  "type": "string",
+                  "doc": "A unit of time.",
+                  "enum": [
+                   "s",
+                   "ms"
+                  ]
+                 },
+                 "value": {
+                  "type": "long",
+                  "doc": "A number of time units."
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "tls": {
+            "type": "structure",
+            "doc": "A reference to an object that represents the Transport Layer Security (TLS) properties for a listener.",
+            "members": {
+             "certificate": {
+              "type": "structure",
+              "doc": "A reference to an object that represents a listener's Transport Layer Security (TLS) certificate.",
+              "members": {
+               "acm": {
+                "type": "structure",
+                "doc": "A reference to an object that represents an Certificate Manager certificate.",
+                "members": {
+                 "certificateArn": {
+                  "type": "string",
+                  "doc": "The Amazon Resource Name (ARN) for the certificate. The certificate must meet specific requirements and you must have proxy authorization enabled. For more information, see Transport Layer Security (TLS) .",
+                  "required": true
+                 }
+                }
+               },
+               "file": {
+                "type": "structure",
+                "doc": "A reference to an object that represents a local file certificate.",
+                "members": {
+                 "certificateChain": {
+                  "type": "string",
+                  "doc": "The certificate chain for the certificate.",
+                  "required": true
+                 },
+                 "privateKey": {
+                  "type": "string",
+                  "doc": "The private key for a certificate stored on the file system of the virtual node that the proxy is running on.",
+                  "required": true
+                 }
+                }
+               },
+               "sds": {
+                "type": "structure",
+                "doc": "A reference to an object that represents a listener's Secret Discovery Service certificate.",
+                "members": {
+                 "secretName": {
+                  "type": "string",
+                  "doc": "A reference to an object that represents the name of the secret requested from the Secret Discovery Service provider representing Transport Layer Security (TLS) materials like a certificate or certificate chain.",
+                  "required": true
+                 }
+                }
+               }
+              },
+              "required": true
+             },
+             "mode": {
+              "type": "string",
+              "doc": "Specify one of the following modes. STRICT – Listener only accepts connections with TLS enabled. PERMISSIVE – Listener accepts connections with or without TLS enabled. DISABLED – Listener only accepts connections without TLS.",
+              "enum": [
+               "STRICT",
+               "PERMISSIVE",
+               "DISABLED"
+              ],
+              "required": true
+             },
+             "validation": {
+              "type": "structure",
+              "doc": "A reference to an object that represents a listener's Transport Layer Security (TLS) validation context.",
+              "members": {
+               "subjectAlternativeNames": {
+                "type": "structure",
+                "doc": "A reference to an object that represents the SANs for a listener's Transport Layer Security (TLS) validation context.",
+                "members": {
+                 "match": {
+                  "type": "structure",
+                  "doc": "An object that represents the criteria for determining a SANs match.",
+                  "members": {
+                   "exact": {
+                    "type": "list",
+                    "doc": "The values sent must match the specified values exactly.",
+                    "ref": "SubjectAlternativeNameList",
+                    "required": true
+                   }
+                  },
+                  "required": true
+                 }
+                }
+               },
+               "trust": {
+                "type": "structure",
+                "doc": "A reference to where to retrieve the trust chain when validating a peer’s Transport Layer Security (TLS) certificate.",
+                "members": {
+                 "file": {
+                  "type": "structure",
+                  "doc": "An object that represents a Transport Layer Security (TLS) validation context trust for a local file.",
+                  "members": {
+                   "certificateChain": {
+                    "type": "string",
+                    "doc": "The certificate trust chain for a certificate stored on the file system of the virtual node that the proxy is running on.",
+                    "required": true
+                   }
+                  }
+                 },
+                 "sds": {
+                  "type": "structure",
+                  "doc": "A reference to an object that represents a listener's Transport Layer Security (TLS) Secret Discovery Service validation context trust.",
+                  "members": {
+                   "secretName": {
+                    "type": "string",
+                    "doc": "A reference to an object that represents the name of the secret for a Transport Layer Security (TLS) Secret Discovery Service validation context trust.",
+                    "required": true
+                   }
+                  }
+                 }
+                },
+                "required": true
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        },
+        "logging": {
+         "type": "structure",
+         "doc": "The inbound and outbound access logging information for the virtual node.",
+         "members": {
+          "accessLog": {
+           "type": "structure",
+           "doc": "The access log configuration for a virtual node.",
+           "members": {
+            "file": {
+             "type": "structure",
+             "doc": "The file object to send virtual node access logs to.",
+             "members": {
+              "format": {
+               "type": "structure",
+               "doc": "The specified format for the logs. The format is either json_format or text_format .",
+               "members": {
+                "json": {
+                 "type": "list",
+                 "doc": "",
+                 "item": {
+                  "type": "structure",
+                  "doc": "An object that represents the key value pairs for the JSON.",
+                  "members": {
+                   "key": {
+                    "type": "string",
+                    "doc": "The specified key for the JSON.",
+                    "required": true
+                   },
+                   "value": {
+                    "type": "string",
+                    "doc": "The specified value for the JSON.",
+                    "required": true
+                   }
+                  }
+                 }
+                },
+                "text": {
+                 "type": "string",
+                 "doc": ""
+                }
+               }
+              },
+              "path": {
+               "type": "string",
+               "doc": "The file path to write access logs to. You can use /dev/stdout to send access logs to standard out and configure your Envoy container to use a log driver, such as awslogs , to export the access logs to a log storage service such as Amazon CloudWatch Logs. You can also specify a path in the Envoy container's file system to write the files to disk. The Envoy process must have write permissions to the path that you specify here. Otherwise, Envoy fails to bootstrap properly.",
+               "required": true
+              }
+             }
+            }
+           }
+          }
+         }
+        },
+        "serviceDiscovery": {
+         "type": "structure",
+         "doc": "The service discovery information for the virtual node. If your virtual node does not expect ingress traffic, you can omit this parameter. If you specify a listener , then you must specify service discovery information.",
+         "members": {
+          "awsCloudMap": {
+           "type": "structure",
+           "doc": "Specifies any Cloud Map information for the virtual node.",
+           "members": {
+            "attributes": {
+             "type": "list",
+             "doc": "A string map that contains attributes with values that you can use to filter instances by any custom attribute that you specified when you registered the instance. Only instances that match all of the specified key/value pairs will be returned.",
+             "item": {
+              "type": "structure",
+              "doc": "An object that represents the Cloud Map attribute information for your virtual node. Cloud Map is not available in the eu-south-1 Region.",
+              "members": {
+               "key": {
+                "type": "string",
+                "doc": "The name of an Cloud Map service instance attribute key. Any Cloud Map service instance that contains the specified key and value is returned.",
+                "required": true
+               },
+               "value": {
+                "type": "string",
+                "doc": "The value of an Cloud Map service instance attribute key. Any Cloud Map service instance that contains the specified key and value is returned.",
+                "required": true
+               }
+              }
+             }
+            },
+            "ipPreference": {
+             "type": "string",
+             "doc": "The preferred IP version that this virtual node uses. Setting the IP preference on the virtual node only overrides the IP preference set for the mesh on this specific node.",
+             "enum": [
+              "IPv6_PREFERRED",
+              "IPv4_PREFERRED",
+              "IPv4_ONLY",
+              "IPv6_ONLY"
+             ]
+            },
+            "namespaceName": {
+             "type": "string",
+             "doc": "The name of the Cloud Map namespace to use.",
+             "required": true
+            },
+            "serviceName": {
+             "type": "string",
+             "doc": "The name of the Cloud Map service to use.",
+             "required": true
+            }
+           }
+          },
+          "dns": {
+           "type": "structure",
+           "doc": "Specifies the DNS information for the virtual node.",
+           "members": {
+            "hostname": {
+             "type": "string",
+             "doc": "Specifies the DNS service discovery hostname for the virtual node.",
+             "required": true
+            },
+            "ipPreference": {
+             "type": "string",
+             "doc": "The preferred IP version that this virtual node uses. Setting the IP preference on the virtual node only overrides the IP preference set for the mesh on this specific node.",
+             "enum": [
+              "IPv6_PREFERRED",
+              "IPv4_PREFERRED",
+              "IPv4_ONLY",
+              "IPv6_ONLY"
+             ]
+            },
+            "responseType": {
+             "type": "string",
+             "doc": "Specifies the DNS response type for the virtual node.",
+             "enum": [
+              "LOADBALANCER",
+              "ENDPOINTS"
+             ]
+            }
+           }
+          }
+         }
+        }
+       },
+       "required": true
+      },
+      "status": {
+       "type": "structure",
+       "doc": "The current status for the virtual node.",
+       "members": {
+        "status": {
+         "type": "string",
+         "doc": "The current status of the virtual node.",
+         "enum": [
+          "ACTIVE",
+          "INACTIVE",
+          "DELETED"
+         ],
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "virtualNodeName": {
+       "type": "string",
+       "doc": "The name of the virtual node.",
+       "required": true
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.DescribeVirtualRouter": {
+  "service": "appmesh",
+  "operation": "DescribeVirtualRouter",
+  "method": "describe_virtual_router",
+  "doc": "Describes an existing virtual router.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/describe_virtual_router.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualRouter"
+  },
+  "paginated": false,
+  "input_required": [
+   "meshName",
+   "virtualRouterName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "virtualRouter": {
+     "type": "structure",
+     "doc": "The full description of your virtual router.",
+     "members": {
+      "meshName": {
+       "type": "string",
+       "doc": "The name of the service mesh that the virtual router resides in.",
+       "required": true
+      },
+      "metadata": {
+       "type": "structure",
+       "doc": "The associated metadata for the virtual router.",
+       "members": {
+        "arn": {
+         "type": "string",
+         "doc": "The full Amazon Resource Name (ARN) for the resource.",
+         "required": true
+        },
+        "createdAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+         "required": true
+        },
+        "lastUpdatedAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+         "required": true
+        },
+        "meshOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "resourceOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "uid": {
+         "type": "string",
+         "doc": "The unique identifier for the resource.",
+         "required": true
+        },
+        "version": {
+         "type": "long",
+         "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "spec": {
+       "type": "structure",
+       "doc": "The specifications of the virtual router.",
+       "members": {
+        "listeners": {
+         "type": "list",
+         "doc": "The listeners that the virtual router is expected to receive inbound traffic from. You can specify one listener.",
+         "item": {
+          "type": "structure",
+          "doc": "An object that represents a virtual router listener.",
+          "members": {
+           "portMapping": {
+            "type": "structure",
+            "doc": "An object that represents a port mapping.",
+            "members": {
+             "port": {
+              "type": "integer",
+              "doc": "The port used for the port mapping.",
+              "required": true
+             },
+             "protocol": {
+              "type": "string",
+              "doc": "The protocol used for the port mapping. Specify one protocol.",
+              "enum": [
+               "http",
+               "tcp",
+               "http2",
+               "grpc"
+              ],
+              "required": true
+             }
+            },
+            "required": true
+           }
+          }
+         }
+        }
+       },
+       "required": true
+      },
+      "status": {
+       "type": "structure",
+       "doc": "The current status of the virtual router.",
+       "members": {
+        "status": {
+         "type": "string",
+         "doc": "The current status of the virtual router.",
+         "enum": [
+          "ACTIVE",
+          "INACTIVE",
+          "DELETED"
+         ],
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "virtualRouterName": {
+       "type": "string",
+       "doc": "The name of the virtual router.",
+       "required": true
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.DescribeVirtualService": {
+  "service": "appmesh",
+  "operation": "DescribeVirtualService",
+  "method": "describe_virtual_service",
+  "doc": "Describes an existing virtual service.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/describe_virtual_service.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualService"
+  },
+  "paginated": false,
+  "input_required": [
+   "meshName",
+   "virtualServiceName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "virtualService": {
+     "type": "structure",
+     "doc": "The full description of your virtual service.",
+     "members": {
+      "meshName": {
+       "type": "string",
+       "doc": "The name of the service mesh that the virtual service resides in.",
+       "required": true
+      },
+      "metadata": {
+       "type": "structure",
+       "doc": "An object that represents metadata for a resource.",
+       "members": {
+        "arn": {
+         "type": "string",
+         "doc": "The full Amazon Resource Name (ARN) for the resource.",
+         "required": true
+        },
+        "createdAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+         "required": true
+        },
+        "lastUpdatedAt": {
+         "type": "timestamp",
+         "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+         "required": true
+        },
+        "meshOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "resourceOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+         "required": true
+        },
+        "uid": {
+         "type": "string",
+         "doc": "The unique identifier for the resource.",
+         "required": true
+        },
+        "version": {
+         "type": "long",
+         "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "spec": {
+       "type": "structure",
+       "doc": "The specifications of the virtual service.",
+       "members": {
+        "provider": {
+         "type": "structure",
+         "doc": "The App Mesh object that is acting as the provider for a virtual service. You can specify a single virtual node or virtual router.",
+         "members": {
+          "virtualNode": {
+           "type": "structure",
+           "doc": "The virtual node associated with a virtual service.",
+           "members": {
+            "virtualNodeName": {
+             "type": "string",
+             "doc": "The name of the virtual node that is acting as a service provider.",
+             "required": true
+            }
+           }
+          },
+          "virtualRouter": {
+           "type": "structure",
+           "doc": "The virtual router associated with a virtual service.",
+           "members": {
+            "virtualRouterName": {
+             "type": "string",
+             "doc": "The name of the virtual router that is acting as a service provider.",
+             "required": true
+            }
+           }
+          }
+         }
+        }
+       },
+       "required": true
+      },
+      "status": {
+       "type": "structure",
+       "doc": "The current status of the virtual service.",
+       "members": {
+        "status": {
+         "type": "string",
+         "doc": "The current status of the virtual service.",
+         "enum": [
+          "ACTIVE",
+          "INACTIVE",
+          "DELETED"
+         ],
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "virtualServiceName": {
+       "type": "string",
+       "doc": "The name of the virtual service.",
+       "required": true
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.ListMeshes": {
+  "service": "appmesh",
+  "operation": "ListMeshes",
+  "method": "list_meshes",
+  "doc": "Returns a list of existing service meshes.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/list_meshes.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListMeshes"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "meshes": {
+     "type": "list",
+     "doc": "The list of existing service meshes.",
+     "item": {
+      "type": "structure",
+      "doc": "An object that represents a service mesh returned by a list operation.",
+      "members": {
+       "arn": {
+        "type": "string",
+        "doc": "The full Amazon Resource Name (ARN) of the service mesh.",
+        "required": true
+       },
+       "createdAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+        "required": true
+       },
+       "lastUpdatedAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+        "required": true
+       },
+       "meshName": {
+        "type": "string",
+        "doc": "The name of the service mesh.",
+        "required": true
+       },
+       "meshOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "resourceOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "version": {
+        "type": "long",
+        "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future ListMeshes request. When the results of a ListMeshes request exceed limit , you can use this value to retrieve the next page of results. This value is null when there are no more results to return."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.ListTagsForResource": {
+  "service": "appmesh",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "List the tags for an App Mesh resource.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListTagsForResource"
+  },
+  "paginated": true,
+  "input_required": [
+   "resourceArn"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future ListTagsForResource request. When the results of a ListTagsForResource request exceed limit , you can use this value to retrieve the next page of results. This value is null when there are no more results to return."
+    },
+    "tags": {
+     "type": "list",
+     "doc": "The tags for the resource.",
+     "item": {
+      "type": "structure",
+      "doc": "Optional metadata that you apply to a resource to assist with categorization and organization. Each tag consists of a key and an optional value, both of which you define. Tag keys can have a maximum character length of 128 characters, and tag values can have a maximum length of 256 characters.",
+      "members": {
+       "key": {
+        "type": "string",
+        "doc": "One part of a key-value pair that make up a tag. A key is a general label that acts like a category for more specific tag values.",
+        "required": true
+       },
+       "value": {
+        "type": "string",
+        "doc": "The optional part of a key-value pair that make up a tag. A value acts as a descriptor within a tag category (key).",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.ListVirtualGateways": {
+  "service": "appmesh",
+  "operation": "ListVirtualGateways",
+  "method": "list_virtual_gateways",
+  "doc": "Returns a list of existing virtual gateways in a service mesh.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/list_virtual_gateways.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualGateways"
+  },
+  "paginated": true,
+  "input_required": [
+   "meshName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future ListVirtualGateways request. When the results of a ListVirtualGateways request exceed limit , you can use this value to retrieve the next page of results. This value is null when there are no more results to return."
+    },
+    "virtualGateways": {
+     "type": "list",
+     "doc": "The list of existing virtual gateways for the specified service mesh.",
+     "item": {
+      "type": "structure",
+      "doc": "An object that represents a virtual gateway returned by a list operation.",
+      "members": {
+       "arn": {
+        "type": "string",
+        "doc": "The full Amazon Resource Name (ARN) for the resource.",
+        "required": true
+       },
+       "createdAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+        "required": true
+       },
+       "lastUpdatedAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+        "required": true
+       },
+       "meshName": {
+        "type": "string",
+        "doc": "The name of the service mesh that the resource resides in.",
+        "required": true
+       },
+       "meshOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "resourceOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "version": {
+        "type": "long",
+        "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+        "required": true
+       },
+       "virtualGatewayName": {
+        "type": "string",
+        "doc": "The name of the resource.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.ListVirtualNodes": {
+  "service": "appmesh",
+  "operation": "ListVirtualNodes",
+  "method": "list_virtual_nodes",
+  "doc": "Returns a list of existing virtual nodes.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/list_virtual_nodes.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualNodes"
+  },
+  "paginated": true,
+  "input_required": [
+   "meshName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future ListVirtualNodes request. When the results of a ListVirtualNodes request exceed limit , you can use this value to retrieve the next page of results. This value is null when there are no more results to return."
+    },
+    "virtualNodes": {
+     "type": "list",
+     "doc": "The list of existing virtual nodes for the specified service mesh.",
+     "item": {
+      "type": "structure",
+      "doc": "An object that represents a virtual node returned by a list operation.",
+      "members": {
+       "arn": {
+        "type": "string",
+        "doc": "The full Amazon Resource Name (ARN) for the virtual node.",
+        "required": true
+       },
+       "createdAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+        "required": true
+       },
+       "lastUpdatedAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+        "required": true
+       },
+       "meshName": {
+        "type": "string",
+        "doc": "The name of the service mesh that the virtual node resides in.",
+        "required": true
+       },
+       "meshOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "resourceOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "version": {
+        "type": "long",
+        "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+        "required": true
+       },
+       "virtualNodeName": {
+        "type": "string",
+        "doc": "The name of the virtual node.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.ListVirtualRouters": {
+  "service": "appmesh",
+  "operation": "ListVirtualRouters",
+  "method": "list_virtual_routers",
+  "doc": "Returns a list of existing virtual routers in a service mesh.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/list_virtual_routers.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualRouters"
+  },
+  "paginated": true,
+  "input_required": [
+   "meshName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future ListVirtualRouters request. When the results of a ListVirtualRouters request exceed limit , you can use this value to retrieve the next page of results. This value is null when there are no more results to return."
+    },
+    "virtualRouters": {
+     "type": "list",
+     "doc": "The list of existing virtual routers for the specified service mesh.",
+     "item": {
+      "type": "structure",
+      "doc": "An object that represents a virtual router returned by a list operation.",
+      "members": {
+       "arn": {
+        "type": "string",
+        "doc": "The full Amazon Resource Name (ARN) for the virtual router.",
+        "required": true
+       },
+       "createdAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+        "required": true
+       },
+       "lastUpdatedAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+        "required": true
+       },
+       "meshName": {
+        "type": "string",
+        "doc": "The name of the service mesh that the virtual router resides in.",
+        "required": true
+       },
+       "meshOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "resourceOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "version": {
+        "type": "long",
+        "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+        "required": true
+       },
+       "virtualRouterName": {
+        "type": "string",
+        "doc": "The name of the virtual router.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ },
+ "appmesh.ListVirtualServices": {
+  "service": "appmesh",
+  "operation": "ListVirtualServices",
+  "method": "list_virtual_services",
+  "doc": "Returns a list of existing virtual services in a service mesh.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/appmesh/client/list_virtual_services.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualServices"
+  },
+  "paginated": true,
+  "input_required": [
+   "meshName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future ListVirtualServices request. When the results of a ListVirtualServices request exceed limit , you can use this value to retrieve the next page of results. This value is null when there are no more results to return."
+    },
+    "virtualServices": {
+     "type": "list",
+     "doc": "The list of existing virtual services for the specified service mesh.",
+     "item": {
+      "type": "structure",
+      "doc": "An object that represents a virtual service returned by a list operation.",
+      "members": {
+       "arn": {
+        "type": "string",
+        "doc": "The full Amazon Resource Name (ARN) for the virtual service.",
+        "required": true
+       },
+       "createdAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was created.",
+        "required": true
+       },
+       "lastUpdatedAt": {
+        "type": "timestamp",
+        "doc": "The Unix epoch timestamp in seconds for when the resource was last updated.",
+        "required": true
+       },
+       "meshName": {
+        "type": "string",
+        "doc": "The name of the service mesh that the virtual service resides in.",
+        "required": true
+       },
+       "meshOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the service mesh owner. If the account ID is not your own, then it's the ID of the account that shared the mesh with your account. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "resourceOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services IAM account ID of the resource owner. If the account ID is not your own, then it's the ID of the mesh owner or of another account that the mesh is shared with. For more information about mesh sharing, see Working with shared meshes .",
+        "required": true
+       },
+       "version": {
+        "type": "long",
+        "doc": "The version of the resource. Resources are created at version 1, and this version is incremented each time that they're updated.",
+        "required": true
+       },
+       "virtualServiceName": {
+        "type": "string",
+        "doc": "The name of the virtual service.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "appmesh.describe_mesh"
+  ],
+  "rules": [
+   "REME-0101600001",
+   "REME-0101600002",
+   "REME-0101600003",
+   "REME-0101600004"
+  ]
+ }
+}

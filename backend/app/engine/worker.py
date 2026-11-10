@@ -250,6 +250,9 @@ def _run_forked(engine: Engine, sc: dict, timeout: float) -> dict:
         try:
             raw = {"raw": sc.get("raw") or {}}
             applied = engine.preprocess(raw["raw"]) if sc.get("preprocess", True) else []
+            # 엔진 순서 재현 — 같은 프로세스 · 같은 raw 로 앞 룰을 먼저 돌린다(모듈 전역 상태에 기대는 룰: CWH-015 등). 결과는 버린다
+            for pre in sc.get("pre_rules") or []:
+                engine.run_rule(pre["rule"], pre.get("args"), raw, pre.get("service"))
             res = engine.run_rule(sc["rule"], sc.get("args"), raw, sc.get("service"))
             res["preprocess"] = applied
             payload = json.dumps(res, ensure_ascii=False, default=str).encode()
@@ -332,6 +335,45 @@ def run_ruleset(engine: Engine, job: dict) -> dict:
 
 
 # --------------------------------------------------------------------------- main
+def fingerprint(fn, roots: list[str]) -> str:
+    """룰 함수 + 그 함수가 이름으로 부르는 엔진(· 오버레이) 안 함수들(재귀)의 소스 해시.
+    헬퍼만 고친 수정도 잡는다. 모듈 전역 상수 · 속성 접근(mod.func)으로 부르는 함수는 보지 않는다."""
+    import hashlib
+    import inspect
+    import types
+
+    def ours(f) -> bool:
+        try:
+            src = str(Path(inspect.getsourcefile(f) or "").resolve())
+        except TypeError:
+            return False
+        return any(src.startswith(r) for r in roots)
+
+    seen: set = set()
+    parts: list[str] = []
+    stack = [fn]
+    while stack:
+        f = stack.pop()
+        if f in seen:
+            continue
+        seen.add(f)
+        try:
+            parts.append(inspect.getsource(f))
+        except (OSError, TypeError):
+            parts.append(f.__code__.co_code.hex())
+        names: set[str] = set()
+        codes = [f.__code__]
+        while codes:
+            c = codes.pop()
+            names |= set(c.co_names)
+            codes += [k for k in c.co_consts if isinstance(k, types.CodeType)]
+        for n in names:
+            h = f.__globals__.get(n)
+            if isinstance(h, types.FunctionType) and h not in seen and ours(h):
+                stack.append(h)
+    return hashlib.sha1("\n".join(sorted(parts)).encode()).hexdigest()[:12]
+
+
 def main(job_path: str, out_path: str) -> None:
     job = json.loads(Path(job_path).read_text(encoding="utf-8"))
     t0 = time.time()
@@ -359,6 +401,9 @@ def main(job_path: str, out_path: str) -> None:
     elif job["mode"] == "inventory":
         out["rules"] = {r: s for r, s in engine.rule_service.items()}
         out["functions"] = sorted(k.replace("_", "-", 1) for k in engine.funcs)
+        # 룰 함수 지문 — 변형끼리 비교해 "이 룰 로직이 바뀌었나" 를 본다(입력 실험의 개선 전후 비교 가능 여부)
+        roots = [str(Path(job["engine_src"]).resolve())] + ([str(Path(job["overlay"]).resolve())] if job.get("overlay") else [])
+        out["fingerprints"] = {k.replace("_", "-", 1): fingerprint(fn, roots) for k, fn in engine.funcs.items()}
     else:
         raise ValueError(job["mode"])
     out["meta"]["sec"] = round(time.time() - t0, 2)

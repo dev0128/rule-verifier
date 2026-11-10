@@ -1,0 +1,485 @@
+{
+ "backup.DescribeBackupVault": {
+  "service": "backup",
+  "operation": "DescribeBackupVault",
+  "method": "describe_backup_vault",
+  "doc": "Returns metadata about a backup vault specified by its name.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/backup/client/describe_backup_vault.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/DescribeBackupVault"
+  },
+  "paginated": false,
+  "input_required": [
+   "BackupVaultName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "BackupVaultName": {
+     "type": "string",
+     "doc": "The name of a logical container where backups are stored. Backup vaults are identified by names that are unique to the account used to create them and the Region where they are created."
+    },
+    "BackupVaultArn": {
+     "type": "string",
+     "doc": "An Amazon Resource Name (ARN) that uniquely identifies a backup vault; for example, arn:aws:backup:us-east-1:123456789012:backup-vault:aBackupVault ."
+    },
+    "VaultType": {
+     "type": "string",
+     "doc": "The type of vault described.",
+     "enum": [
+      "BACKUP_VAULT",
+      "LOGICALLY_AIR_GAPPED_BACKUP_VAULT"
+     ]
+    },
+    "VaultState": {
+     "type": "string",
+     "doc": "The current state of the vault.->",
+     "enum": [
+      "CREATING",
+      "AVAILABLE",
+      "FAILED"
+     ]
+    },
+    "EncryptionKeyArn": {
+     "type": "string",
+     "doc": "The server-side encryption key that is used to protect your backups; for example, arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab ."
+    },
+    "CreationDate": {
+     "type": "timestamp",
+     "doc": "The date and time that a backup vault is created, in Unix format and Coordinated Universal Time (UTC). The value of CreationDate is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM."
+    },
+    "CreatorRequestId": {
+     "type": "string",
+     "doc": "A unique string that identifies the request and allows failed requests to be retried without the risk of running the operation twice. This parameter is optional. If used, this parameter must contain 1 to 50 alphanumeric or '-_.' characters."
+    },
+    "NumberOfRecoveryPoints": {
+     "type": "long",
+     "doc": "The number of recovery points that are stored in a backup vault."
+    },
+    "Locked": {
+     "type": "boolean",
+     "doc": "A Boolean that indicates whether Backup Vault Lock is currently protecting the backup vault. True means that Vault Lock causes delete or update operations on the recovery points stored in the vault to fail."
+    },
+    "MinRetentionDays": {
+     "type": "long",
+     "doc": "The Backup Vault Lock setting that specifies the minimum retention period that the vault retains its recovery points. If this parameter is not specified, Vault Lock will not enforce a minimum retention period. If specified, any backup or copy job to the vault must have a lifecycle policy with a retention period equal to or longer than the minimum retention period. If the job's retention period is shorter than that minimum retention period, then the vault fails the backup or copy job, and you sh…"
+    },
+    "MaxRetentionDays": {
+     "type": "long",
+     "doc": "The Backup Vault Lock setting that specifies the maximum retention period that the vault retains its recovery points. If this parameter is not specified, Vault Lock does not enforce a maximum retention period on the recovery points in the vault (allowing indefinite storage). If specified, any backup or copy job to the vault must have a lifecycle policy with a retention period equal to or shorter than the maximum retention period. If the job's retention period is longer than that maximum retenti…"
+    },
+    "LockDate": {
+     "type": "timestamp",
+     "doc": "The date and time when Backup Vault Lock configuration cannot be changed or deleted. If you applied Vault Lock to your vault without specifying a lock date, you can change any of your Vault Lock settings, or delete Vault Lock from the vault entirely, at any time. This value is in Unix format, Coordinated Universal Time (UTC), and accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM."
+    }
+   }
+  },
+  "added_in_latest": [
+   "EncryptionKeyType",
+   "LatestMpaApprovalTeamUpdate",
+   "LatestMpaApprovalTeamUpdate.ExpiryDate",
+   "LatestMpaApprovalTeamUpdate.InitiationDate",
+   "LatestMpaApprovalTeamUpdate.MpaSessionArn",
+   "LatestMpaApprovalTeamUpdate.Status",
+   "LatestMpaApprovalTeamUpdate.StatusMessage",
+   "MpaApprovalTeamArn",
+   "MpaSessionArn",
+   "SourceBackupVaultArn"
+  ],
+  "raw_keys": [
+   "backup.list_backup_plans"
+  ],
+  "rules": [
+   "REME-0101900001",
+   "REME-0101900002"
+  ]
+ },
+ "backup.GetBackupPlan": {
+  "service": "backup",
+  "operation": "GetBackupPlan",
+  "method": "get_backup_plan",
+  "doc": "Returns BackupPlan details for the specified BackupPlanId . The details are the body of a backup plan in JSON format, in addition to plan metadata.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/backup/client/get_backup_plan.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/GetBackupPlan"
+  },
+  "paginated": false,
+  "input_required": [
+   "BackupPlanId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "BackupPlan": {
+     "type": "structure",
+     "doc": "Specifies the body of a backup plan. Includes a BackupPlanName and one or more sets of Rules .",
+     "members": {
+      "BackupPlanName": {
+       "type": "string",
+       "doc": "The display name of a backup plan. Must contain only alphanumeric or '-_.' special characters. If this is set in the console, it can contain 1 to 50 characters; if this is set through CLI or API, it can contain 1 to 200 characters.",
+       "required": true
+      },
+      "Rules": {
+       "type": "list",
+       "doc": "An array of BackupRule objects, each of which specifies a scheduled task that is used to back up a selection of resources.",
+       "item": {
+        "type": "structure",
+        "doc": "Specifies a scheduled task used to back up a selection of resources.",
+        "members": {
+         "RuleName": {
+          "type": "string",
+          "doc": "A display name for a backup rule. Must contain 1 to 50 alphanumeric or '-_.' characters.",
+          "required": true
+         },
+         "TargetBackupVaultName": {
+          "type": "string",
+          "doc": "The name of a logical container where backups are stored. Backup vaults are identified by names that are unique to the account used to create them and the Amazon Web Services Region where they are created.",
+          "required": true
+         },
+         "ScheduleExpression": {
+          "type": "string",
+          "doc": "A cron expression in UTC specifying when Backup initiates a backup job. For more information about Amazon Web Services cron expressions, see Schedule Expressions for Rules in the Amazon CloudWatch Events User Guide. . Two examples of Amazon Web Services cron expressions are 15 * ? * * * (take a backup every hour at 15 minutes past the hour) and 0 12 * * ? * (take a backup every day at 12 noon UTC). For a table of examples, click the preceding link and scroll down the page."
+         },
+         "StartWindowMinutes": {
+          "type": "long",
+          "doc": "A value in minutes after a backup is scheduled before a job will be canceled if it doesn't start successfully. This value is optional. If this value is included, it must be at least 60 minutes to avoid errors. During the start window, the backup job status remains in CREATED status until it has successfully begun or until the start window time has run out. If within the start window time Backup receives an error that allows the job to be retried, Backup will automatically retry to begin the job…"
+         },
+         "CompletionWindowMinutes": {
+          "type": "long",
+          "doc": "A value in minutes after a backup job is successfully started before it must be completed or it will be canceled by Backup. This value is optional."
+         },
+         "Lifecycle": {
+          "type": "structure",
+          "doc": "The lifecycle defines when a protected resource is transitioned to cold storage and when it expires. Backup transitions and expires backups automatically according to the lifecycle that you define. Backups transitioned to cold storage must be stored in cold storage for a minimum of 90 days. Therefore, the “retention” setting must be 90 days greater than the “transition to cold after days” setting. The “transition to cold after days” setting cannot be changed after a backup has been transitioned…",
+          "members": {
+           "MoveToColdStorageAfterDays": {
+            "type": "long",
+            "doc": "The number of days after creation that a recovery point is moved to cold storage."
+           },
+           "DeleteAfterDays": {
+            "type": "long",
+            "doc": "The number of days after creation that a recovery point is deleted. This value must be at least 90 days after the number of days specified in MoveToColdStorageAfterDays ."
+           },
+           "OptInToArchiveForSupportedResources": {
+            "type": "boolean",
+            "doc": "If the value is true, your backup plan transitions supported resources to archive (cold) storage tier in accordance with your lifecycle settings."
+           }
+          }
+         },
+         "RecoveryPointTags": {
+          "type": "map",
+          "doc": "The tags that are assigned to resources that are associated with this rule when restored from backup.",
+          "key": {
+           "type": "string"
+          },
+          "value": {
+           "type": "string"
+          }
+         },
+         "RuleId": {
+          "type": "string",
+          "doc": "Uniquely identifies a rule that is used to schedule the backup of a selection of resources."
+         },
+         "CopyActions": {
+          "type": "list",
+          "doc": "An array of CopyAction objects, which contains the details of the copy operation.",
+          "item": {
+           "type": "structure",
+           "doc": "The details of the copy operation.",
+           "members": {
+            "Lifecycle": {
+             "type": "structure",
+             "doc": "Specifies the time period, in days, before a recovery point transitions to cold storage or is deleted. Backups transitioned to cold storage must be stored in cold storage for a minimum of 90 days. Therefore, on the console, the retention setting must be 90 days greater than the transition to cold after days setting. The transition to cold after days setting can't be changed after a backup has been transitioned to cold. Resource types that can transition to cold storage are listed in the Feature…",
+             "members": {
+              "MoveToColdStorageAfterDays": {
+               "type": "long",
+               "doc": "The number of days after creation that a recovery point is moved to cold storage."
+              },
+              "DeleteAfterDays": {
+               "type": "long",
+               "doc": "The number of days after creation that a recovery point is deleted. This value must be at least 90 days after the number of days specified in MoveToColdStorageAfterDays ."
+              },
+              "OptInToArchiveForSupportedResources": {
+               "type": "boolean",
+               "doc": "If the value is true, your backup plan transitions supported resources to archive (cold) storage tier in accordance with your lifecycle settings."
+              }
+             }
+            },
+            "DestinationBackupVaultArn": {
+             "type": "string",
+             "doc": "An Amazon Resource Name (ARN) that uniquely identifies the destination backup vault for the copied backup. For example, arn:aws:backup:us-east-1:123456789012:backup-vault:aBackupVault .",
+             "required": true
+            }
+           }
+          }
+         },
+         "EnableContinuousBackup": {
+          "type": "boolean",
+          "doc": "Specifies whether Backup creates continuous backups. True causes Backup to create continuous backups capable of point-in-time restore (PITR). False (or not specified) causes Backup to create snapshot backups."
+         },
+         "ScheduleExpressionTimezone": {
+          "type": "string",
+          "doc": "The timezone in which the schedule expression is set. By default, ScheduleExpressions are in UTC. You can modify this to a specified timezone."
+         },
+         "IndexActions": {
+          "type": "list",
+          "doc": "IndexActions is an array you use to specify how backup data should be indexed. eEach BackupRule can have 0 or 1 IndexAction, as each backup can have up to one index associated with it. Within the array is ResourceType. Only one will be accepted for each BackupRule.",
+          "item": {
+           "type": "structure",
+           "doc": "This is an optional array within a BackupRule. IndexAction consists of one ResourceTypes.",
+           "members": {
+            "ResourceTypes": {
+             "type": "list",
+             "doc": "0 or 1 index action will be accepted for each BackupRule. Valid values: EBS for Amazon Elastic Block Store S3 for Amazon Simple Storage Service (Amazon S3)",
+             "item": {
+              "type": "string"
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "required": true
+      },
+      "AdvancedBackupSettings": {
+       "type": "list",
+       "doc": "Contains a list of BackupOptions for each resource type.",
+       "item": {
+        "type": "structure",
+        "doc": "The backup options for each resource type.",
+        "members": {
+         "ResourceType": {
+          "type": "string",
+          "doc": "Specifies an object containing resource type and backup options. The only supported resource type is Amazon EC2 instances with Windows Volume Shadow Copy Service (VSS). For a CloudFormation example, see the sample CloudFormation template to enable Windows VSS in the Backup User Guide . Valid values: EC2 ."
+         },
+         "BackupOptions": {
+          "type": "map",
+          "doc": "Specifies the backup option for a selected resource. This option is only available for Windows VSS backup jobs. Valid values: Set to \"WindowsVSS\":\"enabled\" to enable the WindowsVSS backup option and create a Windows VSS backup. Set to \"WindowsVSS\":\"disabled\" to create a regular backup. The WindowsVSS option is not enabled by default. If you specify an invalid option, you get an InvalidParameterValueException exception. For more information about Windows VSS backups, see Creating a VSS-Enabled W…",
+          "key": {
+           "type": "string"
+          },
+          "value": {
+           "type": "string"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "BackupPlanId": {
+     "type": "string",
+     "doc": "Uniquely identifies a backup plan."
+    },
+    "BackupPlanArn": {
+     "type": "string",
+     "doc": "An Amazon Resource Name (ARN) that uniquely identifies a backup plan; for example, arn:aws:backup:us-east-1:123456789012:plan:8F81F553-3A74-4A3F-B93D-B3360DC80C50 ."
+    },
+    "VersionId": {
+     "type": "string",
+     "doc": "Unique, randomly generated, Unicode, UTF-8 encoded strings that are at most 1,024 bytes long. Version IDs cannot be edited."
+    },
+    "CreatorRequestId": {
+     "type": "string",
+     "doc": "A unique string that identifies the request and allows failed requests to be retried without the risk of running the operation twice."
+    },
+    "CreationDate": {
+     "type": "timestamp",
+     "doc": "The date and time that a backup plan is created, in Unix format and Coordinated Universal Time (UTC). The value of CreationDate is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM."
+    },
+    "DeletionDate": {
+     "type": "timestamp",
+     "doc": "The date and time that a backup plan is deleted, in Unix format and Coordinated Universal Time (UTC). The value of DeletionDate is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM."
+    },
+    "LastExecutionDate": {
+     "type": "timestamp",
+     "doc": "The last time this backup plan was run. A date and time, in Unix format and Coordinated Universal Time (UTC). The value of LastExecutionDate is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM."
+    },
+    "AdvancedBackupSettings": {
+     "type": "list",
+     "doc": "Contains a list of BackupOptions for each resource type. The list is populated only if the advanced option is set for the backup plan.",
+     "item": {
+      "type": "structure",
+      "doc": "The backup options for each resource type.",
+      "members": {
+       "ResourceType": {
+        "type": "string",
+        "doc": "Specifies an object containing resource type and backup options. The only supported resource type is Amazon EC2 instances with Windows Volume Shadow Copy Service (VSS). For a CloudFormation example, see the sample CloudFormation template to enable Windows VSS in the Backup User Guide . Valid values: EC2 ."
+       },
+       "BackupOptions": {
+        "type": "map",
+        "doc": "Specifies the backup option for a selected resource. This option is only available for Windows VSS backup jobs. Valid values: Set to \"WindowsVSS\":\"enabled\" to enable the WindowsVSS backup option and create a Windows VSS backup. Set to \"WindowsVSS\":\"disabled\" to create a regular backup. The WindowsVSS option is not enabled by default. If you specify an invalid option, you get an InvalidParameterValueException exception. For more information about Windows VSS backups, see Creating a VSS-Enabled W…",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "BackupPlan.Rules[].CopyActions[].Lifecycle.DeleteAfterEvent",
+   "BackupPlan.Rules[].Lifecycle.DeleteAfterEvent",
+   "BackupPlan.Rules[].ScanActions",
+   "BackupPlan.Rules[].ScanActions[].MalwareScanner",
+   "BackupPlan.Rules[].ScanActions[].ScanMode",
+   "BackupPlan.Rules[].TargetLogicallyAirGappedBackupVaultArn",
+   "BackupPlan.ScanSettings",
+   "BackupPlan.ScanSettings[].MalwareScanner",
+   "BackupPlan.ScanSettings[].ResourceTypes",
+   "BackupPlan.ScanSettings[].ScannerRoleArn",
+   "ScheduledRunsPreview",
+   "ScheduledRunsPreview[].ExecutionTime",
+   "ScheduledRunsPreview[].RuleExecutionType",
+   "ScheduledRunsPreview[].RuleId"
+  ],
+  "raw_keys": [
+   "backup.list_backup_plans"
+  ],
+  "rules": [
+   "REME-0101900001",
+   "REME-0101900002"
+  ]
+ },
+ "backup.ListBackupPlans": {
+  "service": "backup",
+  "operation": "ListBackupPlans",
+  "method": "list_backup_plans",
+  "doc": "Lists the active backup plans for the account.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/backup/client/list_backup_plans.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListBackupPlans"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextToken": {
+     "type": "string",
+     "doc": "The next item following a partial list of returned items. For example, if a request is made to return MaxResults number of items, NextToken allows you to return more items in your list starting at the location pointed to by the next token."
+    },
+    "BackupPlansList": {
+     "type": "list",
+     "doc": "Information about the backup plans.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains metadata about a backup plan.",
+      "members": {
+       "BackupPlanArn": {
+        "type": "string",
+        "doc": "An Amazon Resource Name (ARN) that uniquely identifies a backup plan; for example, arn:aws:backup:us-east-1:123456789012:plan:8F81F553-3A74-4A3F-B93D-B3360DC80C50 ."
+       },
+       "BackupPlanId": {
+        "type": "string",
+        "doc": "Uniquely identifies a backup plan."
+       },
+       "CreationDate": {
+        "type": "timestamp",
+        "doc": "The date and time a resource backup plan is created, in Unix format and Coordinated Universal Time (UTC). The value of CreationDate is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM."
+       },
+       "DeletionDate": {
+        "type": "timestamp",
+        "doc": "The date and time a backup plan is deleted, in Unix format and Coordinated Universal Time (UTC). The value of DeletionDate is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM."
+       },
+       "VersionId": {
+        "type": "string",
+        "doc": "Unique, randomly generated, Unicode, UTF-8 encoded strings that are at most 1,024 bytes long. Version IDs cannot be edited."
+       },
+       "BackupPlanName": {
+        "type": "string",
+        "doc": "The display name of a saved backup plan."
+       },
+       "CreatorRequestId": {
+        "type": "string",
+        "doc": "A unique string that identifies the request and allows failed requests to be retried without the risk of running the operation twice. This parameter is optional. If used, this parameter must contain 1 to 50 alphanumeric or '-_.' characters."
+       },
+       "LastExecutionDate": {
+        "type": "timestamp",
+        "doc": "The last time this backup plan was run. A date and time, in Unix format and Coordinated Universal Time (UTC). The value of LastExecutionDate is accurate to milliseconds. For example, the value 1516925490.087 represents Friday, January 26, 2018 12:11:30.087 AM."
+       },
+       "AdvancedBackupSettings": {
+        "type": "list",
+        "doc": "Contains a list of BackupOptions for a resource type.",
+        "item": {
+         "type": "structure",
+         "doc": "The backup options for each resource type.",
+         "members": {
+          "ResourceType": {
+           "type": "string",
+           "doc": "Specifies an object containing resource type and backup options. The only supported resource type is Amazon EC2 instances with Windows Volume Shadow Copy Service (VSS). For a CloudFormation example, see the sample CloudFormation template to enable Windows VSS in the Backup User Guide . Valid values: EC2 ."
+          },
+          "BackupOptions": {
+           "type": "map",
+           "doc": "Specifies the backup option for a selected resource. This option is only available for Windows VSS backup jobs. Valid values: Set to \"WindowsVSS\":\"enabled\" to enable the WindowsVSS backup option and create a Windows VSS backup. Set to \"WindowsVSS\":\"disabled\" to create a regular backup. The WindowsVSS option is not enabled by default. If you specify an invalid option, you get an InvalidParameterValueException exception. For more information about Windows VSS backups, see Creating a VSS-Enabled W…",
+           "key": {
+            "type": "string"
+           },
+           "value": {
+            "type": "string"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "backup.list_backup_plans"
+  ],
+  "rules": [
+   "REME-0101900001",
+   "REME-0101900002"
+  ]
+ },
+ "backup.ListTags": {
+  "service": "backup",
+  "operation": "ListTags",
+  "method": "list_tags",
+  "doc": "Returns the tags assigned to the resource, such as a target recovery point, backup plan, or backup vault.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/backup/client/list_tags.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/backup-2018-11-15/ListTags"
+  },
+  "paginated": false,
+  "input_required": [
+   "ResourceArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextToken": {
+     "type": "string",
+     "doc": "The next item following a partial list of returned items. For example, if a request is made to return MaxResults number of items, NextToken allows you to return more items in your list starting at the location pointed to by the next token."
+    },
+    "Tags": {
+     "type": "map",
+     "doc": "Information about the tags.",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "backup.list_backup_plans"
+  ],
+  "rules": [
+   "REME-0101900001",
+   "REME-0101900002"
+  ]
+ }
+}

@@ -1,0 +1,183 @@
+{
+ "ses.GetIdentityMailFromDomainAttributes": {
+  "service": "ses",
+  "operation": "GetIdentityMailFromDomainAttributes",
+  "method": "get_identity_mail_from_domain_attributes",
+  "doc": "Returns the custom MAIL FROM attributes for a list of identities (email addresses : domains). This operation is throttled at one request per second and can only get custom MAIL FROM attributes for up to 100 identities at a time.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses/client/get_identity_mail_from_domain_attributes.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/email-2010-12-01/GetIdentityMailFromDomainAttributes"
+  },
+  "paginated": false,
+  "input_required": [
+   "Identities"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Represents the custom MAIL FROM attributes for a list of identities.",
+   "members": {
+    "MailFromDomainAttributes": {
+     "type": "map",
+     "doc": "A map of identities to custom MAIL FROM attributes.",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "structure",
+      "doc": "Represents the custom MAIL FROM domain attributes of a verified identity (email address or domain).",
+      "members": {
+       "MailFromDomain": {
+        "type": "string",
+        "doc": "The custom MAIL FROM domain that the identity is configured to use.",
+        "required": true
+       },
+       "MailFromDomainStatus": {
+        "type": "string",
+        "doc": "The state that indicates whether Amazon SES has successfully read the MX record required for custom MAIL FROM domain setup. If the state is Success , Amazon SES uses the specified custom MAIL FROM domain when the verified identity sends an email. All other states indicate that Amazon SES takes the action described by BehaviorOnMXFailure .",
+        "enum": [
+         "Pending",
+         "Success",
+         "Failed",
+         "TemporaryFailure"
+        ],
+        "required": true
+       },
+       "BehaviorOnMXFailure": {
+        "type": "string",
+        "doc": "The action that Amazon SES takes if it cannot successfully read the required MX record when you send an email. A value of UseDefaultValue indicates that if Amazon SES cannot read the required MX record, it uses amazonses.com (or a subdomain of that) as the MAIL FROM domain. A value of RejectMessage indicates that if Amazon SES cannot read the required MX record, Amazon SES returns a MailFromDomainNotVerified error and does not send the email. The custom MAIL FROM setup states that result in thi…",
+        "enum": [
+         "UseDefaultValue",
+         "RejectMessage"
+        ],
+        "required": true
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ses.list_identities"
+  ],
+  "rules": [
+   "REME-0102900001",
+   "REME-0102900002"
+  ]
+ },
+ "ses.GetIdentityPolicies": {
+  "service": "ses",
+  "operation": "GetIdentityPolicies",
+  "method": "get_identity_policies",
+  "doc": "Returns the requested sending authorization policies for the given identity (an email address or a domain). The policies are returned as a map of policy names to policy contents. You can retrieve a maximum of 20 policies at a time. This operation is for the identity owner only. If you have not verified the identity, it returns an error. Sending authorization is a feature that enables an identity owner to authorize other senders to use its identities. For information about using sending authorization, see the Amazon SES Developer Guide . You can execute this operation no more than once per second.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses/client/get_identity_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/email-2010-12-01/GetIdentityPolicies"
+  },
+  "paginated": false,
+  "input_required": [
+   "Identity",
+   "PolicyNames"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Represents the requested sending authorization policies.",
+   "members": {
+    "Policies": {
+     "type": "map",
+     "doc": "A map of policy names to policies.",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ses.list_identities"
+  ],
+  "rules": [
+   "REME-0102900001",
+   "REME-0102900002"
+  ]
+ },
+ "ses.ListIdentities": {
+  "service": "ses",
+  "operation": "ListIdentities",
+  "method": "list_identities",
+  "doc": "Returns a list containing all of the identities (email addresses and domains) for your Amazon Web Services account in the current Amazon Web Services Region, regardless of verification status. You can execute this operation no more than once per second. It's recommended that for successive pagination calls of this API, you continue to the use the same parameter/value pairs as used in the original call, e.g., if you used IdentityType=Domain in the the original call and received a NextToken in the response, you should continue providing the IdentityType=Domain parameter for further NextToken calls; however, if you didn't provide the IdentityType parameter in the original call, then continue to not provide it for successive pagination calls. Using this protocol will ensure consistent results.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses/client/list_identities.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/email-2010-12-01/ListIdentities"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "A list of all identities that you have attempted to verify under your Amazon Web Services account, regardless of verification status.",
+   "members": {
+    "Identities": {
+     "type": "list",
+     "doc": "A list of identities.",
+     "item": {
+      "type": "string"
+     },
+     "required": true
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The token used for pagination."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ses.list_identities"
+  ],
+  "rules": [
+   "REME-0102900001",
+   "REME-0102900002"
+  ]
+ },
+ "ses.ListIdentityPolicies": {
+  "service": "ses",
+  "operation": "ListIdentityPolicies",
+  "method": "list_identity_policies",
+  "doc": "Returns a list of sending authorization policies that are attached to the given identity (an email address or a domain). This operation returns only a list. To get the actual policy content, use GetIdentityPolicies . This operation is for the identity owner only. If you have not verified the identity, it returns an error. Sending authorization is a feature that enables an identity owner to authorize other senders to use its identities. For information about using sending authorization, see the Amazon SES Developer Guide . You can execute this operation no more than once per second.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses/client/list_identity_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/email-2010-12-01/ListIdentityPolicies"
+  },
+  "paginated": false,
+  "input_required": [
+   "Identity"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "A list of names of sending authorization policies that apply to an identity.",
+   "members": {
+    "PolicyNames": {
+     "type": "list",
+     "doc": "A list of names of policies that apply to the specified identity.",
+     "item": {
+      "type": "string"
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ses.list_identities"
+  ],
+  "rules": [
+   "REME-0102900001",
+   "REME-0102900002"
+  ]
+ }
+}

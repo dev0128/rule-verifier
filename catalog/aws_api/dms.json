@@ -1,0 +1,310 @@
+{
+ "dms.DescribeReplicationInstances": {
+  "service": "dms",
+  "operation": "DescribeReplicationInstances",
+  "method": "describe_replication_instances",
+  "doc": "Returns information about replication instances for your account in the current region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dms/client/describe_replication_instances.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/dms-2016-01-01/DescribeReplicationInstances"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "Marker": {
+     "type": "string",
+     "doc": "An optional pagination token provided by a previous request. If this parameter is specified, the response includes only records beyond the marker, up to the value specified by MaxRecords ."
+    },
+    "ReplicationInstances": {
+     "type": "list",
+     "doc": "The replication instances described.",
+     "item": {
+      "type": "structure",
+      "doc": "Provides information that defines a replication instance.",
+      "members": {
+       "ReplicationInstanceIdentifier": {
+        "type": "string",
+        "doc": "The replication instance identifier is a required parameter. This parameter is stored as a lowercase string. Constraints: Must contain 1-63 alphanumeric characters or hyphens. First character must be a letter. Cannot end with a hyphen or contain two consecutive hyphens. Example: myrepinstance"
+       },
+       "ReplicationInstanceClass": {
+        "type": "string",
+        "doc": "The compute and memory capacity of the replication instance as defined for the specified replication instance class. It is a required parameter, although a default value is pre-selected in the DMS console. For more information on the settings and capacities for the available replication instance classes, see Selecting the right DMS replication instance for your migration ."
+       },
+       "ReplicationInstanceStatus": {
+        "type": "string",
+        "doc": "The status of the replication instance. The possible return values include: \"available\" \"creating\" \"deleted\" \"deleting\" \"failed\" \"modifying\" \"upgrading\" \"rebooting\" \"resetting-master-credentials\" \"storage-full\" \"incompatible-credentials\" \"incompatible-network\" \"maintenance\""
+       },
+       "AllocatedStorage": {
+        "type": "integer",
+        "doc": "The amount of storage (in gigabytes) that is allocated for the replication instance."
+       },
+       "InstanceCreateTime": {
+        "type": "timestamp",
+        "doc": "The time the replication instance was created."
+       },
+       "VpcSecurityGroups": {
+        "type": "list",
+        "doc": "The VPC security group for the instance.",
+        "item": {
+         "type": "structure",
+         "doc": "Describes the status of a security group associated with the virtual private cloud (VPC) hosting your replication and DB instances.",
+         "members": {
+          "VpcSecurityGroupId": {
+           "type": "string",
+           "doc": "The VPC security group ID."
+          },
+          "Status": {
+           "type": "string",
+           "doc": "The status of the VPC security group."
+          }
+         }
+        }
+       },
+       "AvailabilityZone": {
+        "type": "string",
+        "doc": "The Availability Zone for the instance."
+       },
+       "ReplicationSubnetGroup": {
+        "type": "structure",
+        "doc": "The subnet group for the replication instance.",
+        "members": {
+         "ReplicationSubnetGroupIdentifier": {
+          "type": "string",
+          "doc": "The identifier of the replication instance subnet group."
+         },
+         "ReplicationSubnetGroupDescription": {
+          "type": "string",
+          "doc": "A description for the replication subnet group."
+         },
+         "VpcId": {
+          "type": "string",
+          "doc": "The ID of the VPC."
+         },
+         "SubnetGroupStatus": {
+          "type": "string",
+          "doc": "The status of the subnet group."
+         },
+         "Subnets": {
+          "type": "list",
+          "doc": "The subnets that are in the subnet group.",
+          "item": {
+           "type": "structure",
+           "doc": "In response to a request by the DescribeReplicationSubnetGroups operation, this object identifies a subnet by its given Availability Zone, subnet identifier, and status.",
+           "members": {
+            "SubnetIdentifier": {
+             "type": "string",
+             "doc": "The subnet identifier."
+            },
+            "SubnetAvailabilityZone": {
+             "type": "structure",
+             "doc": "The Availability Zone of the subnet.",
+             "members": {
+              "Name": {
+               "type": "string",
+               "doc": "The name of the Availability Zone."
+              }
+             }
+            },
+            "SubnetStatus": {
+             "type": "string",
+             "doc": "The status of the subnet."
+            }
+           }
+          }
+         },
+         "SupportedNetworkTypes": {
+          "type": "list",
+          "doc": "The IP addressing protocol supported by the subnet group. This is used by a replication instance with values such as IPv4 only or Dual-stack that supports both IPv4 and IPv6 addressing. IPv6 only is not yet supported.",
+          "item": {
+           "type": "string"
+          }
+         }
+        }
+       },
+       "PreferredMaintenanceWindow": {
+        "type": "string",
+        "doc": "The maintenance window times for the replication instance. Any pending upgrades to the replication instance are performed during this time."
+       },
+       "PendingModifiedValues": {
+        "type": "structure",
+        "doc": "The pending modification values.",
+        "members": {
+         "ReplicationInstanceClass": {
+          "type": "string",
+          "doc": "The compute and memory capacity of the replication instance as defined for the specified replication instance class. For more information on the settings and capacities for the available replication instance classes, see Selecting the right DMS replication instance for your migration ."
+         },
+         "AllocatedStorage": {
+          "type": "integer",
+          "doc": "The amount of storage (in gigabytes) that is allocated for the replication instance."
+         },
+         "MultiAZ": {
+          "type": "boolean",
+          "doc": "Specifies whether the replication instance is a Multi-AZ deployment. You can't set the AvailabilityZone parameter if the Multi-AZ parameter is set to true ."
+         },
+         "EngineVersion": {
+          "type": "string",
+          "doc": "The engine version number of the replication instance."
+         },
+         "NetworkType": {
+          "type": "string",
+          "doc": "The type of IP address protocol used by a replication instance, such as IPv4 only or Dual-stack that supports both IPv4 and IPv6 addressing. IPv6 only is not yet supported."
+         }
+        }
+       },
+       "MultiAZ": {
+        "type": "boolean",
+        "doc": "Specifies whether the replication instance is a Multi-AZ deployment. You can't set the AvailabilityZone parameter if the Multi-AZ parameter is set to true ."
+       },
+       "EngineVersion": {
+        "type": "string",
+        "doc": "The engine version number of the replication instance. If an engine version number is not specified when a replication instance is created, the default is the latest engine version available. When modifying a major engine version of an instance, also set AllowMajorVersionUpgrade to true ."
+       },
+       "AutoMinorVersionUpgrade": {
+        "type": "boolean",
+        "doc": "Boolean value indicating if minor version upgrades will be automatically applied to the instance."
+       },
+       "KmsKeyId": {
+        "type": "string",
+        "doc": "An KMS key identifier that is used to encrypt the data on the replication instance. If you don't specify a value for the KmsKeyId parameter, then DMS uses your default encryption key. KMS creates the default encryption key for your Amazon Web Services account. Your Amazon Web Services account has a different default encryption key for each Amazon Web Services Region."
+       },
+       "ReplicationInstanceArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the replication instance."
+       },
+       "ReplicationInstancePublicIpAddress": {
+        "type": "string",
+        "doc": "The public IP address of the replication instance."
+       },
+       "ReplicationInstancePrivateIpAddress": {
+        "type": "string",
+        "doc": "The private IP address of the replication instance."
+       },
+       "ReplicationInstancePublicIpAddresses": {
+        "type": "list",
+        "doc": "One or more public IP addresses for the replication instance.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "ReplicationInstancePrivateIpAddresses": {
+        "type": "list",
+        "doc": "One or more private IP addresses for the replication instance.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "ReplicationInstanceIpv6Addresses": {
+        "type": "list",
+        "doc": "One or more IPv6 addresses for the replication instance.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "PubliclyAccessible": {
+        "type": "boolean",
+        "doc": "Specifies the accessibility options for the replication instance. A value of true represents an instance with a public IP address. A value of false represents an instance with a private IP address. The default value is true ."
+       },
+       "SecondaryAvailabilityZone": {
+        "type": "string",
+        "doc": "The Availability Zone of the standby replication instance in a Multi-AZ deployment."
+       },
+       "FreeUntil": {
+        "type": "timestamp",
+        "doc": "The expiration date of the free replication instance that is part of the Free DMS program."
+       },
+       "DnsNameServers": {
+        "type": "string",
+        "doc": "The DNS name servers supported for the replication instance to access your on-premise source or target database."
+       },
+       "NetworkType": {
+        "type": "string",
+        "doc": "The type of IP address protocol used by a replication instance, such as IPv4 only or Dual-stack that supports both IPv4 and IPv6 addressing. IPv6 only is not yet supported."
+       },
+       "KerberosAuthenticationSettings": {
+        "type": "structure",
+        "doc": "Specifies the settings required for kerberos authentication when replicating an instance.",
+        "members": {
+         "KeyCacheSecretId": {
+          "type": "string",
+          "doc": "Specifies the ID of the secret that stores the key cache file required for kerberos authentication."
+         },
+         "KeyCacheSecretIamArn": {
+          "type": "string",
+          "doc": "Specifies the Amazon Resource Name (ARN) of the IAM role that grants Amazon Web Services DMS access to the secret containing key cache file for the kerberos authentication."
+         },
+         "Krb5FileContents": {
+          "type": "string",
+          "doc": "Specifies the contents of krb5 configuration file required for kerberos authentication."
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "ReplicationInstances[].ReplicationSubnetGroup.IsReadOnly"
+  ],
+  "raw_keys": [
+   "dms.describe_replication_instances"
+  ],
+  "rules": [
+   "REME-0104700001",
+   "REME-0104700002",
+   "REME-0104700003"
+  ]
+ },
+ "dms.ListTagsForResource": {
+  "service": "dms",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "Lists all metadata tags attached to an DMS resource, including replication instance, endpoint, subnet group, and migration task. For more information, see Tag data type description.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dms/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/dms-2016-01-01/ListTagsForResource"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "",
+   "members": {
+    "TagList": {
+     "type": "list",
+     "doc": "A list of tags for the resource.",
+     "item": {
+      "type": "structure",
+      "doc": "A user-defined key-value pair that describes metadata added to an DMS resource and that is used by operations such as the following: AddTagsToResource ListTagsForResource RemoveTagsFromResource",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "A key is the required name of the tag. The string value can be 1-128 Unicode characters in length and can't be prefixed with \"aws:\" or \"dms:\". The string can only contain only the set of Unicode letters, digits, white-space, '_', '.', '/', '=', '+', '-' (Java regular expressions: \"^([\\\\p{L}\\\\p{Z}\\\\p{N}_.:/=+\\\\-]*)$\")."
+       },
+       "Value": {
+        "type": "string",
+        "doc": "A value is the optional value of the tag. The string value can be 1-256 Unicode characters in length and can't be prefixed with \"aws:\" or \"dms:\". The string can only contain only the set of Unicode letters, digits, white-space, '_', '.', '/', '=', '+', '-' (Java regular expressions: \"^([\\\\p{L}\\\\p{Z}\\\\p{N}_.:/=+\\\\-]*)$\")."
+       },
+       "ResourceArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) string that uniquely identifies the resource for which the tag is created."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "dms.describe_replication_instances"
+  ],
+  "rules": [
+   "REME-0104700001",
+   "REME-0104700002",
+   "REME-0104700003"
+  ]
+ }
+}

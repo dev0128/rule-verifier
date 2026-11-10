@@ -1,0 +1,379 @@
+{
+ "logs.DescribeLogGroups": {
+  "service": "logs",
+  "operation": "DescribeLogGroups",
+  "method": "describe_log_groups",
+  "doc": "Lists the specified log groups. You can list all your log groups or filter the results by prefix. The results are ASCII-sorted by log group name. CloudWatch Logs doesn't support IAM policies that control access to the DescribeLogGroups action by using the aws:ResourceTag/ key-name condition key. Other CloudWatch Logs actions do support the use of the aws:ResourceTag/ key-name condition key to control access. For more information about using tags to control access, see Controlling access to Amazon Web Services resources using tags . If you are using CloudWatch cross-account observability, you can use this operation in a monitoring account and view data from the linked source accounts. For more information, see CloudWatch cross-account observability .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs/client/describe_log_groups.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/logs-2014-03-28/DescribeLogGroups"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "logGroups": {
+     "type": "list",
+     "doc": "The log groups. If the retentionInDays value is not included for a log group, then that log group's events do not expire.",
+     "item": {
+      "type": "structure",
+      "doc": "Represents a log group.",
+      "members": {
+       "logGroupName": {
+        "type": "string",
+        "doc": "The name of the log group."
+       },
+       "creationTime": {
+        "type": "long",
+        "doc": "The creation time of the log group, expressed as the number of milliseconds after Jan 1, 1970 00:00:00 UTC."
+       },
+       "retentionInDays": {
+        "type": "integer",
+        "doc": "The number of days to retain the log events in the specified log group. Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, and 3653. To set a log group so that its log events do not expire, use DeleteRetentionPolicy ."
+       },
+       "metricFilterCount": {
+        "type": "integer",
+        "doc": "The number of metric filters."
+       },
+       "arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the log group. This version of the ARN includes a trailing :* after the log group name. Use this version to refer to the ARN in IAM policies when specifying permissions for most API actions. The exception is when specifying permissions for TagResource , UntagResource , and ListTagsForResource . The permissions for those three actions require the ARN version that doesn't include a trailing :* ."
+       },
+       "storedBytes": {
+        "type": "long",
+        "doc": "The number of bytes stored."
+       },
+       "kmsKeyId": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the KMS key to use when encrypting log data."
+       },
+       "dataProtectionStatus": {
+        "type": "string",
+        "doc": "Displays whether this log group has a protection policy, or whether it had one in the past. For more information, see PutDataProtectionPolicy .",
+        "enum": [
+         "ACTIVATED",
+         "DELETED",
+         "ARCHIVED",
+         "DISABLED"
+        ]
+       },
+       "inheritedProperties": {
+        "type": "list",
+        "doc": "Displays all the properties that this log group has inherited from account-level settings.",
+        "item": {
+         "type": "string",
+         "enum": [
+          "ACCOUNT_DATA_PROTECTION"
+         ]
+        }
+       },
+       "logGroupClass": {
+        "type": "string",
+        "doc": "This specifies the log group class for this log group. There are two classes: The Standard log class supports all CloudWatch Logs features. The Infrequent Access log class supports a subset of CloudWatch Logs features and incurs lower costs. For details about the features supported by each class, see Log classes",
+        "enum": [
+         "STANDARD",
+         "INFREQUENT_ACCESS"
+        ]
+       },
+       "logGroupArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the log group. This version of the ARN doesn't include a trailing :* after the log group name. Use this version to refer to the ARN in the following situations: In the logGroupIdentifier input field in many CloudWatch Logs APIs. In the resourceArn field in tagging APIs In IAM policies, when specifying permissions for TagResource , UntagResource , and ListTagsForResource ."
+       }
+      }
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The token for the next set of items to return. The token expires after 24 hours."
+    }
+   }
+  },
+  "added_in_latest": [
+   "logGroups[].bearerTokenAuthenticationEnabled",
+   "logGroups[].deletionProtectionEnabled",
+   "logGroups[].retentionPolicyName"
+  ],
+  "raw_keys": [
+   "cloudwatch.describe_alarms",
+   "cloudwatch.describe_log_groups",
+   "cloudwatch.describe_metric_filters"
+  ],
+  "rules": [
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015",
+   "REME-0106300016",
+   "REME-0106300017"
+  ]
+ },
+ "logs.DescribeMetricFilters": {
+  "service": "logs",
+  "operation": "DescribeMetricFilters",
+  "method": "describe_metric_filters",
+  "doc": "Lists the specified metric filters. You can list all of the metric filters or filter the results by log name, prefix, metric name, or metric namespace. The results are ASCII-sorted by filter name.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs/client/describe_metric_filters.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/logs-2014-03-28/DescribeMetricFilters"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "metricFilters": {
+     "type": "list",
+     "doc": "The metric filters.",
+     "item": {
+      "type": "structure",
+      "doc": "Metric filters express how CloudWatch Logs would extract metric observations from ingested log events and transform them into metric data in a CloudWatch metric.",
+      "members": {
+       "filterName": {
+        "type": "string",
+        "doc": "The name of the metric filter."
+       },
+       "filterPattern": {
+        "type": "string",
+        "doc": "A symbolic description of how CloudWatch Logs should interpret the data in each log event. For example, a log event can contain timestamps, IP addresses, strings, and so on. You use the filter pattern to specify what to look for in the log event message."
+       },
+       "metricTransformations": {
+        "type": "list",
+        "doc": "The metric transformations.",
+        "item": {
+         "type": "structure",
+         "doc": "Indicates how to transform ingested log events to metric data in a CloudWatch metric.",
+         "members": {
+          "metricName": {
+           "type": "string",
+           "doc": "The name of the CloudWatch metric.",
+           "required": true
+          },
+          "metricNamespace": {
+           "type": "string",
+           "doc": "A custom namespace to contain your metric in CloudWatch. Use namespaces to group together metrics that are similar. For more information, see Namespaces .",
+           "required": true
+          },
+          "metricValue": {
+           "type": "string",
+           "doc": "The value to publish to the CloudWatch metric when a filter pattern matches a log event.",
+           "required": true
+          },
+          "defaultValue": {
+           "type": "double",
+           "doc": "(Optional) The value to emit when a filter pattern does not match a log event. This value can be null."
+          },
+          "dimensions": {
+           "type": "map",
+           "doc": "The fields to use as dimensions for the metric. One metric filter can include as many as three dimensions. Metrics extracted from log events are charged as custom metrics. To prevent unexpected high charges, do not specify high-cardinality fields such as IPAddress or requestID as dimensions. Each different value found for a dimension is treated as a separate metric and accrues charges as a separate custom metric. CloudWatch Logs disables a metric filter if it generates 1000 different name/value…",
+           "key": {
+            "type": "string"
+           },
+           "value": {
+            "type": "string"
+           }
+          },
+          "unit": {
+           "type": "string",
+           "doc": "The unit to assign to the metric. If you omit this, the unit is set as None .",
+           "enum": [
+            "Seconds",
+            "Microseconds",
+            "Milliseconds",
+            "Bytes",
+            "Kilobytes",
+            "Megabytes",
+            "Gigabytes",
+            "Terabytes",
+            "Bits",
+            "Kilobits",
+            "Megabits",
+            "Gigabits",
+            "Terabits",
+            "Percent",
+            "Count",
+            "Bytes/Second",
+            "Kilobytes/Second",
+            "Megabytes/Second",
+            "Gigabytes/Second",
+            "Terabytes/Second",
+            "Bits/Second",
+            "Kilobits/Second",
+            "Megabits/Second",
+            "Gigabits/Second",
+            "Terabits/Second",
+            "Count/Second",
+            "None"
+           ]
+          }
+         }
+        }
+       },
+       "creationTime": {
+        "type": "long",
+        "doc": "The creation time of the metric filter, expressed as the number of milliseconds after Jan 1, 1970 00:00:00 UTC ."
+       },
+       "logGroupName": {
+        "type": "string",
+        "doc": "The name of the log group."
+       },
+       "applyOnTransformedLogs": {
+        "type": "boolean",
+        "doc": "This parameter is valid only for log groups that have an active log transformer. For more information about log transformers, see PutTransformer . If this value is true , the metric filter is applied on the transformed version of the log events instead of the original ingested log events."
+       }
+      }
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The token for the next set of items to return. The token expires after 24 hours."
+    }
+   }
+  },
+  "added_in_latest": [
+   "metricFilters[].emitSystemFieldDimensions",
+   "metricFilters[].fieldSelectionCriteria"
+  ],
+  "raw_keys": [
+   "cloudwatch.describe_alarms",
+   "cloudwatch.describe_log_groups",
+   "cloudwatch.describe_metric_filters"
+  ],
+  "rules": [
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015",
+   "REME-0106300016",
+   "REME-0106300017"
+  ]
+ },
+ "logs.ListTagsForResource": {
+  "service": "logs",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "Displays the tags associated with a CloudWatch Logs resource. Currently, log groups and destinations support tagging.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/logs-2014-03-28/ListTagsForResource"
+  },
+  "paginated": false,
+  "input_required": [
+   "resourceArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "tags": {
+     "type": "map",
+     "doc": "The list of tags associated with the requested resource.>",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "cloudwatch.describe_alarms",
+   "cloudwatch.describe_log_groups"
+  ],
+  "rules": [
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015",
+   "REME-0106300016",
+   "REME-0106300017"
+  ]
+ },
+ "logs.ListTagsLogGroup": {
+  "service": "logs",
+  "operation": "ListTagsLogGroup",
+  "method": "list_tags_log_group",
+  "doc": "The ListTagsLogGroup operation is on the path to deprecation. We recommend that you use ListTagsForResource instead. Lists the tags for the specified log group.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs/client/list_tags_log_group.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/logs-2014-03-28/ListTagsLogGroup"
+  },
+  "paginated": false,
+  "input_required": [
+   "logGroupName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "tags": {
+     "type": "map",
+     "doc": "The tags for the log group.",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "cloudwatch.describe_alarms",
+   "cloudwatch.describe_log_groups"
+  ],
+  "rules": [
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015",
+   "REME-0106300016",
+   "REME-0106300017"
+  ]
+ }
+}

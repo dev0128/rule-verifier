@@ -1,0 +1,324 @@
+{
+ "kinesis.DescribeStream": {
+  "service": "kinesis",
+  "operation": "DescribeStream",
+  "method": "describe_stream",
+  "doc": "Describes the specified Kinesis data stream. This API has been revised. It's highly recommended that you use the DescribeStreamSummary API to get a summarized description of the specified Kinesis data stream and the ListShards API to list the shards in a specified data stream and obtain information about each shard. When invoking this API, you must use either the StreamARN or the StreamName parameter, or both. It is recommended that you use the StreamARN input parameter when you invoke this API. The information returned includes the stream name, Amazon Resource Name (ARN), creation time, enhanced metric configuration, and shard map. The shard map is an array of shard objects. For each shard object, there is the hash key and sequence number ranges that the shard spans, and the IDs of any earlier shards that played in a role in creating the shard. Every record ingested in the stream is identified by a sequence number, which is assigned when the record is put into the stream. You can limit the number of shards returned by each call. For more information, see Retrieving Shards from a Stream in the Amazon Kinesis Data Streams Developer Guide . There are no guarantees about the chronolo…",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kinesis/client/describe_stream.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DescribeStream"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Represents the output for DescribeStream .",
+   "members": {
+    "StreamDescription": {
+     "type": "structure",
+     "doc": "The current status of the stream, the stream Amazon Resource Name (ARN), an array of shard objects that comprise the stream, and whether there are more shards available.",
+     "members": {
+      "StreamName": {
+       "type": "string",
+       "doc": "The name of the stream being described.",
+       "required": true
+      },
+      "StreamARN": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) for the stream being described.",
+       "required": true
+      },
+      "StreamStatus": {
+       "type": "string",
+       "doc": "The current status of the stream being described. The stream status is one of the following states: CREATING - The stream is being created. Kinesis Data Streams immediately returns and sets StreamStatus to CREATING . DELETING - The stream is being deleted. The specified stream is in the DELETING state until Kinesis Data Streams completes the deletion. ACTIVE - The stream exists and is ready for read and write operations or deletion. You should perform read and write operations only on an ACTIVE…",
+       "enum": [
+        "CREATING",
+        "DELETING",
+        "ACTIVE",
+        "UPDATING"
+       ],
+       "required": true
+      },
+      "StreamModeDetails": {
+       "type": "structure",
+       "doc": "Specifies the capacity mode to which you want to set your data stream. Currently, in Kinesis Data Streams, you can choose between an on-demand capacity mode and a provisioned capacity mode for your data streams.",
+       "members": {
+        "StreamMode": {
+         "type": "string",
+         "doc": "Specifies the capacity mode to which you want to set your data stream. Currently, in Kinesis Data Streams, you can choose between an on-demand capacity mode and a provisioned capacity mode for your data streams.",
+         "enum": [
+          "PROVISIONED",
+          "ON_DEMAND"
+         ],
+         "required": true
+        }
+       }
+      },
+      "Shards": {
+       "type": "list",
+       "doc": "The shards that comprise the stream.",
+       "item": {
+        "type": "structure",
+        "doc": "A uniquely identified group of data records in a Kinesis data stream.",
+        "members": {
+         "ShardId": {
+          "type": "string",
+          "doc": "The unique identifier of the shard within the stream.",
+          "required": true
+         },
+         "ParentShardId": {
+          "type": "string",
+          "doc": "The shard ID of the shard's parent."
+         },
+         "AdjacentParentShardId": {
+          "type": "string",
+          "doc": "The shard ID of the shard adjacent to the shard's parent."
+         },
+         "HashKeyRange": {
+          "type": "structure",
+          "doc": "The range of possible hash key values for the shard, which is a set of ordered contiguous positive integers.",
+          "members": {
+           "StartingHashKey": {
+            "type": "string",
+            "doc": "The starting hash key of the hash key range.",
+            "required": true
+           },
+           "EndingHashKey": {
+            "type": "string",
+            "doc": "The ending hash key of the hash key range.",
+            "required": true
+           }
+          },
+          "required": true
+         },
+         "SequenceNumberRange": {
+          "type": "structure",
+          "doc": "The range of possible sequence numbers for the shard.",
+          "members": {
+           "StartingSequenceNumber": {
+            "type": "string",
+            "doc": "The starting sequence number for the range.",
+            "required": true
+           },
+           "EndingSequenceNumber": {
+            "type": "string",
+            "doc": "The ending sequence number for the range. Shards that are in the OPEN state have an ending sequence number of null ."
+           }
+          },
+          "required": true
+         }
+        }
+       },
+       "required": true
+      },
+      "HasMoreShards": {
+       "type": "boolean",
+       "doc": "If set to true , more shards in the stream are available to describe.",
+       "required": true
+      },
+      "RetentionPeriodHours": {
+       "type": "integer",
+       "doc": "The current retention period, in hours. Minimum value of 24. Maximum value of 168.",
+       "required": true
+      },
+      "StreamCreationTimestamp": {
+       "type": "timestamp",
+       "doc": "The approximate time that the stream was created.",
+       "required": true
+      },
+      "EnhancedMonitoring": {
+       "type": "list",
+       "doc": "Represents the current enhanced monitoring settings of the stream.",
+       "item": {
+        "type": "structure",
+        "doc": "Represents enhanced metrics types.",
+        "members": {
+         "ShardLevelMetrics": {
+          "type": "list",
+          "doc": "List of shard-level metrics. The following are the valid shard-level metrics. The value \" ALL \" enhances every metric. IncomingBytes IncomingRecords OutgoingBytes OutgoingRecords WriteProvisionedThroughputExceeded ReadProvisionedThroughputExceeded IteratorAgeMilliseconds ALL For more information, see Monitoring the Amazon Kinesis Data Streams Service with Amazon CloudWatch in the Amazon Kinesis Data Streams Developer Guide .",
+          "item": {
+           "type": "string",
+           "enum": [
+            "IncomingBytes",
+            "IncomingRecords",
+            "OutgoingBytes",
+            "OutgoingRecords",
+            "WriteProvisionedThroughputExceeded",
+            "ReadProvisionedThroughputExceeded",
+            "IteratorAgeMilliseconds",
+            "ALL"
+           ]
+          }
+         }
+        }
+       },
+       "required": true
+      },
+      "EncryptionType": {
+       "type": "string",
+       "doc": "The server-side encryption type used on the stream. This parameter can be one of the following values: NONE : Do not encrypt the records in the stream. KMS : Use server-side encryption on the records in the stream using a customer-managed Amazon Web Services KMS key.",
+       "enum": [
+        "NONE",
+        "KMS"
+       ]
+      },
+      "KeyId": {
+       "type": "string",
+       "doc": "The GUID for the customer-managed Amazon Web Services KMS key to use for encryption. This value can be a globally unique identifier, a fully specified ARN to either an alias or a key, or an alias name prefixed by \"alias/\".You can also use a master key owned by Kinesis Data Streams by specifying the alias aws/kinesis . Key ARN example: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012 Alias ARN example: arn:aws:kms:us-east-1:123456789012:alias/MyAliasName Globally uniqu…"
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "kinesis.describe_stream"
+  ],
+  "rules": [
+   "REME-0104500001"
+  ]
+ },
+ "kinesis.ListStreams": {
+  "service": "kinesis",
+  "operation": "ListStreams",
+  "method": "list_streams",
+  "doc": "Lists your Kinesis data streams. The number of streams may be too large to return from a single call to ListStreams . You can limit the number of returned streams using the Limit parameter. If you do not specify a value for the Limit parameter, Kinesis Data Streams uses the default limit, which is currently 100. You can detect if there are more streams available to list by using the HasMoreStreams flag from the returned output. If there are more streams available, you can request more streams by using the name of the last stream returned by the ListStreams request in the ExclusiveStartStreamName parameter in a subsequent request to ListStreams . The group of stream names returned by the subsequent request is then added to the list. You can continue this process until all the stream names have been collected in the list. ListStreams has a limit of five transactions per second per account.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kinesis/client/list_streams.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListStreams"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Represents the output for ListStreams .",
+   "members": {
+    "StreamNames": {
+     "type": "list",
+     "doc": "The names of the streams that are associated with the Amazon Web Services account making the ListStreams request.",
+     "item": {
+      "type": "string"
+     },
+     "required": true
+    },
+    "HasMoreStreams": {
+     "type": "boolean",
+     "doc": "If set to true , there are more streams available to list.",
+     "required": true
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": ""
+    },
+    "StreamSummaries": {
+     "type": "list",
+     "doc": "",
+     "item": {
+      "type": "structure",
+      "doc": "The summary of a stream.",
+      "members": {
+       "StreamName": {
+        "type": "string",
+        "doc": "The name of a stream.",
+        "required": true
+       },
+       "StreamARN": {
+        "type": "string",
+        "doc": "The ARN of the stream.",
+        "required": true
+       },
+       "StreamStatus": {
+        "type": "string",
+        "doc": "The status of the stream.",
+        "enum": [
+         "CREATING",
+         "DELETING",
+         "ACTIVE",
+         "UPDATING"
+        ],
+        "required": true
+       },
+       "StreamModeDetails": {
+        "type": "structure",
+        "doc": "Specifies the capacity mode to which you want to set your data stream. Currently, in Kinesis Data Streams, you can choose between an on-demand capacity mode and a provisioned capacity mode for your data streams.",
+        "members": {
+         "StreamMode": {
+          "type": "string",
+          "doc": "Specifies the capacity mode to which you want to set your data stream. Currently, in Kinesis Data Streams, you can choose between an on-demand capacity mode and a provisioned capacity mode for your data streams.",
+          "enum": [
+           "PROVISIONED",
+           "ON_DEMAND"
+          ],
+          "required": true
+         }
+        }
+       },
+       "StreamCreationTimestamp": {
+        "type": "timestamp",
+        "doc": "The timestamp at which the stream was created."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "kinesis.describe_stream"
+  ],
+  "rules": [
+   "REME-0104500001"
+  ]
+ },
+ "kinesis.ListTagsForStream": {
+  "service": "kinesis",
+  "operation": "ListTagsForStream",
+  "method": "list_tags_for_stream",
+  "doc": "Lists the tags for the specified Kinesis data stream. This operation has a limit of five transactions per second per account. When invoking this API, you must use either the StreamARN or the StreamName parameter, or both. It is recommended that you use the StreamARN input parameter when you invoke this API.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kinesis/client/list_tags_for_stream.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListTagsForStream"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Represents the output for ListTagsForStream .",
+   "members": {
+    "Tags": {
+     "type": "list",
+     "doc": "A list of tags associated with StreamName , starting with the first tag after ExclusiveStartTagKey and up to the specified Limit .",
+     "item": {
+      "type": "structure",
+      "doc": "Metadata assigned to the stream, consisting of a key-value pair.",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "A unique identifier for the tag. Maximum length: 128 characters. Valid characters: Unicode letters, digits, white space, _ . / = + - % @",
+        "required": true
+       },
+       "Value": {
+        "type": "string",
+        "doc": "An optional string, typically used to describe or define the tag. Maximum length: 256 characters. Valid characters: Unicode letters, digits, white space, _ . / = + - % @"
+       }
+      }
+     },
+     "required": true
+    },
+    "HasMoreTags": {
+     "type": "boolean",
+     "doc": "If set to true , more tags are available. To request additional tags, set ExclusiveStartTagKey to the key of the last tag returned.",
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "kinesis.describe_stream"
+  ],
+  "rules": [
+   "REME-0104500001"
+  ]
+ }
+}

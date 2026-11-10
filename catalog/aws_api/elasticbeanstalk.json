@@ -1,0 +1,384 @@
+{
+ "elasticbeanstalk.DescribeConfigurationSettings": {
+  "service": "elasticbeanstalk",
+  "operation": "DescribeConfigurationSettings",
+  "method": "describe_configuration_settings",
+  "doc": "Returns a description of the settings for the specified configuration set, that is, either a configuration template or the configuration set associated with a running environment. When describing the settings for the configuration set associated with a running environment, it is possible to receive two sets of setting descriptions. One is the deployed configuration set, and the other is a draft configuration of an environment that is either in the process of deployment or that failed to deploy. Related Topics DeleteEnvironmentConfiguration",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elasticbeanstalk/client/describe_configuration_settings.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeConfigurationSettings"
+  },
+  "paginated": false,
+  "input_required": [
+   "ApplicationName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "The results from a request to change the configuration settings of an environment.",
+   "members": {
+    "ConfigurationSettings": {
+     "type": "list",
+     "doc": "A list of ConfigurationSettingsDescription .",
+     "item": {
+      "type": "structure",
+      "doc": "Describes the settings for a configuration set.",
+      "members": {
+       "SolutionStackName": {
+        "type": "string",
+        "doc": "The name of the solution stack this configuration set uses."
+       },
+       "PlatformArn": {
+        "type": "string",
+        "doc": "The ARN of the platform version."
+       },
+       "ApplicationName": {
+        "type": "string",
+        "doc": "The name of the application associated with this configuration set."
+       },
+       "TemplateName": {
+        "type": "string",
+        "doc": "If not null , the name of the configuration template for this configuration set."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "Describes this configuration set."
+       },
+       "EnvironmentName": {
+        "type": "string",
+        "doc": "If not null , the name of the environment for this configuration set."
+       },
+       "DeploymentStatus": {
+        "type": "string",
+        "doc": "If this configuration set is associated with an environment, the DeploymentStatus parameter indicates the deployment status of this configuration set: null : This configuration is not associated with a running environment. pending : This is a draft configuration that is not deployed to the associated environment but is in the process of deploying. deployed : This is the configuration that is currently deployed to the associated running environment. failed : This is a draft configuration that fa…",
+        "enum": [
+         "deployed",
+         "pending",
+         "failed"
+        ]
+       },
+       "DateCreated": {
+        "type": "timestamp",
+        "doc": "The date (in UTC time) when this configuration set was created."
+       },
+       "DateUpdated": {
+        "type": "timestamp",
+        "doc": "The date (in UTC time) when this configuration set was last modified."
+       },
+       "OptionSettings": {
+        "type": "list",
+        "doc": "A list of the configuration options and their values in this configuration set.",
+        "item": {
+         "type": "structure",
+         "doc": "A specification identifying an individual configuration option along with its current value. For a list of possible namespaces and option values, see Option Values in the AWS Elastic Beanstalk Developer Guide .",
+         "members": {
+          "ResourceName": {
+           "type": "string",
+           "doc": "A unique resource name for the option setting. Use it for a time–based scaling configuration option."
+          },
+          "Namespace": {
+           "type": "string",
+           "doc": "A unique namespace that identifies the option's associated AWS resource."
+          },
+          "OptionName": {
+           "type": "string",
+           "doc": "The name of the configuration option."
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The current value for the configuration option."
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "elasticbeanstalk.describe_environments"
+  ],
+  "rules": [
+   "REME-0101300001",
+   "REME-0101300002",
+   "REME-0101300003",
+   "REME-0101300004",
+   "REME-0101300005",
+   "REME-0101300006",
+   "REME-0101300007"
+  ]
+ },
+ "elasticbeanstalk.DescribeEnvironments": {
+  "service": "elasticbeanstalk",
+  "operation": "DescribeEnvironments",
+  "method": "describe_environments",
+  "doc": "Returns descriptions for existing environments.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elasticbeanstalk/client/describe_environments.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/DescribeEnvironments"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Result message containing a list of environment descriptions.",
+   "members": {
+    "Environments": {
+     "type": "list",
+     "doc": "Returns an EnvironmentDescription list.",
+     "item": {
+      "type": "structure",
+      "doc": "Describes the properties of an environment.",
+      "members": {
+       "EnvironmentName": {
+        "type": "string",
+        "doc": "The name of this environment."
+       },
+       "EnvironmentId": {
+        "type": "string",
+        "doc": "The ID of this environment."
+       },
+       "ApplicationName": {
+        "type": "string",
+        "doc": "The name of the application associated with this environment."
+       },
+       "VersionLabel": {
+        "type": "string",
+        "doc": "The application version deployed in this environment."
+       },
+       "SolutionStackName": {
+        "type": "string",
+        "doc": "The name of the SolutionStack deployed with this environment."
+       },
+       "PlatformArn": {
+        "type": "string",
+        "doc": "The ARN of the platform version."
+       },
+       "TemplateName": {
+        "type": "string",
+        "doc": "The name of the configuration template used to originally launch this environment."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "Describes this environment."
+       },
+       "EndpointURL": {
+        "type": "string",
+        "doc": "For load-balanced, autoscaling environments, the URL to the LoadBalancer. For single-instance environments, the IP address of the instance."
+       },
+       "CNAME": {
+        "type": "string",
+        "doc": "The URL to the CNAME for this environment."
+       },
+       "DateCreated": {
+        "type": "timestamp",
+        "doc": "The creation date for this environment."
+       },
+       "DateUpdated": {
+        "type": "timestamp",
+        "doc": "The last modified date for this environment."
+       },
+       "Status": {
+        "type": "string",
+        "doc": "The current operational status of the environment: Launching : Environment is in the process of initial deployment. Updating : Environment is in the process of updating its configuration settings or application version. Ready : Environment is available to have an action performed on it, such as update or terminate. Terminating : Environment is in the shut-down process. Terminated : Environment is not running.",
+        "enum": [
+         "Aborting",
+         "Launching",
+         "Updating",
+         "LinkingFrom",
+         "LinkingTo",
+         "Ready",
+         "Terminating",
+         "Terminated"
+        ]
+       },
+       "AbortableOperationInProgress": {
+        "type": "boolean",
+        "doc": "Indicates if there is an in-progress environment configuration update or application version deployment that you can cancel. true: There is an update in progress. false: There are no updates currently in progress."
+       },
+       "Health": {
+        "type": "string",
+        "doc": "Describes the health status of the environment. AWS Elastic Beanstalk indicates the failure levels for a running environment: Red : Indicates the environment is not responsive. Occurs when three or more consecutive failures occur for an environment. Yellow : Indicates that something is wrong. Occurs when two consecutive failures occur for an environment. Green : Indicates the environment is healthy and fully functional. Grey : Default health for a new environment. The environment is not fully l…",
+        "enum": [
+         "Green",
+         "Yellow",
+         "Red",
+         "Grey"
+        ]
+       },
+       "HealthStatus": {
+        "type": "string",
+        "doc": "Returns the health status of the application running in your environment. For more information, see Health Colors and Statuses .",
+        "enum": [
+         "NoData",
+         "Unknown",
+         "Pending",
+         "Ok",
+         "Info",
+         "Warning",
+         "Degraded",
+         "Severe",
+         "Suspended"
+        ]
+       },
+       "Resources": {
+        "type": "structure",
+        "doc": "The description of the AWS resources used by this environment.",
+        "members": {
+         "LoadBalancer": {
+          "type": "structure",
+          "doc": "Describes the LoadBalancer.",
+          "members": {
+           "LoadBalancerName": {
+            "type": "string",
+            "doc": "The name of the LoadBalancer."
+           },
+           "Domain": {
+            "type": "string",
+            "doc": "The domain name of the LoadBalancer."
+           },
+           "Listeners": {
+            "type": "list",
+            "doc": "A list of Listeners used by the LoadBalancer.",
+            "item": {
+             "type": "structure",
+             "doc": "Describes the properties of a Listener for the LoadBalancer.",
+             "members": {
+              "Protocol": {
+               "type": "string",
+               "doc": "The protocol that is used by the Listener."
+              },
+              "Port": {
+               "type": "integer",
+               "doc": "The port that is used by the Listener."
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "Tier": {
+        "type": "structure",
+        "doc": "Describes the current tier of this environment.",
+        "members": {
+         "Name": {
+          "type": "string",
+          "doc": "The name of this environment tier. Valid values: For Web server tier – WebServer For Worker tier – Worker"
+         },
+         "Type": {
+          "type": "string",
+          "doc": "The type of this environment tier. Valid values: For Web server tier – Standard For Worker tier – SQS/HTTP"
+         },
+         "Version": {
+          "type": "string",
+          "doc": "The version of this environment tier. When you don't set a value to it, Elastic Beanstalk uses the latest compatible worker tier version. This member is deprecated. Any specific version that you set may become out of date. We recommend leaving it unspecified."
+         }
+        }
+       },
+       "EnvironmentLinks": {
+        "type": "list",
+        "doc": "A list of links to other environments in the same group.",
+        "item": {
+         "type": "structure",
+         "doc": "A link to another environment, defined in the environment's manifest. Links provide connection information in system properties that can be used to connect to another environment in the same group. See Environment Manifest (env.yaml) for details.",
+         "members": {
+          "LinkName": {
+           "type": "string",
+           "doc": "The name of the link."
+          },
+          "EnvironmentName": {
+           "type": "string",
+           "doc": "The name of the linked environment (the dependency)."
+          }
+         }
+        }
+       },
+       "EnvironmentArn": {
+        "type": "string",
+        "doc": "The environment's Amazon Resource Name (ARN), which can be used in other API requests that require an ARN."
+       },
+       "OperationsRole": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the environment's operations role. For more information, see Operations roles in the AWS Elastic Beanstalk Developer Guide ."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "In a paginated request, the token that you can pass in a subsequent request to get the next response page."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "elasticbeanstalk.describe_environments"
+  ],
+  "rules": [
+   "REME-0101300001",
+   "REME-0101300002",
+   "REME-0101300003",
+   "REME-0101300004",
+   "REME-0101300005",
+   "REME-0101300006",
+   "REME-0101300007"
+  ]
+ },
+ "elasticbeanstalk.ListTagsForResource": {
+  "service": "elasticbeanstalk",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "Return the tags applied to an AWS Elastic Beanstalk resource. The response contains a list of tag key-value pairs. Elastic Beanstalk supports tagging of all of its resources. For details about resource tagging, see Tagging Application Resources .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/elasticbeanstalk/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/elasticbeanstalk-2010-12-01/ListTagsForResource"
+  },
+  "paginated": false,
+  "input_required": [
+   "ResourceArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "ResourceArn": {
+     "type": "string",
+     "doc": "The Amazon Resource Name (ARN) of the resource for which a tag list was requested."
+    },
+    "ResourceTags": {
+     "type": "list",
+     "doc": "A list of tag key-value pairs.",
+     "item": {
+      "type": "structure",
+      "doc": "Describes a tag applied to a resource in an environment.",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "The key of the tag."
+       },
+       "Value": {
+        "type": "string",
+        "doc": "The value of the tag."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "elasticbeanstalk.describe_environments"
+  ],
+  "rules": [
+   "REME-0101300001",
+   "REME-0101300002",
+   "REME-0101300003",
+   "REME-0101300004",
+   "REME-0101300005",
+   "REME-0101300006",
+   "REME-0101300007"
+  ]
+ }
+}

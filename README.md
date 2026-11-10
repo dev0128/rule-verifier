@@ -10,14 +10,16 @@
 
 ```
 ./dev.sh setup     # 최초 1회 — uv sync + npm install
-./dev.sh serve     # → http://127.0.0.1:8600   (FE 빌드 후 백엔드가 같이 서빙)
+./dev.sh serve     # → http://127.0.0.1:8600   (FE 빌드 후 백엔드가 같이 서빙. 포트를 쥔 이전 서버는 먼저 종료)
 ./dev.sh dev       # 개발 — 백엔드 8600(--reload) + Vite 5180
 ./dev.sh cases     # 재현 케이스 전체 × 엔진 변형 전부
 ./dev.sh test
+cd backend && uv run rv apiref   # 엔진이 부르는 AWS API 참고 자료 → catalog/aws_api/ (엔진 ref 를 바꾸면 다시)
 ```
 
 필요한 것: Python 3.12 + [uv](https://docs.astral.sh/uv/), Node 18+, 옆 폴더의 `k8s-engine` git 레포(`RV_ENGINE_REPO` 로 바꿀 수 있다),
 S3 를 쓰려면 `~/.aws/credentials` 의 `dev-dclo` / `ops-dclo` 프로파일(`RV_AWS_PROFILES`).
+고객사 · 계정 · 진단 · 룰 목록(DB 스냅샷)을 받으려면 `python-tenant-helper/.env` 의 `*_DEV` / `*_OPS` 접속 정보와 bastion SSH 키(`RV_DB_ENV_FILE` 로 다른 파일 지정).
 
 ## 구성
 
@@ -28,12 +30,16 @@ backend/                  FastAPI + 엔진 워커 (uv, Python 3.12 — 엔진과
   app/cases.py            재현 케이스 실행 · 기대값 대조
   app/diagnosis.py        실데이터 실행 · 변형 간 비교 · 운영 실제 결과(Analyze/)와 대조
   app/s3source.py         S3 진단 폴더 탐색 · 받기
+  app/dbconn.py           dev / 운영 DB 읽기 전용 접속 — bastion 터널을 그때만 열고 닫는다
+  app/apiref.py           엔진 수집기 · 룰 AST 분석 + botocore 공식 API 모델 → catalog/aws_api/ (화면 "AWS API 참고")
+  app/dbcatalog.py        DB 스냅샷(data/db/<env>.json) — 고객사 · 버킷 · AWS 계정 · 그룹/거버넌스 · 진단 · 마스터 룰
   variants.json           엔진 변형 정의 (baseline = 운영 태그, improved = 운영 + 오버레이)
-  overlays/improved/      개선안 — 고친 룰 함수(REME_…) · 수집 보정(preprocess_raw)
+  overlays/               빠른 시험용 오버레이(고친 룰 함수 · 수집 보정) — 엔진 수정은 k8s-engine 브랜치에서 (overlays/README.md)
   cases/                  재현 케이스 214개 (형식: cases/README.md)
 catalog/
   findings.json           결함 카탈로그 214건 (F001~F150: 0107 전수 점검, X001~: 0107 후속 · 0106 · 고객 데이터 대조)
   rule_meta.json          룰 코드 · 항목명 · 등급
+  aws_api/                엔진이 부르는 AWS API 356개의 응답 구조 · enum · 공식 설명 · 문서 링크, 룰 ↔ raw 키 ↔ API 연결 (`rv apiref` 생성물)
 frontend/                 Vite + React + TypeScript
 data/                     (.gitignore) 받은 진단 · 실행 결과 · 엔진 소스 캐시 — 고객 환경 데이터라 커밋하지 않는다
 ```
@@ -50,24 +56,29 @@ data/                     (.gitignore) 받은 진단 · 실행 결과 · 엔진 
 
 다른 점: 외부 네트워크를 막는다(ECS-011 GitHub API, EKS-008 AWS 문서 → "외부망 차단" 경로). 커스텀 룰(RQL)은 Couchbase 가 필요해 돌리지 않는다(rql-helper 담당).
 
-## 개선안 만들기
+## 개선안 만들기 — 엔진 브랜치에서
 
-`backend/overlays/improved/*.py` 에
+엔진 수정은 **k8s-engine 브랜치 `fix/aws-master-rules`**(dev 에서 분기)에서, 별도 worktree `~/dclo/k8s-engine-fix` 로 한다
+(`~/dclo/k8s-engine` 의 dev 작업 트리는 그대로 둔다).
 
-- 같은 이름의 `REME_…` 함수를 두면 원 함수를 덮어쓴다(원 모듈 이름공간을 `from AWS.Analyze.Service.<svc> import *` 로 가져다 쓴다).
-- `preprocess_raw(raw)` 를 두면 룰 실행 전에 raw 를 고친다 — **정보가 raw 에 남아 있는 수집 결함**만 이걸로 흉내 낼 수 있다(예: RDS `DBClusters={}`).
-  정보 자체가 사라진 수집 결함(예: SQS Policy 를 `{}` 로 덮어씀)은 케이스에서 `collection` 시나리오로 따로 표시되고, 재수집 전에는 개선이 안 보인다.
-- `FIXES = {"REME_…": "설명"}` 은 화면 표시용.
+```bash
+git -C ~/dclo/k8s-engine worktree add -b fix/aws-master-rules ~/dclo/k8s-engine-fix dev   # 처음 한 번
+# ~/dclo/k8s-engine-fix/src/AWS/... 를 고친다
+./dev.sh cases          # 변형 improved = WORKTREE:k8s-engine-fix — 미커밋 수정까지 바로 돈다
+```
 
-엔진에 반영되면 `variants.json` 의 `engine_ref` 를 그 커밋(또는 브랜치)으로 바꾸고 오버레이에서 그 함수를 뺀다.
-엔진 작업 브랜치를 바로 비교하려면 변형을 하나 더 추가한다: `{"id": "fix-branch", "label": "수정 브랜치", "engine_ref": "fix/rule-xxx"}`.
+- `variants.json` 의 `engine_ref` 는 git ref(태그 · 브랜치 · 커밋 — 커밋된 것만) 또는 `WORKTREE:<경로>`(worktree 를 미커밋까지).
+  다른 브랜치를 나란히 보려면 변형을 하나 더: `{"id": "fix2", "label": "…", "engine_ref": "fix/rule-xxx"}`.
+- 이미 수집된 raw(고객 데이터 · 케이스)로 결과를 보므로 **수집 결함은 룰 쪽에서도 견디게** 고친다(예: RDS 단독 인스턴스 — 수집기는 `DBClusters={}` 를 안 넣게, 룰은 빈 값도 단독으로).
+- 엔진을 고치기 전에 생각만 빨리 확인하려면 오버레이(`backend/overlays/README.md`).
 
 ## 재현 케이스 상태
 
 | 상태 | 뜻 |
 |---|---|
-| 결함 재현 | 결함 입력(bug) 시나리오가 올바른 결과와 다르게 나온다 |
-| 수집 결함 | 룰은 맞게 판정하지만 수집 단계에서 정보가 사라져 실제 결과는 틀린다 — 수집 수정 + 재수집 필요 |
-| 정상 / 개선됨 | 모든 시나리오가 기대대로 (운영에서 재현되던 것이 이 변형에서 기대대로면 "개선됨") |
-| 케이스 점검 | 정상 입력(control)이 기대와 다르다 — 케이스가 틀렸다 |
-| 재현 안 됨 | 케이스 작성 중 결함이 재현되지 않았다(메모에 근거) |
+| 결함 있음 | 결함이 드러나는 입력(bug 시나리오)을 이 엔진으로 돌리면 올바른 결과와 다르게 나온다 — 아직 안 고쳐짐 |
+| 개선됨 | 현재 운영 엔진은 틀리던 입력을 이 엔진은 올바르게 판정한다 |
+| 결함 없음 | 케이스의 모든 입력이 올바른 결과대로 나온다 |
+| 수집 문제 | 룰은 맞게 판정하지만 수집 단계에서 정보가 빠져 실제 결과는 틀린다 — 수집기 수정 + 재수집 필요 |
+| 케이스 오류 | 정상 입력(control)부터 올바른 결과와 다르다 — 결함이 아니라 케이스가 틀렸다 |
+| 결함 확인 안 됨 | 케이스 작성 중 결함이 실제로 나타나지 않았다(메모에 근거) |

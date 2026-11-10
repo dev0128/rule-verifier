@@ -1,0 +1,67 @@
+{
+ "s3control.GetPublicAccessBlock": {
+  "service": "s3control",
+  "operation": "GetPublicAccessBlock",
+  "method": "get_public_access_block",
+  "doc": "This operation is not supported by directory buckets. Retrieves the PublicAccessBlock configuration for an Amazon Web Services account. For more information, see Using Amazon S3 block public access . Related actions include: DeletePublicAccessBlock PutPublicAccessBlock",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3control/client/get_public_access_block.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetPublicAccessBlock"
+  },
+  "paginated": false,
+  "input_required": [
+   "AccountId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "PublicAccessBlockConfiguration": {
+     "type": "structure",
+     "doc": "The PublicAccessBlock configuration currently in effect for this Amazon Web Services account.",
+     "members": {
+      "BlockPublicAcls": {
+       "type": "boolean",
+       "doc": "Specifies whether Amazon S3 should block public access control lists (ACLs) for buckets in this account. Setting this element to TRUE causes the following behavior: PutBucketAcl and PutObjectAcl calls fail if the specified ACL is public. PUT Object calls fail if the request includes a public ACL. PUT Bucket calls fail if the request includes a public ACL. Enabling this setting doesn't affect existing policies or ACLs. This property is not supported for Amazon S3 on Outposts."
+      },
+      "IgnorePublicAcls": {
+       "type": "boolean",
+       "doc": "Specifies whether Amazon S3 should ignore public ACLs for buckets in this account. Setting this element to TRUE causes Amazon S3 to ignore all public ACLs on buckets in this account and any objects that they contain. Enabling this setting doesn't affect the persistence of any existing ACLs and doesn't prevent new public ACLs from being set. This property is not supported for Amazon S3 on Outposts."
+      },
+      "BlockPublicPolicy": {
+       "type": "boolean",
+       "doc": "Specifies whether Amazon S3 should block public bucket policies for buckets in this account. Setting this element to TRUE causes Amazon S3 to reject calls to PUT Bucket policy if the specified bucket policy allows public access. Enabling this setting doesn't affect existing bucket policies. This property is not supported for Amazon S3 on Outposts."
+      },
+      "RestrictPublicBuckets": {
+       "type": "boolean",
+       "doc": "Specifies whether Amazon S3 should restrict public bucket policies for buckets in this account. Setting this element to TRUE restricts access to buckets with public policies to only Amazon Web Services service principals and authorized users within this account. Enabling this setting doesn't affect previously stored bucket policies, except that public and cross-account access within any public bucket policy, including non-public delegation to specific accounts, is blocked. This property is not …"
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "s3.list_buckets"
+  ],
+  "rules": [
+   "REME-0100900002",
+   "REME-0100900010",
+   "REME-0100700001",
+   "REME-0100700002",
+   "REME-0100700003",
+   "REME-0100700004",
+   "REME-0100700005",
+   "REME-0100700006",
+   "REME-0100700007",
+   "REME-0100700008",
+   "REME-0100700009",
+   "REME-0100700010",
+   "REME-0100700011",
+   "REME-0100700012",
+   "REME-0100700013",
+   "REME-0100700014",
+   "REME-0100700016",
+   "REME-0100700017"
+  ]
+ }
+}

@@ -1,0 +1,677 @@
+{
+ "athena.GetQueryExecution": {
+  "service": "athena",
+  "operation": "GetQueryExecution",
+  "method": "get_query_execution",
+  "doc": "Returns information about a single execution of a query if you have access to the workgroup in which the query ran. Each time a query executes, information about the query execution is saved with a unique ID.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/athena/client/get_query_execution.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/athena-2017-05-18/GetQueryExecution"
+  },
+  "paginated": false,
+  "input_required": [
+   "QueryExecutionId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "QueryExecution": {
+     "type": "structure",
+     "doc": "Information about the query execution.",
+     "members": {
+      "QueryExecutionId": {
+       "type": "string",
+       "doc": "The unique identifier for each query execution."
+      },
+      "Query": {
+       "type": "string",
+       "doc": "The SQL query statements which the query execution ran."
+      },
+      "StatementType": {
+       "type": "string",
+       "doc": "The type of query statement that was run. DDL indicates DDL query statements. DML indicates DML (Data Manipulation Language) query statements, such as CREATE TABLE AS SELECT . UTILITY indicates query statements other than DDL and DML, such as SHOW CREATE TABLE , or DESCRIBE TABLE .",
+       "enum": [
+        "DDL",
+        "DML",
+        "UTILITY"
+       ]
+      },
+      "ResultConfiguration": {
+       "type": "structure",
+       "doc": "The location in Amazon S3 where query and calculation results are stored and the encryption option, if any, used for query results. These are known as \"client-side settings\". If workgroup settings override client-side settings, then the query uses the location for the query results and the encryption configuration that are specified for the workgroup.",
+       "members": {
+        "OutputLocation": {
+         "type": "string",
+         "doc": "The location in Amazon S3 where your query and calculation results are stored, such as s3://path/to/query/bucket/ . To run the query, you must specify the query results location using one of the ways: either for individual queries using either this setting (client-side), or in the workgroup, using WorkGroupConfiguration . If none of them is set, Athena issues an error that no output location is provided. If workgroup settings override client-side settings, then the query uses the settings speci…"
+        },
+        "EncryptionConfiguration": {
+         "type": "structure",
+         "doc": "If query and calculation results are encrypted in Amazon S3, indicates the encryption option used (for example, SSE_KMS or CSE_KMS ) and key information. This is a client-side setting. If workgroup settings override client-side settings, then the query uses the encryption configuration that is specified for the workgroup, and also uses the location for storing query results specified in the workgroup. See WorkGroupConfiguration$EnforceWorkGroupConfiguration and Workgroup Settings Override Clien…",
+         "members": {
+          "EncryptionOption": {
+           "type": "string",
+           "doc": "Indicates whether Amazon S3 server-side encryption with Amazon S3-managed keys ( SSE_S3 ), server-side encryption with KMS-managed keys ( SSE_KMS ), or client-side encryption with KMS-managed keys ( CSE_KMS ) is used. If a query runs in a workgroup and the workgroup overrides client-side settings, then the workgroup's setting for encryption is used. It specifies whether query results must be encrypted, for all queries that run in this workgroup.",
+           "enum": [
+            "SSE_S3",
+            "SSE_KMS",
+            "CSE_KMS"
+           ],
+           "required": true
+          },
+          "KmsKey": {
+           "type": "string",
+           "doc": "For SSE_KMS and CSE_KMS , this is the KMS key ARN or ID."
+          }
+         }
+        },
+        "ExpectedBucketOwner": {
+         "type": "string",
+         "doc": "The Amazon Web Services account ID that you expect to be the owner of the Amazon S3 bucket specified by ResultConfiguration$OutputLocation . If set, Athena uses the value for ExpectedBucketOwner when it makes Amazon S3 calls to your specified output location. If the ExpectedBucketOwner Amazon Web Services account ID does not match the actual owner of the Amazon S3 bucket, the call fails with a permissions error. This is a client-side setting. If workgroup settings override client-side settings,…"
+        },
+        "AclConfiguration": {
+         "type": "structure",
+         "doc": "Indicates that an Amazon S3 canned ACL should be set to control ownership of stored query results. Currently the only supported canned ACL is BUCKET_OWNER_FULL_CONTROL . This is a client-side setting. If workgroup settings override client-side settings, then the query uses the ACL configuration that is specified for the workgroup, and also uses the location for storing query results specified in the workgroup. For more information, see WorkGroupConfiguration$EnforceWorkGroupConfiguration and Wo…",
+         "members": {
+          "S3AclOption": {
+           "type": "string",
+           "doc": "The Amazon S3 canned ACL that Athena should specify when storing query results, including data files inserted by Athena as the result of statements like CTAS or INSERT INTO. Currently the only supported canned ACL is BUCKET_OWNER_FULL_CONTROL . If a query runs in a workgroup and the workgroup overrides client-side settings, then the Amazon S3 canned ACL specified in the workgroup's settings is used for all queries that run in the workgroup. For more information about Amazon S3 canned ACLs, see …",
+           "enum": [
+            "BUCKET_OWNER_FULL_CONTROL"
+           ],
+           "required": true
+          }
+         }
+        }
+       }
+      },
+      "ResultReuseConfiguration": {
+       "type": "structure",
+       "doc": "Specifies the query result reuse behavior that was used for the query.",
+       "members": {
+        "ResultReuseByAgeConfiguration": {
+         "type": "structure",
+         "doc": "Specifies whether previous query results are reused, and if so, their maximum age.",
+         "members": {
+          "Enabled": {
+           "type": "boolean",
+           "doc": "True if previous query results can be reused when the query is run; otherwise, false. The default is false.",
+           "required": true
+          },
+          "MaxAgeInMinutes": {
+           "type": "integer",
+           "doc": "Specifies, in minutes, the maximum age of a previous query result that Athena should consider for reuse. The default is 60."
+          }
+         }
+        }
+       }
+      },
+      "QueryExecutionContext": {
+       "type": "structure",
+       "doc": "The database in which the query execution occurred.",
+       "members": {
+        "Database": {
+         "type": "string",
+         "doc": "The name of the database used in the query execution. The database must exist in the catalog."
+        },
+        "Catalog": {
+         "type": "string",
+         "doc": "The name of the data catalog used in the query execution."
+        }
+       }
+      },
+      "Status": {
+       "type": "structure",
+       "doc": "The completion date, current state, submission time, and state change reason (if applicable) for the query execution.",
+       "members": {
+        "State": {
+         "type": "string",
+         "doc": "The state of query execution. QUEUED indicates that the query has been submitted to the service, and Athena will execute the query as soon as resources are available. RUNNING indicates that the query is in execution phase. SUCCEEDED indicates that the query completed without errors. FAILED indicates that the query experienced an error and did not complete processing. CANCELLED indicates that a user input interrupted query execution. Athena automatically retries your queries in cases of certain …",
+         "enum": [
+          "QUEUED",
+          "RUNNING",
+          "SUCCEEDED",
+          "FAILED",
+          "CANCELLED"
+         ]
+        },
+        "StateChangeReason": {
+         "type": "string",
+         "doc": "Further detail about the status of the query."
+        },
+        "SubmissionDateTime": {
+         "type": "timestamp",
+         "doc": "The date and time that the query was submitted."
+        },
+        "CompletionDateTime": {
+         "type": "timestamp",
+         "doc": "The date and time that the query completed."
+        },
+        "AthenaError": {
+         "type": "structure",
+         "doc": "Provides information about an Athena query error.",
+         "members": {
+          "ErrorCategory": {
+           "type": "integer",
+           "doc": "An integer value that specifies the category of a query failure error. The following list shows the category for each integer value. 1 - System 2 - User 3 - Other"
+          },
+          "ErrorType": {
+           "type": "integer",
+           "doc": "An integer value that provides specific information about an Athena query error. For the meaning of specific values, see the Error Type Reference in the Amazon Athena User Guide ."
+          },
+          "Retryable": {
+           "type": "boolean",
+           "doc": "True if the query might succeed if resubmitted."
+          },
+          "ErrorMessage": {
+           "type": "string",
+           "doc": "Contains a short description of the error that occurred."
+          }
+         }
+        }
+       }
+      },
+      "Statistics": {
+       "type": "structure",
+       "doc": "Query execution statistics, such as the amount of data scanned, the amount of time that the query took to process, and the type of statement that was run.",
+       "members": {
+        "EngineExecutionTimeInMillis": {
+         "type": "long",
+         "doc": "The number of milliseconds that the query took to execute."
+        },
+        "DataScannedInBytes": {
+         "type": "long",
+         "doc": "The number of bytes in the data that was queried."
+        },
+        "DataManifestLocation": {
+         "type": "string",
+         "doc": "The location and file name of a data manifest file. The manifest file is saved to the Athena query results location in Amazon S3. The manifest file tracks files that the query wrote to Amazon S3. If the query fails, the manifest file also tracks files that the query intended to write. The manifest is useful for identifying orphaned files resulting from a failed query. For more information, see Working with Query Results, Output Files, and Query History in the Amazon Athena User Guide ."
+        },
+        "TotalExecutionTimeInMillis": {
+         "type": "long",
+         "doc": "The number of milliseconds that Athena took to run the query."
+        },
+        "QueryQueueTimeInMillis": {
+         "type": "long",
+         "doc": "The number of milliseconds that the query was in your query queue waiting for resources. Note that if transient errors occur, Athena might automatically add the query back to the queue."
+        },
+        "ServicePreProcessingTimeInMillis": {
+         "type": "long",
+         "doc": "The number of milliseconds that Athena took to preprocess the query before submitting the query to the query engine."
+        },
+        "QueryPlanningTimeInMillis": {
+         "type": "long",
+         "doc": "The number of milliseconds that Athena took to plan the query processing flow. This includes the time spent retrieving table partitions from the data source. Note that because the query engine performs the query planning, query planning time is a subset of engine processing time."
+        },
+        "ServiceProcessingTimeInMillis": {
+         "type": "long",
+         "doc": "The number of milliseconds that Athena took to finalize and publish the query results after the query engine finished running the query."
+        },
+        "ResultReuseInformation": {
+         "type": "structure",
+         "doc": "Contains information about whether previous query results were reused for the query.",
+         "members": {
+          "ReusedPreviousResult": {
+           "type": "boolean",
+           "doc": "True if a previous query result was reused; false if the result was generated from a new run of the query.",
+           "required": true
+          }
+         }
+        }
+       }
+      },
+      "WorkGroup": {
+       "type": "string",
+       "doc": "The name of the workgroup in which the query ran."
+      },
+      "EngineVersion": {
+       "type": "structure",
+       "doc": "The engine version that executed the query.",
+       "members": {
+        "SelectedEngineVersion": {
+         "type": "string",
+         "doc": "The engine version requested by the user. Possible values are determined by the output of ListEngineVersions , including AUTO. The default is AUTO."
+        },
+        "EffectiveEngineVersion": {
+         "type": "string",
+         "doc": "Read only. The engine version on which the query runs. If the user requests a valid engine version other than Auto, the effective engine version is the same as the engine version that the user requested. If the user requests Auto, the effective engine version is chosen by Athena. When a request to update the engine version is made by a CreateWorkGroup or UpdateWorkGroup operation, the EffectiveEngineVersion field is ignored."
+        }
+       }
+      },
+      "ExecutionParameters": {
+       "type": "list",
+       "doc": "A list of values for the parameters in a query. The values are applied sequentially to the parameters in the query in the order in which the parameters occur. The list of parameters is not returned in the response.",
+       "item": {
+        "type": "string"
+       }
+      },
+      "SubstatementType": {
+       "type": "string",
+       "doc": "The kind of query statement that was run."
+      },
+      "QueryResultsS3AccessGrantsConfiguration": {
+       "type": "structure",
+       "doc": "Specifies whether Amazon S3 access grants are enabled for query results.",
+       "members": {
+        "EnableS3AccessGrants": {
+         "type": "boolean",
+         "doc": "Specifies whether Amazon S3 access grants are enabled for query results.",
+         "required": true
+        },
+        "CreateUserLevelPrefix": {
+         "type": "boolean",
+         "doc": "When enabled, appends the user ID as an Amazon S3 path prefix to the query result output location."
+        },
+        "AuthenticationType": {
+         "type": "string",
+         "doc": "The authentication type used for Amazon S3 access grants. Currently, only DIRECTORY_IDENTITY is supported.",
+         "enum": [
+          "DIRECTORY_IDENTITY"
+         ],
+         "required": true
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "QueryExecution.ManagedQueryResultsConfiguration",
+   "QueryExecution.ManagedQueryResultsConfiguration.Enabled",
+   "QueryExecution.ManagedQueryResultsConfiguration.EncryptionConfiguration",
+   "QueryExecution.ManagedQueryResultsConfiguration.EncryptionConfiguration.KmsKey",
+   "QueryExecution.Statistics.DpuCount"
+  ],
+  "raw_keys": [
+   "athena.get_query_execution"
+  ]
+ },
+ "athena.GetWorkGroup": {
+  "service": "athena",
+  "operation": "GetWorkGroup",
+  "method": "get_work_group",
+  "doc": "Returns information about the workgroup with the specified name.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/athena/client/get_work_group.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/athena-2017-05-18/GetWorkGroup"
+  },
+  "paginated": false,
+  "input_required": [
+   "WorkGroup"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "WorkGroup": {
+     "type": "structure",
+     "doc": "Information about the workgroup.",
+     "members": {
+      "Name": {
+       "type": "string",
+       "doc": "The workgroup name.",
+       "required": true
+      },
+      "State": {
+       "type": "string",
+       "doc": "The state of the workgroup: ENABLED or DISABLED.",
+       "enum": [
+        "ENABLED",
+        "DISABLED"
+       ]
+      },
+      "Configuration": {
+       "type": "structure",
+       "doc": "The configuration of the workgroup, which includes the location in Amazon S3 where query and calculation results are stored, the encryption configuration, if any, used for query and calculation results; whether the Amazon CloudWatch Metrics are enabled for the workgroup; whether workgroup settings override client-side settings; and the data usage limits for the amount of data scanned per query or per workgroup. The workgroup settings override is specified in EnforceWorkGroupConfiguration (true/…",
+       "members": {
+        "ResultConfiguration": {
+         "type": "structure",
+         "doc": "The configuration for the workgroup, which includes the location in Amazon S3 where query and calculation results are stored and the encryption option, if any, used for query and calculation results. To run the query, you must specify the query results location using one of the ways: either in the workgroup using this setting, or for individual queries (client-side), using ResultConfiguration$OutputLocation . If none of them is set, Athena issues an error that no output location is provided.",
+         "members": {
+          "OutputLocation": {
+           "type": "string",
+           "doc": "The location in Amazon S3 where your query and calculation results are stored, such as s3://path/to/query/bucket/ . To run the query, you must specify the query results location using one of the ways: either for individual queries using either this setting (client-side), or in the workgroup, using WorkGroupConfiguration . If none of them is set, Athena issues an error that no output location is provided. If workgroup settings override client-side settings, then the query uses the settings speci…"
+          },
+          "EncryptionConfiguration": {
+           "type": "structure",
+           "doc": "If query and calculation results are encrypted in Amazon S3, indicates the encryption option used (for example, SSE_KMS or CSE_KMS ) and key information. This is a client-side setting. If workgroup settings override client-side settings, then the query uses the encryption configuration that is specified for the workgroup, and also uses the location for storing query results specified in the workgroup. See WorkGroupConfiguration$EnforceWorkGroupConfiguration and Workgroup Settings Override Clien…",
+           "members": {
+            "EncryptionOption": {
+             "type": "string",
+             "doc": "Indicates whether Amazon S3 server-side encryption with Amazon S3-managed keys ( SSE_S3 ), server-side encryption with KMS-managed keys ( SSE_KMS ), or client-side encryption with KMS-managed keys ( CSE_KMS ) is used. If a query runs in a workgroup and the workgroup overrides client-side settings, then the workgroup's setting for encryption is used. It specifies whether query results must be encrypted, for all queries that run in this workgroup.",
+             "enum": [
+              "SSE_S3",
+              "SSE_KMS",
+              "CSE_KMS"
+             ],
+             "required": true
+            },
+            "KmsKey": {
+             "type": "string",
+             "doc": "For SSE_KMS and CSE_KMS , this is the KMS key ARN or ID."
+            }
+           }
+          },
+          "ExpectedBucketOwner": {
+           "type": "string",
+           "doc": "The Amazon Web Services account ID that you expect to be the owner of the Amazon S3 bucket specified by ResultConfiguration$OutputLocation . If set, Athena uses the value for ExpectedBucketOwner when it makes Amazon S3 calls to your specified output location. If the ExpectedBucketOwner Amazon Web Services account ID does not match the actual owner of the Amazon S3 bucket, the call fails with a permissions error. This is a client-side setting. If workgroup settings override client-side settings,…"
+          },
+          "AclConfiguration": {
+           "type": "structure",
+           "doc": "Indicates that an Amazon S3 canned ACL should be set to control ownership of stored query results. Currently the only supported canned ACL is BUCKET_OWNER_FULL_CONTROL . This is a client-side setting. If workgroup settings override client-side settings, then the query uses the ACL configuration that is specified for the workgroup, and also uses the location for storing query results specified in the workgroup. For more information, see WorkGroupConfiguration$EnforceWorkGroupConfiguration and Wo…",
+           "members": {
+            "S3AclOption": {
+             "type": "string",
+             "doc": "The Amazon S3 canned ACL that Athena should specify when storing query results, including data files inserted by Athena as the result of statements like CTAS or INSERT INTO. Currently the only supported canned ACL is BUCKET_OWNER_FULL_CONTROL . If a query runs in a workgroup and the workgroup overrides client-side settings, then the Amazon S3 canned ACL specified in the workgroup's settings is used for all queries that run in the workgroup. For more information about Amazon S3 canned ACLs, see …",
+             "enum": [
+              "BUCKET_OWNER_FULL_CONTROL"
+             ],
+             "required": true
+            }
+           }
+          }
+         }
+        },
+        "EnforceWorkGroupConfiguration": {
+         "type": "boolean",
+         "doc": "If set to \"true\", the settings for the workgroup override client-side settings. If set to \"false\", client-side settings are used. For more information, see Workgroup Settings Override Client-Side Settings ."
+        },
+        "PublishCloudWatchMetricsEnabled": {
+         "type": "boolean",
+         "doc": "Indicates that the Amazon CloudWatch metrics are enabled for the workgroup."
+        },
+        "BytesScannedCutoffPerQuery": {
+         "type": "long",
+         "doc": "The upper data usage limit (cutoff) for the amount of bytes a single query in a workgroup is allowed to scan."
+        },
+        "RequesterPaysEnabled": {
+         "type": "boolean",
+         "doc": "If set to true , allows members assigned to a workgroup to reference Amazon S3 Requester Pays buckets in queries. If set to false , workgroup members cannot query data from Requester Pays buckets, and queries that retrieve data from Requester Pays buckets cause an error. The default is false . For more information about Requester Pays buckets, see Requester Pays Buckets in the Amazon Simple Storage Service Developer Guide ."
+        },
+        "EngineVersion": {
+         "type": "structure",
+         "doc": "The engine version that all queries running on the workgroup use. Queries on the AmazonAthenaPreviewFunctionality workgroup run on the preview engine regardless of this setting.",
+         "members": {
+          "SelectedEngineVersion": {
+           "type": "string",
+           "doc": "The engine version requested by the user. Possible values are determined by the output of ListEngineVersions , including AUTO. The default is AUTO."
+          },
+          "EffectiveEngineVersion": {
+           "type": "string",
+           "doc": "Read only. The engine version on which the query runs. If the user requests a valid engine version other than Auto, the effective engine version is the same as the engine version that the user requested. If the user requests Auto, the effective engine version is chosen by Athena. When a request to update the engine version is made by a CreateWorkGroup or UpdateWorkGroup operation, the EffectiveEngineVersion field is ignored."
+          }
+         }
+        },
+        "AdditionalConfiguration": {
+         "type": "string",
+         "doc": "Specifies a user defined JSON string that is passed to the notebook engine."
+        },
+        "ExecutionRole": {
+         "type": "string",
+         "doc": "The ARN of the execution role used to access user resources for Spark sessions and IAM Identity Center enabled workgroups. This property applies only to Spark enabled workgroups and IAM Identity Center enabled workgroups. The property is required for IAM Identity Center enabled workgroups."
+        },
+        "CustomerContentEncryptionConfiguration": {
+         "type": "structure",
+         "doc": "Specifies the KMS key that is used to encrypt the user's data stores in Athena. This setting does not apply to Athena SQL workgroups.",
+         "members": {
+          "KmsKey": {
+           "type": "string",
+           "doc": "The customer managed KMS key that is used to encrypt the user's data stores in Athena.",
+           "required": true
+          }
+         }
+        },
+        "EnableMinimumEncryptionConfiguration": {
+         "type": "boolean",
+         "doc": "Enforces a minimal level of encryption for the workgroup for query and calculation results that are written to Amazon S3. When enabled, workgroup users can set encryption only to the minimum level set by the administrator or higher when they submit queries. The EnforceWorkGroupConfiguration setting takes precedence over the EnableMinimumEncryptionConfiguration flag. This means that if EnforceWorkGroupConfiguration is true, the EnableMinimumEncryptionConfiguration flag is ignored, and the workgr…"
+        },
+        "IdentityCenterConfiguration": {
+         "type": "structure",
+         "doc": "Specifies whether the workgroup is IAM Identity Center supported.",
+         "members": {
+          "EnableIdentityCenter": {
+           "type": "boolean",
+           "doc": "Specifies whether the workgroup is IAM Identity Center supported."
+          },
+          "IdentityCenterInstanceArn": {
+           "type": "string",
+           "doc": "The IAM Identity Center instance ARN that the workgroup associates to."
+          }
+         }
+        },
+        "QueryResultsS3AccessGrantsConfiguration": {
+         "type": "structure",
+         "doc": "Specifies whether Amazon S3 access grants are enabled for query results.",
+         "members": {
+          "EnableS3AccessGrants": {
+           "type": "boolean",
+           "doc": "Specifies whether Amazon S3 access grants are enabled for query results.",
+           "required": true
+          },
+          "CreateUserLevelPrefix": {
+           "type": "boolean",
+           "doc": "When enabled, appends the user ID as an Amazon S3 path prefix to the query result output location."
+          },
+          "AuthenticationType": {
+           "type": "string",
+           "doc": "The authentication type used for Amazon S3 access grants. Currently, only DIRECTORY_IDENTITY is supported.",
+           "enum": [
+            "DIRECTORY_IDENTITY"
+           ],
+           "required": true
+          }
+         }
+        }
+       }
+      },
+      "Description": {
+       "type": "string",
+       "doc": "The workgroup description."
+      },
+      "CreationTime": {
+       "type": "timestamp",
+       "doc": "The date and time the workgroup was created."
+      },
+      "IdentityCenterApplicationArn": {
+       "type": "string",
+       "doc": "The ARN of the IAM Identity Center enabled application associated with the workgroup."
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "WorkGroup.Configuration.EngineConfiguration",
+   "WorkGroup.Configuration.EngineConfiguration.AdditionalConfigs",
+   "WorkGroup.Configuration.EngineConfiguration.Classifications",
+   "WorkGroup.Configuration.EngineConfiguration.Classifications[].Name",
+   "WorkGroup.Configuration.EngineConfiguration.Classifications[].Properties",
+   "WorkGroup.Configuration.EngineConfiguration.CoordinatorDpuSize",
+   "WorkGroup.Configuration.EngineConfiguration.DefaultExecutorDpuSize",
+   "WorkGroup.Configuration.EngineConfiguration.MaxConcurrentDpus",
+   "WorkGroup.Configuration.EngineConfiguration.SparkProperties",
+   "WorkGroup.Configuration.ManagedQueryResultsConfiguration",
+   "WorkGroup.Configuration.ManagedQueryResultsConfiguration.Enabled",
+   "WorkGroup.Configuration.ManagedQueryResultsConfiguration.EncryptionConfiguration",
+   "WorkGroup.Configuration.ManagedQueryResultsConfiguration.EncryptionConfiguration.KmsKey",
+   "WorkGroup.Configuration.MonitoringConfiguration",
+   "WorkGroup.Configuration.MonitoringConfiguration.CloudWatchLoggingConfiguration",
+   "WorkGroup.Configuration.MonitoringConfiguration.CloudWatchLoggingConfiguration.Enabled",
+   "WorkGroup.Configuration.MonitoringConfiguration.CloudWatchLoggingConfiguration.LogGroup",
+   "WorkGroup.Configuration.MonitoringConfiguration.CloudWatchLoggingConfiguration.LogStreamNamePrefix",
+   "WorkGroup.Configuration.MonitoringConfiguration.CloudWatchLoggingConfiguration.LogTypes",
+   "WorkGroup.Configuration.MonitoringConfiguration.ManagedLoggingConfiguration",
+   "WorkGroup.Configuration.MonitoringConfiguration.ManagedLoggingConfiguration.Enabled",
+   "WorkGroup.Configuration.MonitoringConfiguration.ManagedLoggingConfiguration.KmsKey",
+   "WorkGroup.Configuration.MonitoringConfiguration.S3LoggingConfiguration",
+   "WorkGroup.Configuration.MonitoringConfiguration.S3LoggingConfiguration.Enabled",
+   "WorkGroup.Configuration.MonitoringConfiguration.S3LoggingConfiguration.KmsKey",
+   "WorkGroup.Configuration.MonitoringConfiguration.S3LoggingConfiguration.LogLocation",
+   "WorkGroup.Configuration.SystemTableStatuses",
+   "WorkGroup.Configuration.SystemTableStatuses[].Enabled",
+   "WorkGroup.Configuration.SystemTableStatuses[].TableName"
+  ],
+  "raw_keys": [
+   "athena.get_work_group"
+  ],
+  "rules": [
+   "REME-0101700001"
+  ]
+ },
+ "athena.ListQueryExecutions": {
+  "service": "athena",
+  "operation": "ListQueryExecutions",
+  "method": "list_query_executions",
+  "doc": "Provides a list of available query execution IDs for the queries in the specified workgroup. Athena keeps a query history for 45 days. If a workgroup is not specified, returns a list of query execution IDs for the primary workgroup. Requires you to have access to the workgroup in which the queries ran.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/athena/client/list_query_executions.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/athena-2017-05-18/ListQueryExecutions"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "QueryExecutionIds": {
+     "type": "list",
+     "doc": "The unique IDs of each query execution as an array of strings.",
+     "item": {
+      "type": "string"
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "A token to be used by the next request if this request is truncated."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "athena.get_query_execution"
+  ]
+ },
+ "athena.ListTagsForResource": {
+  "service": "athena",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "Lists the tags associated with an Athena resource.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/athena/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/athena-2017-05-18/ListTagsForResource"
+  },
+  "paginated": true,
+  "input_required": [
+   "ResourceARN"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Tags": {
+     "type": "list",
+     "doc": "The list of tags associated with the specified resource.",
+     "item": {
+      "type": "structure",
+      "doc": "A label that you assign to a resource. Athena resources include workgroups, data catalogs, and capacity reservations. Each tag consists of a key and an optional value, both of which you define. For example, you can use tags to categorize Athena resources by purpose, owner, or environment. Use a consistent set of tag keys to make it easier to search and filter the resources in your account. For best practices, see Tagging Best Practices . Tag keys can be from 1 to 128 UTF-8 Unicode characters, a…",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "A tag key. The tag key length is from 1 to 128 Unicode characters in UTF-8. You can use letters and numbers representable in UTF-8, and the following characters: + - = . _ : / @. Tag keys are case-sensitive and must be unique per resource."
+       },
+       "Value": {
+        "type": "string",
+        "doc": "A tag value. The tag value length is from 0 to 256 Unicode characters in UTF-8. You can use letters and numbers representable in UTF-8, and the following characters: + - = . _ : / @. Tag values are case-sensitive."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "A token to be used by the next request if this request is truncated."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "athena.get_work_group"
+  ],
+  "rules": [
+   "REME-0101700001"
+  ]
+ },
+ "athena.ListWorkGroups": {
+  "service": "athena",
+  "operation": "ListWorkGroups",
+  "method": "list_work_groups",
+  "doc": "Lists available workgroups for the account.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/athena/client/list_work_groups.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/athena-2017-05-18/ListWorkGroups"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "WorkGroups": {
+     "type": "list",
+     "doc": "A list of WorkGroupSummary objects that include the names, descriptions, creation times, and states for each workgroup.",
+     "item": {
+      "type": "structure",
+      "doc": "The summary information for the workgroup, which includes its name, state, description, and the date and time it was created.",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "The name of the workgroup."
+       },
+       "State": {
+        "type": "string",
+        "doc": "The state of the workgroup.",
+        "enum": [
+         "ENABLED",
+         "DISABLED"
+        ]
+       },
+       "Description": {
+        "type": "string",
+        "doc": "The workgroup description."
+       },
+       "CreationTime": {
+        "type": "timestamp",
+        "doc": "The workgroup creation date and time."
+       },
+       "EngineVersion": {
+        "type": "structure",
+        "doc": "The engine version setting for all queries on the workgroup. Queries on the AmazonAthenaPreviewFunctionality workgroup run on the preview engine regardless of this setting.",
+        "members": {
+         "SelectedEngineVersion": {
+          "type": "string",
+          "doc": "The engine version requested by the user. Possible values are determined by the output of ListEngineVersions , including AUTO. The default is AUTO."
+         },
+         "EffectiveEngineVersion": {
+          "type": "string",
+          "doc": "Read only. The engine version on which the query runs. If the user requests a valid engine version other than Auto, the effective engine version is the same as the engine version that the user requested. If the user requests Auto, the effective engine version is chosen by Athena. When a request to update the engine version is made by a CreateWorkGroup or UpdateWorkGroup operation, the EffectiveEngineVersion field is ignored."
+         }
+        }
+       },
+       "IdentityCenterApplicationArn": {
+        "type": "string",
+        "doc": "The ARN of the IAM Identity Center enabled application associated with the workgroup."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "A token generated by the Athena service that specifies where to continue pagination if a previous request was truncated. To obtain the next set of pages, pass in the NextToken from the response object of the previous page call."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "athena.get_work_group",
+   "athena.list_work_groups"
+  ],
+  "rules": [
+   "REME-0101700001"
+  ]
+ }
+}

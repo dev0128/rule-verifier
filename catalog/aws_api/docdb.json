@@ -1,0 +1,259 @@
+{
+ "docdb.DescribeDBClusters": {
+  "service": "docdb",
+  "operation": "DescribeDBClusters",
+  "method": "describe_db_clusters",
+  "doc": "Returns information about provisioned Amazon DocumentDB clusters. This API operation supports pagination. For certain management features such as cluster and instance lifecycle management, Amazon DocumentDB leverages operational technology that is shared with Amazon RDS and Amazon Neptune. Use the filterName=engine,Values=docdb filter parameter to return only Amazon DocumentDB clusters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/docdb/client/describe_db_clusters.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/docdb-2014-10-31/DescribeDBClusters"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Represents the output of DescribeDBClusters .",
+   "members": {
+    "Marker": {
+     "type": "string",
+     "doc": "An optional pagination token provided by a previous request. If this parameter is specified, the response includes only records beyond the marker, up to the value specified by MaxRecords ."
+    },
+    "DBClusters": {
+     "type": "list",
+     "doc": "A list of clusters.",
+     "item": {
+      "type": "structure",
+      "doc": "Detailed information about a cluster.",
+      "members": {
+       "AvailabilityZones": {
+        "type": "list",
+        "doc": "Provides the list of Amazon EC2 Availability Zones that instances in the cluster can be created in.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "BackupRetentionPeriod": {
+        "type": "integer",
+        "doc": "Specifies the number of days for which automatic snapshots are retained."
+       },
+       "DBClusterIdentifier": {
+        "type": "string",
+        "doc": "Contains a user-supplied cluster identifier. This identifier is the unique key that identifies a cluster."
+       },
+       "DBClusterParameterGroup": {
+        "type": "string",
+        "doc": "Specifies the name of the cluster parameter group for the cluster."
+       },
+       "DBSubnetGroup": {
+        "type": "string",
+        "doc": "Specifies information on the subnet group that is associated with the cluster, including the name, description, and subnets in the subnet group."
+       },
+       "Status": {
+        "type": "string",
+        "doc": "Specifies the current state of this cluster."
+       },
+       "PercentProgress": {
+        "type": "string",
+        "doc": "Specifies the progress of the operation as a percentage."
+       },
+       "EarliestRestorableTime": {
+        "type": "timestamp",
+        "doc": "The earliest time to which a database can be restored with point-in-time restore."
+       },
+       "Endpoint": {
+        "type": "string",
+        "doc": "Specifies the connection endpoint for the primary instance of the cluster."
+       },
+       "ReaderEndpoint": {
+        "type": "string",
+        "doc": "The reader endpoint for the cluster. The reader endpoint for a cluster load balances connections across the Amazon DocumentDB replicas that are available in a cluster. As clients request new connections to the reader endpoint, Amazon DocumentDB distributes the connection requests among the Amazon DocumentDB replicas in the cluster. This functionality can help balance your read workload across multiple Amazon DocumentDB replicas in your cluster. If a failover occurs, and the Amazon DocumentDB re…"
+       },
+       "MultiAZ": {
+        "type": "boolean",
+        "doc": "Specifies whether the cluster has instances in multiple Availability Zones."
+       },
+       "Engine": {
+        "type": "string",
+        "doc": "Provides the name of the database engine to be used for this cluster."
+       },
+       "EngineVersion": {
+        "type": "string",
+        "doc": "Indicates the database engine version."
+       },
+       "LatestRestorableTime": {
+        "type": "timestamp",
+        "doc": "Specifies the latest time to which a database can be restored with point-in-time restore."
+       },
+       "Port": {
+        "type": "integer",
+        "doc": "Specifies the port that the database engine is listening on."
+       },
+       "MasterUsername": {
+        "type": "string",
+        "doc": "Contains the master user name for the cluster."
+       },
+       "PreferredBackupWindow": {
+        "type": "string",
+        "doc": "Specifies the daily time range during which automated backups are created if automated backups are enabled, as determined by the BackupRetentionPeriod ."
+       },
+       "PreferredMaintenanceWindow": {
+        "type": "string",
+        "doc": "Specifies the weekly time range during which system maintenance can occur, in Universal Coordinated Time (UTC)."
+       },
+       "ReplicationSourceIdentifier": {
+        "type": "string",
+        "doc": "Contains the identifier of the source cluster if this cluster is a secondary cluster."
+       },
+       "ReadReplicaIdentifiers": {
+        "type": "list",
+        "doc": "Contains one or more identifiers of the secondary clusters that are associated with this cluster.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "DBClusterMembers": {
+        "type": "list",
+        "doc": "Provides the list of instances that make up the cluster.",
+        "item": {
+         "type": "structure",
+         "doc": "Contains information about an instance that is part of a cluster.",
+         "members": {
+          "DBInstanceIdentifier": {
+           "type": "string",
+           "doc": "Specifies the instance identifier for this member of the cluster."
+          },
+          "IsClusterWriter": {
+           "type": "boolean",
+           "doc": "A value that is true if the cluster member is the primary instance for the cluster and false otherwise."
+          },
+          "DBClusterParameterGroupStatus": {
+           "type": "string",
+           "doc": "Specifies the status of the cluster parameter group for this member of the DB cluster."
+          },
+          "PromotionTier": {
+           "type": "integer",
+           "doc": "A value that specifies the order in which an Amazon DocumentDB replica is promoted to the primary instance after a failure of the existing primary instance."
+          }
+         }
+        }
+       },
+       "VpcSecurityGroups": {
+        "type": "list",
+        "doc": "Provides a list of virtual private cloud (VPC) security groups that the cluster belongs to.",
+        "item": {
+         "type": "structure",
+         "doc": "Used as a response element for queries on virtual private cloud (VPC) security group membership.",
+         "members": {
+          "VpcSecurityGroupId": {
+           "type": "string",
+           "doc": "The name of the VPC security group."
+          },
+          "Status": {
+           "type": "string",
+           "doc": "The status of the VPC security group."
+          }
+         }
+        }
+       },
+       "HostedZoneId": {
+        "type": "string",
+        "doc": "Specifies the ID that Amazon Route 53 assigns when you create a hosted zone."
+       },
+       "StorageEncrypted": {
+        "type": "boolean",
+        "doc": "Specifies whether the cluster is encrypted."
+       },
+       "KmsKeyId": {
+        "type": "string",
+        "doc": "If StorageEncrypted is true , the KMS key identifier for the encrypted cluster."
+       },
+       "DbClusterResourceId": {
+        "type": "string",
+        "doc": "The Amazon Web Services Region-unique, immutable identifier for the cluster. This identifier is found in CloudTrail log entries whenever the KMS key for the cluster is accessed."
+       },
+       "DBClusterArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) for the cluster."
+       },
+       "AssociatedRoles": {
+        "type": "list",
+        "doc": "Provides a list of the Identity and Access Management (IAM) roles that are associated with the cluster. (IAM) roles that are associated with a cluster grant permission for the cluster to access other Amazon Web Services services on your behalf.",
+        "item": {
+         "type": "structure",
+         "doc": "Describes an Identity and Access Management (IAM) role that is associated with a cluster.",
+         "members": {
+          "RoleArn": {
+           "type": "string",
+           "doc": "The Amazon Resource Name (ARN) of the IAMrole that is associated with the DB cluster."
+          },
+          "Status": {
+           "type": "string",
+           "doc": "Describes the state of association between the IAMrole and the cluster. The Status property returns one of the following values: ACTIVE - The IAMrole ARN is associated with the cluster and can be used to access other Amazon Web Services services on your behalf. PENDING - The IAMrole ARN is being associated with the cluster. INVALID - The IAMrole ARN is associated with the cluster, but the cluster cannot assume the IAMrole to access other Amazon Web Services services on your behalf."
+          }
+         }
+        }
+       },
+       "CloneGroupId": {
+        "type": "string",
+        "doc": "Identifies the clone group to which the DB cluster is associated."
+       },
+       "ClusterCreateTime": {
+        "type": "timestamp",
+        "doc": "Specifies the time when the cluster was created, in Universal Coordinated Time (UTC)."
+       },
+       "EnabledCloudwatchLogsExports": {
+        "type": "list",
+        "doc": "A list of log types that this cluster is configured to export to Amazon CloudWatch Logs.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "DeletionProtection": {
+        "type": "boolean",
+        "doc": "Specifies whether this cluster can be deleted. If DeletionProtection is enabled, the cluster cannot be deleted unless it is modified and DeletionProtection is disabled. DeletionProtection protects clusters from being accidentally deleted."
+       },
+       "StorageType": {
+        "type": "string",
+        "doc": "Storage type associated with your cluster Storage type associated with your cluster For information on storage types for Amazon DocumentDB clusters, see Cluster storage configurations in the Amazon DocumentDB Developer Guide . Valid values for storage type - standard | iopt1 Default value is standard"
+       },
+       "MasterUserSecret": {
+        "type": "structure",
+        "doc": "The secret managed by Amazon DocumentDB in Amazon Web Services Secrets Manager for the master user password.",
+        "members": {
+         "SecretArn": {
+          "type": "string",
+          "doc": "The Amazon Resource Name (ARN) of the secret."
+         },
+         "SecretStatus": {
+          "type": "string",
+          "doc": "The status of the secret. The possible status values include the following: creating - The secret is being created. active - The secret is available for normal use and rotation. rotating - The secret is being rotated. impaired - The secret can be used to access database credentials, but it can't be rotated. A secret might have this status if, for example, permissions are changed so that Amazon DocumentDB can no longer access either the secret or the KMS key for the secret. When a secret has thi…"
+         },
+         "KmsKeyId": {
+          "type": "string",
+          "doc": "The Amazon Web Services KMS key identifier that is used to encrypt the secret."
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "DBClusters[].CopyTagsToSnapshot",
+   "DBClusters[].IOOptimizedNextAllowedModificationTime",
+   "DBClusters[].NetworkType",
+   "DBClusters[].ServerlessV2PlatformVersion",
+   "DBClusters[].ServerlessV2ScalingConfiguration",
+   "DBClusters[].ServerlessV2ScalingConfiguration.MaxCapacity",
+   "DBClusters[].ServerlessV2ScalingConfiguration.MinCapacity"
+  ],
+  "raw_keys": [
+   "docdb.describe_db_clusters"
+  ],
+  "rules": [
+   "REME-0104200001",
+   "REME-0104200002"
+  ]
+ }
+}

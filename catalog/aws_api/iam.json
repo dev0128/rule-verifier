@@ -1,0 +1,3263 @@
+{
+ "iam.GenerateCredentialReport": {
+  "service": "iam",
+  "operation": "GenerateCredentialReport",
+  "method": "generate_credential_report",
+  "doc": "Generates a credential report for the Amazon Web Services account. For more information about the credential report, see Getting credential reports in the IAM User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/generate_credential_report.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GenerateCredentialReport"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GenerateCredentialReport request.",
+   "members": {
+    "State": {
+     "type": "string",
+     "doc": "Information about the state of the credential report.",
+     "enum": [
+      "STARTED",
+      "INPROGRESS",
+      "COMPLETE"
+     ]
+    },
+    "Description": {
+     "type": "string",
+     "doc": "Information about the credential report."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.generate_credential_report",
+   "iam.get_credential_report"
+  ],
+  "rules": [
+   "REME-0100100001",
+   "REME-0100100002",
+   "REME-0100100003",
+   "REME-0100100004",
+   "REME-0100100005",
+   "REME-0100100006",
+   "REME-0100100014",
+   "REME-0100100015",
+   "REME-0100100017"
+  ]
+ },
+ "iam.GenerateServiceLastAccessedDetails": {
+  "service": "iam",
+  "operation": "GenerateServiceLastAccessedDetails",
+  "method": "generate_service_last_accessed_details",
+  "doc": "Generates a report that includes details about when an IAM resource (user, group, role, or policy) was last used in an attempt to access Amazon Web Services services. Recent activity usually appears within four hours. IAM reports activity for at least the last 400 days, or less if your Region began supporting this feature within the last year. For more information, see Regions where data is tracked . For more information about services and actions for which action last accessed information is displayed, see IAM action last accessed information services and actions . The service last accessed data includes all attempts to access an Amazon Web Services API, not just the successful ones. This includes all attempts that were made using the Amazon Web Services Management Console, the Amazon Web Services API through any of the SDKs, or any of the command line tools. An unexpected entry in the service last accessed data does not mean that your account has been compromised, because the request might have been denied. Refer to your CloudTrail logs as the authoritative source for information about all API calls and whether they were successful or denied access. For more information, see Log…",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/generate_service_last_accessed_details.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GenerateServiceLastAccessedDetails"
+  },
+  "paginated": false,
+  "input_required": [
+   "Arn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "JobId": {
+     "type": "string",
+     "doc": "The JobId that you can use in the GetServiceLastAccessedDetails or GetServiceLastAccessedDetailsWithEntities operations. The JobId returned by GenerateServiceLastAccessedDetail must be used by the same role within a session, or by the same user when used to call GetServiceLastAccessedDetail ."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0100100004",
+   "REME-0100100011",
+   "REME-0100100019"
+  ]
+ },
+ "iam.GetAccountPasswordPolicy": {
+  "service": "iam",
+  "operation": "GetAccountPasswordPolicy",
+  "method": "get_account_password_policy",
+  "doc": "Retrieves the password policy for the Amazon Web Services account. This tells you the complexity requirements and mandatory rotation periods for the IAM user passwords in your account. For more information about using a password policy, see Managing an IAM password policy .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_account_password_policy.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccountPasswordPolicy"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GetAccountPasswordPolicy request.",
+   "members": {
+    "PasswordPolicy": {
+     "type": "structure",
+     "doc": "A structure that contains details about the account's password policy.",
+     "members": {
+      "MinimumPasswordLength": {
+       "type": "integer",
+       "doc": "Minimum length to require for IAM user passwords."
+      },
+      "RequireSymbols": {
+       "type": "boolean",
+       "doc": "Specifies whether IAM user passwords must contain at least one of the following symbols: ! @ # $ % ^ & * ( ) _ + - = [ ] { } | '"
+      },
+      "RequireNumbers": {
+       "type": "boolean",
+       "doc": "Specifies whether IAM user passwords must contain at least one numeric character (0 to 9)."
+      },
+      "RequireUppercaseCharacters": {
+       "type": "boolean",
+       "doc": "Specifies whether IAM user passwords must contain at least one uppercase character (A to Z)."
+      },
+      "RequireLowercaseCharacters": {
+       "type": "boolean",
+       "doc": "Specifies whether IAM user passwords must contain at least one lowercase character (a to z)."
+      },
+      "AllowUsersToChangePassword": {
+       "type": "boolean",
+       "doc": "Specifies whether IAM users are allowed to change their own password. Gives IAM users permissions to iam:ChangePassword for only their user and to the iam:GetAccountPasswordPolicy action. This option does not attach a permissions policy to each user, rather the permissions are applied at the account-level for all users by IAM."
+      },
+      "ExpirePasswords": {
+       "type": "boolean",
+       "doc": "Indicates whether passwords in the account expire. Returns true if MaxPasswordAge contains a value greater than 0. Returns false if MaxPasswordAge is 0 or not present."
+      },
+      "MaxPasswordAge": {
+       "type": "integer",
+       "doc": "The number of days that an IAM user password is valid."
+      },
+      "PasswordReusePrevention": {
+       "type": "integer",
+       "doc": "Specifies the number of previous passwords that IAM users are prevented from reusing."
+      },
+      "HardExpiry": {
+       "type": "boolean",
+       "doc": "Specifies whether IAM users are prevented from setting a new password via the Amazon Web Services Management Console after their password has expired. The IAM user cannot access the console until an administrator resets the password. IAM users with iam:ChangePassword permission and active access keys can reset their own expired console password using the CLI or API."
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.get_account_password_policy"
+  ],
+  "rules": [
+   "REME-0100100007",
+   "REME-0100100008",
+   "REME-0100100009"
+  ]
+ },
+ "iam.GetAccountSummary": {
+  "service": "iam",
+  "operation": "GetAccountSummary",
+  "method": "get_account_summary",
+  "doc": "Retrieves information about IAM entity usage and IAM quotas in the Amazon Web Services account. For information about IAM quotas, see IAM and STS quotas in the IAM User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_account_summary.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetAccountSummary"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GetAccountSummary request.",
+   "members": {
+    "SummaryMap": {
+     "type": "map",
+     "doc": "A set of key–value pairs containing information about IAM entity usage and IAM quotas.",
+     "key": {
+      "type": "string",
+      "enum": [
+       "Users",
+       "UsersQuota",
+       "Groups",
+       "GroupsQuota",
+       "ServerCertificates",
+       "ServerCertificatesQuota",
+       "UserPolicySizeQuota",
+       "GroupPolicySizeQuota",
+       "GroupsPerUserQuota",
+       "SigningCertificatesPerUserQuota",
+       "AccessKeysPerUserQuota",
+       "MFADevices",
+       "MFADevicesInUse",
+       "AccountMFAEnabled",
+       "AccountAccessKeysPresent",
+       "AccountPasswordPresent",
+       "AccountSigningCertificatesPresent",
+       "AttachedPoliciesPerGroupQuota",
+       "AttachedPoliciesPerRoleQuota",
+       "AttachedPoliciesPerUserQuota",
+       "Policies",
+       "PoliciesQuota",
+       "PolicySizeQuota",
+       "PolicyVersionsInUse",
+       "PolicyVersionsInUseQuota",
+       "VersionsPerPolicyQuota",
+       "GlobalEndpointTokenVersion"
+      ]
+     },
+     "value": {
+      "type": "integer"
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.get_account_summary"
+  ]
+ },
+ "iam.GetCredentialReport": {
+  "service": "iam",
+  "operation": "GetCredentialReport",
+  "method": "get_credential_report",
+  "doc": "Retrieves a credential report for the Amazon Web Services account. For more information about the credential report, see Getting credential reports in the IAM User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_credential_report.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetCredentialReport"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GetCredentialReport request.",
+   "members": {
+    "Content": {
+     "type": "blob",
+     "doc": "Contains the credential report. The report is Base64-encoded."
+    },
+    "ReportFormat": {
+     "type": "string",
+     "doc": "The format (MIME type) of the credential report.",
+     "enum": [
+      "text/csv"
+     ]
+    },
+    "GeneratedTime": {
+     "type": "timestamp",
+     "doc": "The date and time when the credential report was created, in ISO 8601 date-time format ."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.generate_credential_report",
+   "iam.get_credential_report"
+  ],
+  "rules": [
+   "REME-0100100001",
+   "REME-0100100002",
+   "REME-0100100003",
+   "REME-0100100004",
+   "REME-0100100005",
+   "REME-0100100006",
+   "REME-0100100014",
+   "REME-0100100015",
+   "REME-0100100017"
+  ]
+ },
+ "iam.GetGroup": {
+  "service": "iam",
+  "operation": "GetGroup",
+  "method": "get_group",
+  "doc": "Returns a list of IAM users that are in the specified IAM group. You can paginate the results using the MaxItems and Marker parameters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_group.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetGroup"
+  },
+  "paginated": true,
+  "input_required": [
+   "GroupName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GetGroup request.",
+   "members": {
+    "Group": {
+     "type": "structure",
+     "doc": "A structure that contains details about the group.",
+     "members": {
+      "Path": {
+       "type": "string",
+       "doc": "The path to the group. For more information about paths, see IAM identifiers in the IAM User Guide .",
+       "required": true
+      },
+      "GroupName": {
+       "type": "string",
+       "doc": "The friendly name that identifies the group.",
+       "required": true
+      },
+      "GroupId": {
+       "type": "string",
+       "doc": "The stable and unique string identifying the group. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+       "required": true
+      },
+      "Arn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) specifying the group. For more information about ARNs and how to use them in policies, see IAM identifiers in the IAM User Guide .",
+       "required": true
+      },
+      "CreateDate": {
+       "type": "timestamp",
+       "doc": "The date and time, in ISO 8601 date-time format , when the group was created.",
+       "required": true
+      }
+     },
+     "required": true
+    },
+    "Users": {
+     "type": "list",
+     "doc": "A list of users in the group.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an IAM user entity. This data type is used as a response element in the following operations: CreateUser GetUser ListUsers",
+      "members": {
+       "Path": {
+        "type": "string",
+        "doc": "The path to the user. For more information about paths, see IAM identifiers in the IAM User Guide . The ARN of the policy used to set the permissions boundary for the user.",
+        "required": true
+       },
+       "UserName": {
+        "type": "string",
+        "doc": "The friendly name identifying the user.",
+        "required": true
+       },
+       "UserId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the user. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) that identifies the user. For more information about ARNs and how to use ARNs in policies, see IAM Identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the user was created.",
+        "required": true
+       },
+       "PasswordLastUsed": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the user's password was last used to sign in to an Amazon Web Services website. For a list of Amazon Web Services websites that capture a user's last sign-in time, see the Credential reports topic in the IAM User Guide . If a password is used more than once in a five-minute span, only the first use is returned in this field. If the field is null (no value), then it indicates that they never signed in with a password. This can be because: Th…"
+       },
+       "PermissionsBoundary": {
+        "type": "structure",
+        "doc": "For more information about permissions boundaries, see Permissions boundaries for IAM identities in the IAM User Guide .",
+        "members": {
+         "PermissionsBoundaryType": {
+          "type": "string",
+          "doc": "The permissions boundary usage type that indicates what type of IAM resource is used as the permissions boundary for an entity. This data type can only have a value of Policy .",
+          "enum": [
+           "PermissionsBoundaryPolicy"
+          ]
+         },
+         "PermissionsBoundaryArn": {
+          "type": "string",
+          "doc": "The ARN of the policy used to set the permissions boundary for the user or role."
+         }
+        }
+       },
+       "Tags": {
+        "type": "list",
+        "doc": "A list of tags that are associated with the user. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+        "item": {
+         "type": "structure",
+         "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+         "members": {
+          "Key": {
+           "type": "string",
+           "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+           "required": true
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+           "required": true
+          }
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups"
+  ],
+  "rules": [
+   "REME-0100100017"
+  ]
+ },
+ "iam.GetLoginProfile": {
+  "service": "iam",
+  "operation": "GetLoginProfile",
+  "method": "get_login_profile",
+  "doc": "Retrieves the user name for the specified IAM user. A login profile is created when you create a password for the user to access the Amazon Web Services Management Console. If the user does not exist or does not have a password, the operation returns a 404 ( NoSuchEntity ) error. If you create an IAM user with access to the console, the CreateDate reflects the date you created the initial password for the user. If you create an IAM user with programmatic access, and then later add a password for the user to access the Amazon Web Services Management Console, the CreateDate reflects the initial password creation date. A user with programmatic access does not have a login profile unless you create a password for the user to access the Amazon Web Services Management Console.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_login_profile.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetLoginProfile"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GetLoginProfile request.",
+   "members": {
+    "LoginProfile": {
+     "type": "structure",
+     "doc": "A structure containing the user name and the profile creation date for the user.",
+     "members": {
+      "UserName": {
+       "type": "string",
+       "doc": "The name of the user, which can be used for signing in to the Amazon Web Services Management Console.",
+       "required": true
+      },
+      "CreateDate": {
+       "type": "timestamp",
+       "doc": "The date when the password for the user was created.",
+       "required": true
+      },
+      "PasswordResetRequired": {
+       "type": "boolean",
+       "doc": "Specifies whether the user is required to set a new password on next sign-in."
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0100100004",
+   "REME-0100100011",
+   "REME-0100100019"
+  ]
+ },
+ "iam.GetPolicy": {
+  "service": "iam",
+  "operation": "GetPolicy",
+  "method": "get_policy",
+  "doc": "Retrieves information about the specified managed policy, including the policy's default version and the total number of IAM users, groups, and roles to which the policy is attached. To retrieve the list of the specific users, groups, and roles that the policy is attached to, use ListEntitiesForPolicy . This operation returns metadata about the policy. To retrieve the actual policy document for a specific version of the policy, use GetPolicyVersion . This operation retrieves information about managed policies. To retrieve information about an inline policy that is embedded with an IAM user, group, or role, use GetUserPolicy , GetGroupPolicy , or GetRolePolicy . For more information about policies, see Managed policies and inline policies in the IAM User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_policy.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetPolicy"
+  },
+  "paginated": false,
+  "input_required": [
+   "PolicyArn"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GetPolicy request.",
+   "members": {
+    "Policy": {
+     "type": "structure",
+     "doc": "A structure containing details about the policy.",
+     "members": {
+      "PolicyName": {
+       "type": "string",
+       "doc": "The friendly name (not ARN) identifying the policy."
+      },
+      "PolicyId": {
+       "type": "string",
+       "doc": "The stable and unique string identifying the policy. For more information about IDs, see IAM identifiers in the IAM User Guide ."
+      },
+      "Arn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web Services resources. For more information about ARNs, go to Amazon Resource Names (ARNs) in the Amazon Web Services General Reference ."
+      },
+      "Path": {
+       "type": "string",
+       "doc": "The path to the policy. For more information about paths, see IAM identifiers in the IAM User Guide ."
+      },
+      "DefaultVersionId": {
+       "type": "string",
+       "doc": "The identifier for the version of the policy that is set as the default version."
+      },
+      "AttachmentCount": {
+       "type": "integer",
+       "doc": "The number of entities (users, groups, and roles) that the policy is attached to."
+      },
+      "PermissionsBoundaryUsageCount": {
+       "type": "integer",
+       "doc": "The number of entities (users and roles) for which the policy is used to set the permissions boundary. For more information about permissions boundaries, see Permissions boundaries for IAM identities in the IAM User Guide ."
+      },
+      "IsAttachable": {
+       "type": "boolean",
+       "doc": "Specifies whether the policy can be attached to an IAM user, group, or role."
+      },
+      "Description": {
+       "type": "string",
+       "doc": "A friendly description of the policy. This element is included in the response to the GetPolicy operation. It is not included in the response to the ListPolicies operation."
+      },
+      "CreateDate": {
+       "type": "timestamp",
+       "doc": "The date and time, in ISO 8601 date-time format , when the policy was created."
+      },
+      "UpdateDate": {
+       "type": "timestamp",
+       "doc": "The date and time, in ISO 8601 date-time format , when the policy was last updated. When a policy has only one version, this field contains the date and time when the policy was created. When a policy has more than one version, this field contains the date and time when the most recent policy version was created."
+      },
+      "Tags": {
+       "type": "list",
+       "doc": "A list of tags that are attached to the instance profile. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+       "item": {
+        "type": "structure",
+        "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+        "members": {
+         "Key": {
+          "type": "string",
+          "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+          "required": true
+         },
+         "Value": {
+          "type": "string",
+          "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+          "required": true
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "lambda.list_functions"
+  ],
+  "rules": [
+   "REME-0101000001",
+   "REME-0101000002",
+   "REME-0101000003",
+   "REME-0101000004",
+   "REME-0101000005",
+   "REME-0101000006",
+   "REME-0101000007",
+   "REME-0101000008",
+   "REME-0101000009",
+   "REME-0101000010",
+   "REME-0101000011",
+   "REME-0101000012"
+  ]
+ },
+ "iam.GetPolicyVersion": {
+  "service": "iam",
+  "operation": "GetPolicyVersion",
+  "method": "get_policy_version",
+  "doc": "Retrieves information about the specified version of the specified managed policy, including the policy document. Policies returned by this operation are URL-encoded compliant with RFC 3986 . You can use a URL decoding method to convert the policy back to plain JSON text. For example, if you use Java, you can use the decode method of the java.net.URLDecoder utility class in the Java SDK. Other languages and SDKs provide similar functionality. To list the available versions for a policy, use ListPolicyVersions . This operation retrieves information about managed policies. To retrieve information about an inline policy that is embedded in a user, group, or role, use GetUserPolicy , GetGroupPolicy , or GetRolePolicy . For more information about the types of policies, see Managed policies and inline policies in the IAM User Guide . For more information about managed policy versions, see Versioning for managed policies in the IAM User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_policy_version.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetPolicyVersion"
+  },
+  "paginated": false,
+  "input_required": [
+   "PolicyArn",
+   "VersionId"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GetPolicyVersion request.",
+   "members": {
+    "PolicyVersion": {
+     "type": "structure",
+     "doc": "A structure containing details about the policy version.",
+     "members": {
+      "Document": {
+       "type": "string",
+       "doc": "The policy document. The policy document is returned in the response to the GetPolicyVersion and GetAccountAuthorizationDetails operations. It is not returned in the response to the CreatePolicyVersion or ListPolicyVersions operations. The policy document returned in this structure is URL-encoded compliant with RFC 3986 . You can use a URL decoding method to convert the policy back to plain JSON text. For example, if you use Java, you can use the decode method of the java.net.URLDecoder utility…"
+      },
+      "VersionId": {
+       "type": "string",
+       "doc": "The identifier for the policy version. Policy version identifiers always begin with v (always lowercase). When a policy is created, the first policy version is v1 ."
+      },
+      "IsDefaultVersion": {
+       "type": "boolean",
+       "doc": "Specifies whether the policy version is set as the policy's default version."
+      },
+      "CreateDate": {
+       "type": "timestamp",
+       "doc": "The date and time, in ISO 8601 date-time format , when the policy version was created."
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_saml_providers",
+   "iam.list_server_certificates",
+   "iam.list_users",
+   "iam.list_virtual_mfa_devices",
+   "lambda.list_functions"
+  ],
+  "rules": [
+   "REME-0101000001",
+   "REME-0101000002",
+   "REME-0101000003",
+   "REME-0101000004",
+   "REME-0101000005",
+   "REME-0101000006",
+   "REME-0101000007",
+   "REME-0101000008",
+   "REME-0101000009",
+   "REME-0101000010",
+   "REME-0101000011",
+   "REME-0101000012",
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.GetRole": {
+  "service": "iam",
+  "operation": "GetRole",
+  "method": "get_role",
+  "doc": "Retrieves information about the specified role, including the role's path, GUID, ARN, and the role's trust policy that grants permission to assume the role. For more information about roles, see IAM roles in the IAM User Guide . Policies returned by this operation are URL-encoded compliant with RFC 3986 . You can use a URL decoding method to convert the policy back to plain JSON text. For example, if you use Java, you can use the decode method of the java.net.URLDecoder utility class in the Java SDK. Other languages and SDKs provide similar functionality.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_role.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetRole"
+  },
+  "paginated": false,
+  "input_required": [
+   "RoleName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GetRole request.",
+   "members": {
+    "Role": {
+     "type": "structure",
+     "doc": "A structure containing details about the IAM role.",
+     "members": {
+      "Path": {
+       "type": "string",
+       "doc": "The path to the role. For more information about paths, see IAM identifiers in the IAM User Guide .",
+       "required": true
+      },
+      "RoleName": {
+       "type": "string",
+       "doc": "The friendly name that identifies the role.",
+       "required": true
+      },
+      "RoleId": {
+       "type": "string",
+       "doc": "The stable and unique string identifying the role. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+       "required": true
+      },
+      "Arn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) specifying the role. For more information about ARNs and how to use them in policies, see IAM identifiers in the IAM User Guide guide.",
+       "required": true
+      },
+      "CreateDate": {
+       "type": "timestamp",
+       "doc": "The date and time, in ISO 8601 date-time format , when the role was created.",
+       "required": true
+      },
+      "AssumeRolePolicyDocument": {
+       "type": "string",
+       "doc": "The policy that grants an entity permission to assume the role."
+      },
+      "Description": {
+       "type": "string",
+       "doc": "A description of the role that you provide."
+      },
+      "MaxSessionDuration": {
+       "type": "integer",
+       "doc": "The maximum session duration (in seconds) for the specified role. Anyone who uses the CLI, or API to assume the role can specify the duration using the optional DurationSeconds API parameter or duration-seconds CLI parameter."
+      },
+      "PermissionsBoundary": {
+       "type": "structure",
+       "doc": "The ARN of the policy used to set the permissions boundary for the role. For more information about permissions boundaries, see Permissions boundaries for IAM identities in the IAM User Guide .",
+       "members": {
+        "PermissionsBoundaryType": {
+         "type": "string",
+         "doc": "The permissions boundary usage type that indicates what type of IAM resource is used as the permissions boundary for an entity. This data type can only have a value of Policy .",
+         "enum": [
+          "PermissionsBoundaryPolicy"
+         ]
+        },
+        "PermissionsBoundaryArn": {
+         "type": "string",
+         "doc": "The ARN of the policy used to set the permissions boundary for the user or role."
+        }
+       }
+      },
+      "Tags": {
+       "type": "list",
+       "doc": "A list of tags that are attached to the role. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+       "item": {
+        "type": "structure",
+        "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+        "members": {
+         "Key": {
+          "type": "string",
+          "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+          "required": true
+         },
+         "Value": {
+          "type": "string",
+          "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+          "required": true
+         }
+        }
+       }
+      },
+      "RoleLastUsed": {
+       "type": "structure",
+       "doc": "Contains information about the last time that an IAM role was used. This includes the date and time and the Region in which the role was last used. Activity is only reported for the trailing 400 days. This period can be shorter if your Region began supporting these features within the last year. The role might have been used more than 400 days ago. For more information, see Regions where data is tracked in the IAM user Guide .",
+       "members": {
+        "LastUsedDate": {
+         "type": "timestamp",
+         "doc": "The date and time, in ISO 8601 date-time format that the role was last used. This field is null if the role has not been used within the IAM tracking period. For more information about the tracking period, see Regions where data is tracked in the IAM User Guide ."
+        },
+        "Region": {
+         "type": "string",
+         "doc": "The name of the Amazon Web Services Region in which the role was last used."
+        }
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [
+   "Role.SourceRoleTemplate",
+   "Role.SourceRoleTemplate.TemplateArn",
+   "Role.SourceRoleTemplate.TemplateMinorVersion"
+  ],
+  "raw_keys": [
+   "iam.list_roles",
+   "lambda.list_functions"
+  ],
+  "rules": [
+   "REME-0101000001",
+   "REME-0101000002",
+   "REME-0101000003",
+   "REME-0101000004",
+   "REME-0101000005",
+   "REME-0101000006",
+   "REME-0101000007",
+   "REME-0101000008",
+   "REME-0101000009",
+   "REME-0101000010",
+   "REME-0101000011",
+   "REME-0101000012",
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0105900005",
+   "REME-0100100016",
+   "REME-0100100018"
+  ]
+ },
+ "iam.GetServiceLastAccessedDetails": {
+  "service": "iam",
+  "operation": "GetServiceLastAccessedDetails",
+  "method": "get_service_last_accessed_details",
+  "doc": "Retrieves a service last accessed report that was created using the GenerateServiceLastAccessedDetails operation. You can use the JobId parameter in GetServiceLastAccessedDetails to retrieve the status of your report job. When the report is complete, you can retrieve the generated report. The report includes a list of Amazon Web Services services that the resource (user, group, role, or managed policy) can access. Service last accessed data does not use other policy types when determining whether a resource could access a service. These other policy types include resource-based policies, access control lists, Organizations policies, IAM permissions boundaries, and STS assume role policies. It only applies permissions policy logic. For more about the evaluation of policy types, see Evaluating policies in the IAM User Guide . For each service that the resource could access using permissions policies, the operation returns details about the most recent access attempt. If there was no attempt, the service is listed without details about the most recent attempt to access the service. If the operation fails, the GetServiceLastAccessedDetails operation returns the reason that it failed. …",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_service_last_accessed_details.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetServiceLastAccessedDetails"
+  },
+  "paginated": false,
+  "input_required": [
+   "JobId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "JobStatus": {
+     "type": "string",
+     "doc": "The status of the job.",
+     "enum": [
+      "IN_PROGRESS",
+      "COMPLETED",
+      "FAILED"
+     ],
+     "required": true
+    },
+    "JobType": {
+     "type": "string",
+     "doc": "The type of job. Service jobs return information about when each service was last accessed. Action jobs also include information about when tracked actions within the service were last accessed.",
+     "enum": [
+      "SERVICE_LEVEL",
+      "ACTION_LEVEL"
+     ]
+    },
+    "JobCreationDate": {
+     "type": "timestamp",
+     "doc": "The date and time, in ISO 8601 date-time format , when the report job was created.",
+     "required": true
+    },
+    "ServicesLastAccessed": {
+     "type": "list",
+     "doc": "A ServiceLastAccessed object that contains details about the most recent attempt to access the service.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains details about the most recent attempt to access the service. This data type is used as a response element in the GetServiceLastAccessedDetails operation.",
+      "members": {
+       "ServiceName": {
+        "type": "string",
+        "doc": "The name of the service in which access was attempted.",
+        "required": true
+       },
+       "LastAuthenticated": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when an authenticated entity most recently attempted to access the service. Amazon Web Services does not report unauthenticated requests. This field is null if no IAM entities attempted to access the service within the tracking period ."
+       },
+       "ServiceNamespace": {
+        "type": "string",
+        "doc": "The namespace of the service in which access was attempted. To learn the service namespace of a service, see Actions, resources, and condition keys for Amazon Web Services services in the Service Authorization Reference . Choose the name of the service to view details for that service. In the first paragraph, find the service prefix. For example, (service prefix: a4b) . For more information about service namespaces, see Amazon Web Services Service Namespaces in the Amazon Web Services General R…",
+        "required": true
+       },
+       "LastAuthenticatedEntity": {
+        "type": "string",
+        "doc": "The ARN of the authenticated entity (user or role) that last attempted to access the service. Amazon Web Services does not report unauthenticated requests. This field is null if no IAM entities attempted to access the service within the tracking period ."
+       },
+       "LastAuthenticatedRegion": {
+        "type": "string",
+        "doc": "The Region from which the authenticated entity (user or role) last attempted to access the service. Amazon Web Services does not report unauthenticated requests. This field is null if no IAM entities attempted to access the service within the tracking period ."
+       },
+       "TotalAuthenticatedEntities": {
+        "type": "integer",
+        "doc": "The total number of authenticated principals (root user, IAM users, or IAM roles) that have attempted to access the service. This field is null if no principals attempted to access the service within the tracking period ."
+       },
+       "TrackedActionsLastAccessed": {
+        "type": "list",
+        "doc": "An object that contains details about the most recent attempt to access a tracked action within the service. This field is null if there no tracked actions or if the principal did not use the tracked actions within the tracking period . This field is also null if the report was generated at the service level and not the action level. For more information, see the Granularity field in GenerateServiceLastAccessedDetails .",
+        "item": {
+         "type": "structure",
+         "doc": "Contains details about the most recent attempt to access an action within the service. This data type is used as a response element in the GetServiceLastAccessedDetails operation.",
+         "members": {
+          "ActionName": {
+           "type": "string",
+           "doc": "The name of the tracked action to which access was attempted. Tracked actions are actions that report activity to IAM."
+          },
+          "LastAccessedEntity": {
+           "type": "string",
+           "doc": "The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web Services resources. For more information about ARNs, go to Amazon Resource Names (ARNs) in the Amazon Web Services General Reference ."
+          },
+          "LastAccessedTime": {
+           "type": "timestamp",
+           "doc": "The date and time, in ISO 8601 date-time format , when an authenticated entity most recently attempted to access the tracked service. Amazon Web Services does not report unauthenticated requests. This field is null if no IAM entities attempted to access the service within the tracking period ."
+          },
+          "LastAccessedRegion": {
+           "type": "string",
+           "doc": "The Region from which the authenticated entity (user or role) last attempted to access the tracked action. Amazon Web Services does not report unauthenticated requests. This field is null if no IAM entities attempted to access the service within the tracking period ."
+          }
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "JobCompletionDate": {
+     "type": "timestamp",
+     "doc": "The date and time, in ISO 8601 date-time format , when the generated report job was completed or failed. This field is null if the job is still in progress, as indicated by a job status value of IN_PROGRESS .",
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    },
+    "Error": {
+     "type": "structure",
+     "doc": "An object that contains details about the reason the operation failed.",
+     "members": {
+      "Message": {
+       "type": "string",
+       "doc": "Detailed information about the reason that the operation failed.",
+       "required": true
+      },
+      "Code": {
+       "type": "string",
+       "doc": "The error code associated with the operation failure.",
+       "required": true
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0100100004",
+   "REME-0100100011",
+   "REME-0100100019"
+  ]
+ },
+ "iam.GetUser": {
+  "service": "iam",
+  "operation": "GetUser",
+  "method": "get_user",
+  "doc": "Retrieves information about the specified IAM user, including the user's creation date, path, unique ID, and ARN. If you do not specify a user name, IAM determines the user name implicitly based on the Amazon Web Services access key ID used to sign the request to this operation.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/get_user.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/GetUser"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful GetUser request.",
+   "members": {
+    "User": {
+     "type": "structure",
+     "doc": "A structure containing details about the IAM user. Due to a service issue, password last used data does not include password use from May 3, 2018 22:50 PDT to May 23, 2018 14:08 PDT. This affects last sign-in dates shown in the IAM console and password last used dates in the IAM credential report , and returned by this operation. If users signed in during the affected time, the password last used date that is returned is the date the user last signed in before May 3, 2018. For users that signed…",
+     "members": {
+      "Path": {
+       "type": "string",
+       "doc": "The path to the user. For more information about paths, see IAM identifiers in the IAM User Guide . The ARN of the policy used to set the permissions boundary for the user.",
+       "required": true
+      },
+      "UserName": {
+       "type": "string",
+       "doc": "The friendly name identifying the user.",
+       "required": true
+      },
+      "UserId": {
+       "type": "string",
+       "doc": "The stable and unique string identifying the user. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+       "required": true
+      },
+      "Arn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) that identifies the user. For more information about ARNs and how to use ARNs in policies, see IAM Identifiers in the IAM User Guide .",
+       "required": true
+      },
+      "CreateDate": {
+       "type": "timestamp",
+       "doc": "The date and time, in ISO 8601 date-time format , when the user was created.",
+       "required": true
+      },
+      "PasswordLastUsed": {
+       "type": "timestamp",
+       "doc": "The date and time, in ISO 8601 date-time format , when the user's password was last used to sign in to an Amazon Web Services website. For a list of Amazon Web Services websites that capture a user's last sign-in time, see the Credential reports topic in the IAM User Guide . If a password is used more than once in a five-minute span, only the first use is returned in this field. If the field is null (no value), then it indicates that they never signed in with a password. This can be because: Th…"
+      },
+      "PermissionsBoundary": {
+       "type": "structure",
+       "doc": "For more information about permissions boundaries, see Permissions boundaries for IAM identities in the IAM User Guide .",
+       "members": {
+        "PermissionsBoundaryType": {
+         "type": "string",
+         "doc": "The permissions boundary usage type that indicates what type of IAM resource is used as the permissions boundary for an entity. This data type can only have a value of Policy .",
+         "enum": [
+          "PermissionsBoundaryPolicy"
+         ]
+        },
+        "PermissionsBoundaryArn": {
+         "type": "string",
+         "doc": "The ARN of the policy used to set the permissions boundary for the user or role."
+        }
+       }
+      },
+      "Tags": {
+       "type": "list",
+       "doc": "A list of tags that are associated with the user. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+       "item": {
+        "type": "structure",
+        "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+        "members": {
+         "Key": {
+          "type": "string",
+          "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+          "required": true
+         },
+         "Value": {
+          "type": "string",
+          "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+          "required": true
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0100100004",
+   "REME-0100100011",
+   "REME-0100100019"
+  ]
+ },
+ "iam.ListAccessKeys": {
+  "service": "iam",
+  "operation": "ListAccessKeys",
+  "method": "list_access_keys",
+  "doc": "Returns information about the access key IDs associated with the specified IAM user. If there is none, the operation returns an empty list. Although each user is limited to a small number of keys, you can still paginate the results using the MaxItems and Marker parameters. If the UserName is not specified, the user name is determined implicitly based on the Amazon Web Services access key ID used to sign the request. If a temporary access key is used, then UserName is required. If a long-term key is assigned to the user, then UserName is not required. This operation works for access keys under the Amazon Web Services account. If the Amazon Web Services account has no associated users, the root user returns it's own access key IDs by running this command. To ensure the security of your Amazon Web Services account, the secret access key is accessible only during key and user creation.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_access_keys.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAccessKeys"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListAccessKeys request.",
+   "members": {
+    "AccessKeyMetadata": {
+     "type": "list",
+     "doc": "A list of objects containing metadata about the access keys.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an Amazon Web Services access key, without its secret key. This data type is used as a response element in the ListAccessKeys operation.",
+      "members": {
+       "UserName": {
+        "type": "string",
+        "doc": "The name of the IAM user that the key is associated with."
+       },
+       "AccessKeyId": {
+        "type": "string",
+        "doc": "The ID for this access key."
+       },
+       "Status": {
+        "type": "string",
+        "doc": "The status of the access key. Active means that the key is valid for API calls; Inactive means it is not.",
+        "enum": [
+         "Active",
+         "Inactive"
+        ]
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date when the access key was created."
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0100100004",
+   "REME-0100100011",
+   "REME-0100100019"
+  ]
+ },
+ "iam.ListAttachedGroupPolicies": {
+  "service": "iam",
+  "operation": "ListAttachedGroupPolicies",
+  "method": "list_attached_group_policies",
+  "doc": "Lists all managed policies that are attached to the specified IAM group. An IAM group can also have inline policies embedded with it. To list the inline policies for a group, use ListGroupPolicies . For information about policies, see Managed policies and inline policies in the IAM User Guide . You can paginate the results using the MaxItems and Marker parameters. You can use the PathPrefix parameter to limit the list of policies to only those matching the specified path prefix. If there are no policies attached to the specified group (or none that match the specified path prefix), the operation returns an empty list.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_attached_group_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAttachedGroupPolicies"
+  },
+  "paginated": true,
+  "input_required": [
+   "GroupName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListAttachedGroupPolicies request.",
+   "members": {
+    "AttachedPolicies": {
+     "type": "list",
+     "doc": "A list of the attached policies.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an attached policy. An attached policy is a managed policy that has been attached to a user, group, or role. This data type is used as a response element in the ListAttachedGroupPolicies , ListAttachedRolePolicies , ListAttachedUserPolicies , and GetAccountAuthorizationDetails operations. For more information about managed policies, refer to Managed policies and inline policies in the IAM User Guide .",
+      "members": {
+       "PolicyName": {
+        "type": "string",
+        "doc": "The friendly name of the attached policy."
+       },
+       "PolicyArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web Services resources. For more information about ARNs, go to Amazon Resource Names (ARNs) in the Amazon Web Services General Reference ."
+       }
+      }
+     }
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_saml_providers",
+   "iam.list_server_certificates",
+   "iam.list_users",
+   "iam.list_virtual_mfa_devices"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListAttachedRolePolicies": {
+  "service": "iam",
+  "operation": "ListAttachedRolePolicies",
+  "method": "list_attached_role_policies",
+  "doc": "Lists all managed policies that are attached to the specified IAM role. An IAM role can also have inline policies embedded with it. To list the inline policies for a role, use ListRolePolicies . For information about policies, see Managed policies and inline policies in the IAM User Guide . You can paginate the results using the MaxItems and Marker parameters. You can use the PathPrefix parameter to limit the list of policies to only those matching the specified path prefix. If there are no policies attached to the specified role (or none that match the specified path prefix), the operation returns an empty list.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_attached_role_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAttachedRolePolicies"
+  },
+  "paginated": true,
+  "input_required": [
+   "RoleName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListAttachedRolePolicies request.",
+   "members": {
+    "AttachedPolicies": {
+     "type": "list",
+     "doc": "A list of the attached policies.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an attached policy. An attached policy is a managed policy that has been attached to a user, group, or role. This data type is used as a response element in the ListAttachedGroupPolicies , ListAttachedRolePolicies , ListAttachedUserPolicies , and GetAccountAuthorizationDetails operations. For more information about managed policies, refer to Managed policies and inline policies in the IAM User Guide .",
+      "members": {
+       "PolicyName": {
+        "type": "string",
+        "doc": "The friendly name of the attached policy."
+       },
+       "PolicyArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web Services resources. For more information about ARNs, go to Amazon Resource Names (ARNs) in the Amazon Web Services General Reference ."
+       }
+      }
+     }
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_saml_providers",
+   "iam.list_server_certificates",
+   "iam.list_users",
+   "iam.list_virtual_mfa_devices",
+   "lambda.list_functions"
+  ],
+  "rules": [
+   "REME-0101000001",
+   "REME-0101000002",
+   "REME-0101000003",
+   "REME-0101000004",
+   "REME-0101000005",
+   "REME-0101000006",
+   "REME-0101000007",
+   "REME-0101000008",
+   "REME-0101000009",
+   "REME-0101000010",
+   "REME-0101000011",
+   "REME-0101000012",
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListAttachedUserPolicies": {
+  "service": "iam",
+  "operation": "ListAttachedUserPolicies",
+  "method": "list_attached_user_policies",
+  "doc": "Lists all managed policies that are attached to the specified IAM user. An IAM user can also have inline policies embedded with it. To list the inline policies for a user, use ListUserPolicies . For information about policies, see Managed policies and inline policies in the IAM User Guide . You can paginate the results using the MaxItems and Marker parameters. You can use the PathPrefix parameter to limit the list of policies to only those matching the specified path prefix. If there are no policies attached to the specified group (or none that match the specified path prefix), the operation returns an empty list.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_attached_user_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListAttachedUserPolicies"
+  },
+  "paginated": true,
+  "input_required": [
+   "UserName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListAttachedUserPolicies request.",
+   "members": {
+    "AttachedPolicies": {
+     "type": "list",
+     "doc": "A list of the attached policies.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an attached policy. An attached policy is a managed policy that has been attached to a user, group, or role. This data type is used as a response element in the ListAttachedGroupPolicies , ListAttachedRolePolicies , ListAttachedUserPolicies , and GetAccountAuthorizationDetails operations. For more information about managed policies, refer to Managed policies and inline policies in the IAM User Guide .",
+      "members": {
+       "PolicyName": {
+        "type": "string",
+        "doc": "The friendly name of the attached policy."
+       },
+       "PolicyArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web Services resources. For more information about ARNs, go to Amazon Resource Names (ARNs) in the Amazon Web Services General Reference ."
+       }
+      }
+     }
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_saml_providers",
+   "iam.list_server_certificates",
+   "iam.list_users",
+   "iam.list_virtual_mfa_devices"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListEntitiesForPolicy": {
+  "service": "iam",
+  "operation": "ListEntitiesForPolicy",
+  "method": "list_entities_for_policy",
+  "doc": "Lists all IAM users, groups, and roles that the specified managed policy is attached to. You can use the optional EntityFilter parameter to limit the results to a particular type of entity (users, groups, or roles). For example, to list only the roles that are attached to the specified policy, set EntityFilter to Role . You can paginate the results using the MaxItems and Marker parameters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_entities_for_policy.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListEntitiesForPolicy"
+  },
+  "paginated": true,
+  "input_required": [
+   "PolicyArn"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListEntitiesForPolicy request.",
+   "members": {
+    "PolicyGroups": {
+     "type": "list",
+     "doc": "A list of IAM groups that the policy is attached to.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about a group that a managed policy is attached to. This data type is used as a response element in the ListEntitiesForPolicy operation. For more information about managed policies, refer to Managed policies and inline policies in the IAM User Guide .",
+      "members": {
+       "GroupName": {
+        "type": "string",
+        "doc": "The name (friendly name, not ARN) identifying the group."
+       },
+       "GroupId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the group. For more information about IDs, see IAM identifiers in the IAM User Guide ."
+       }
+      }
+     }
+    },
+    "PolicyUsers": {
+     "type": "list",
+     "doc": "A list of IAM users that the policy is attached to.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about a user that a managed policy is attached to. This data type is used as a response element in the ListEntitiesForPolicy operation. For more information about managed policies, refer to Managed policies and inline policies in the IAM User Guide .",
+      "members": {
+       "UserName": {
+        "type": "string",
+        "doc": "The name (friendly name, not ARN) identifying the user."
+       },
+       "UserId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the user. For more information about IDs, see IAM identifiers in the IAM User Guide ."
+       }
+      }
+     }
+    },
+    "PolicyRoles": {
+     "type": "list",
+     "doc": "A list of IAM roles that the policy is attached to.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about a role that a managed policy is attached to. This data type is used as a response element in the ListEntitiesForPolicy operation. For more information about managed policies, refer to Managed policies and inline policies in the IAM User Guide .",
+      "members": {
+       "RoleName": {
+        "type": "string",
+        "doc": "The name (friendly name, not ARN) identifying the role."
+       },
+       "RoleId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the role. For more information about IDs, see IAM identifiers in the IAM User Guide ."
+       }
+      }
+     }
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_saml_providers",
+   "iam.list_server_certificates",
+   "iam.list_users",
+   "iam.list_virtual_mfa_devices"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListGroupPolicies": {
+  "service": "iam",
+  "operation": "ListGroupPolicies",
+  "method": "list_group_policies",
+  "doc": "Lists the names of the inline policies that are embedded in the specified IAM group. An IAM group can also have managed policies attached to it. To list the managed policies that are attached to a group, use ListAttachedGroupPolicies . For more information about policies, see Managed policies and inline policies in the IAM User Guide . You can paginate the results using the MaxItems and Marker parameters. If there are no inline policies embedded with the specified group, the operation returns an empty list.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_group_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListGroupPolicies"
+  },
+  "paginated": true,
+  "input_required": [
+   "GroupName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListGroupPolicies request.",
+   "members": {
+    "PolicyNames": {
+     "type": "list",
+     "doc": "A list of policy names. This parameter allows (through its regex pattern ) a string of characters consisting of upper and lowercase alphanumeric characters with no spaces. You can also include any of the following characters: _+=,.@-",
+     "item": {
+      "type": "string"
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_saml_providers",
+   "iam.list_server_certificates",
+   "iam.list_users",
+   "iam.list_virtual_mfa_devices"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListGroups": {
+  "service": "iam",
+  "operation": "ListGroups",
+  "method": "list_groups",
+  "doc": "Lists the IAM groups that have the specified path prefix. You can paginate the results using the MaxItems and Marker parameters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_groups.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListGroups"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListGroups request.",
+   "members": {
+    "Groups": {
+     "type": "list",
+     "doc": "A list of groups.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an IAM group entity. This data type is used as a response element in the following operations: CreateGroup GetGroup ListGroups",
+      "members": {
+       "Path": {
+        "type": "string",
+        "doc": "The path to the group. For more information about paths, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "GroupName": {
+        "type": "string",
+        "doc": "The friendly name that identifies the group.",
+        "required": true
+       },
+       "GroupId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the group. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) specifying the group. For more information about ARNs and how to use them in policies, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the group was created.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_server_certificates",
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListGroupsForUser": {
+  "service": "iam",
+  "operation": "ListGroupsForUser",
+  "method": "list_groups_for_user",
+  "doc": "Lists the IAM groups that the specified IAM user belongs to. You can paginate the results using the MaxItems and Marker parameters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_groups_for_user.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListGroupsForUser"
+  },
+  "paginated": true,
+  "input_required": [
+   "UserName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListGroupsForUser request.",
+   "members": {
+    "Groups": {
+     "type": "list",
+     "doc": "A list of groups.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an IAM group entity. This data type is used as a response element in the following operations: CreateGroup GetGroup ListGroups",
+      "members": {
+       "Path": {
+        "type": "string",
+        "doc": "The path to the group. For more information about paths, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "GroupName": {
+        "type": "string",
+        "doc": "The friendly name that identifies the group.",
+        "required": true
+       },
+       "GroupId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the group. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) specifying the group. For more information about ARNs and how to use them in policies, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the group was created.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0100100004",
+   "REME-0100100011",
+   "REME-0100100019"
+  ]
+ },
+ "iam.ListInstanceProfilesForRole": {
+  "service": "iam",
+  "operation": "ListInstanceProfilesForRole",
+  "method": "list_instance_profiles_for_role",
+  "doc": "Lists the instance profiles that have the specified associated IAM role. If there are none, the operation returns an empty list. For more information about instance profiles, go to Using instance profiles in the IAM User Guide . You can paginate the results using the MaxItems and Marker parameters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_instance_profiles_for_role.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListInstanceProfilesForRole"
+  },
+  "paginated": true,
+  "input_required": [
+   "RoleName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListInstanceProfilesForRole request.",
+   "members": {
+    "InstanceProfiles": {
+     "type": "list",
+     "doc": "A list of instance profiles.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an instance profile. This data type is used as a response element in the following operations: CreateInstanceProfile GetInstanceProfile ListInstanceProfiles ListInstanceProfilesForRole",
+      "members": {
+       "Path": {
+        "type": "string",
+        "doc": "The path to the instance profile. For more information about paths, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "InstanceProfileName": {
+        "type": "string",
+        "doc": "The name identifying the instance profile.",
+        "required": true
+       },
+       "InstanceProfileId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the instance profile. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) specifying the instance profile. For more information about ARNs and how to use them in policies, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date when the instance profile was created.",
+        "required": true
+       },
+       "Roles": {
+        "type": "list",
+        "doc": "The role associated with the instance profile.",
+        "item": {
+         "type": "structure",
+         "doc": "Contains information about an IAM role. This structure is returned as a response element in several API operations that interact with roles.",
+         "members": {
+          "Path": {
+           "type": "string",
+           "doc": "The path to the role. For more information about paths, see IAM identifiers in the IAM User Guide .",
+           "required": true
+          },
+          "RoleName": {
+           "type": "string",
+           "doc": "The friendly name that identifies the role.",
+           "required": true
+          },
+          "RoleId": {
+           "type": "string",
+           "doc": "The stable and unique string identifying the role. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+           "required": true
+          },
+          "Arn": {
+           "type": "string",
+           "doc": "The Amazon Resource Name (ARN) specifying the role. For more information about ARNs and how to use them in policies, see IAM identifiers in the IAM User Guide guide.",
+           "required": true
+          },
+          "CreateDate": {
+           "type": "timestamp",
+           "doc": "The date and time, in ISO 8601 date-time format , when the role was created.",
+           "required": true
+          },
+          "AssumeRolePolicyDocument": {
+           "type": "string",
+           "doc": "The policy that grants an entity permission to assume the role."
+          },
+          "Description": {
+           "type": "string",
+           "doc": "A description of the role that you provide."
+          },
+          "MaxSessionDuration": {
+           "type": "integer",
+           "doc": "The maximum session duration (in seconds) for the specified role. Anyone who uses the CLI, or API to assume the role can specify the duration using the optional DurationSeconds API parameter or duration-seconds CLI parameter."
+          },
+          "PermissionsBoundary": {
+           "type": "structure",
+           "doc": "The ARN of the policy used to set the permissions boundary for the role. For more information about permissions boundaries, see Permissions boundaries for IAM identities in the IAM User Guide .",
+           "members": {
+            "PermissionsBoundaryType": {
+             "type": "string",
+             "doc": "The permissions boundary usage type that indicates what type of IAM resource is used as the permissions boundary for an entity. This data type can only have a value of Policy .",
+             "enum": [
+              "PermissionsBoundaryPolicy"
+             ]
+            },
+            "PermissionsBoundaryArn": {
+             "type": "string",
+             "doc": "The ARN of the policy used to set the permissions boundary for the user or role."
+            }
+           }
+          },
+          "Tags": {
+           "type": "list",
+           "doc": "A list of tags that are attached to the role. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+           "item": {
+            "type": "structure",
+            "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+            "members": {
+             "Key": {
+              "type": "string",
+              "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+              "required": true
+             },
+             "Value": {
+              "type": "string",
+              "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+              "required": true
+             }
+            }
+           }
+          },
+          "RoleLastUsed": {
+           "type": "structure",
+           "doc": "Contains information about the last time that an IAM role was used. This includes the date and time and the Region in which the role was last used. Activity is only reported for the trailing 400 days. This period can be shorter if your Region began supporting these features within the last year. The role might have been used more than 400 days ago. For more information, see Regions where data is tracked in the IAM user Guide .",
+           "members": {
+            "LastUsedDate": {
+             "type": "timestamp",
+             "doc": "The date and time, in ISO 8601 date-time format that the role was last used. This field is null if the role has not been used within the IAM tracking period. For more information about the tracking period, see Regions where data is tracked in the IAM User Guide ."
+            },
+            "Region": {
+             "type": "string",
+             "doc": "The name of the Amazon Web Services Region in which the role was last used."
+            }
+           }
+          }
+         }
+        },
+        "required": true
+       },
+       "Tags": {
+        "type": "list",
+        "doc": "A list of tags that are attached to the instance profile. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+        "item": {
+         "type": "structure",
+         "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+         "members": {
+          "Key": {
+           "type": "string",
+           "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+           "required": true
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+           "required": true
+          }
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [
+   "InstanceProfiles[].Roles[].SourceRoleTemplate",
+   "InstanceProfiles[].Roles[].SourceRoleTemplate.TemplateArn",
+   "InstanceProfiles[].Roles[].SourceRoleTemplate.TemplateMinorVersion"
+  ],
+  "raw_keys": [
+   "iam.list_roles"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0105900005",
+   "REME-0100100016",
+   "REME-0100100018"
+  ]
+ },
+ "iam.ListMFADevices": {
+  "service": "iam",
+  "operation": "ListMFADevices",
+  "method": "list_mfa_devices",
+  "doc": "Lists the MFA devices for an IAM user. If the request includes a IAM user name, then this operation lists all the MFA devices associated with the specified user. If you do not specify a user name, IAM determines the user name implicitly based on the Amazon Web Services access key ID signing the request for this operation. You can paginate the results using the MaxItems and Marker parameters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_mfa_devices.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListMFADevices"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListMFADevices request.",
+   "members": {
+    "MFADevices": {
+     "type": "list",
+     "doc": "A list of MFA devices.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an MFA device. This data type is used as a response element in the ListMFADevices operation.",
+      "members": {
+       "UserName": {
+        "type": "string",
+        "doc": "The user with whom the MFA device is associated.",
+        "required": true
+       },
+       "SerialNumber": {
+        "type": "string",
+        "doc": "The serial number that uniquely identifies the MFA device. For virtual MFA devices, the serial number is the device ARN.",
+        "required": true
+       },
+       "EnableDate": {
+        "type": "timestamp",
+        "doc": "The date when the MFA device was enabled for the user.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0100100004",
+   "REME-0100100011",
+   "REME-0100100019"
+  ]
+ },
+ "iam.ListPolicies": {
+  "service": "iam",
+  "operation": "ListPolicies",
+  "method": "list_policies",
+  "doc": "Lists all the managed policies that are available in your Amazon Web Services account, including your own customer-defined managed policies and all Amazon Web Services managed policies. You can filter the list of policies that is returned using the optional OnlyAttached , Scope , and PathPrefix parameters. For example, to list only the customer managed policies in your Amazon Web Services account, set Scope to Local . To list only Amazon Web Services managed policies, set Scope to AWS . You can paginate the results using the MaxItems and Marker parameters. For more information about managed policies, see Managed policies and inline policies in the IAM User Guide . IAM resource-listing operations return a subset of the available attributes for the resource. For example, this operation does not return tags, even though they are an attribute of the returned object. To view all of the information for a customer manged policy, see GetPolicy .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPolicies"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListPolicies request.",
+   "members": {
+    "Policies": {
+     "type": "list",
+     "doc": "A list of policies.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about a managed policy. This data type is used as a response element in the CreatePolicy , GetPolicy , and ListPolicies operations. For more information about managed policies, refer to Managed policies and inline policies in the IAM User Guide .",
+      "members": {
+       "PolicyName": {
+        "type": "string",
+        "doc": "The friendly name (not ARN) identifying the policy."
+       },
+       "PolicyId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the policy. For more information about IDs, see IAM identifiers in the IAM User Guide ."
+       },
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web Services resources. For more information about ARNs, go to Amazon Resource Names (ARNs) in the Amazon Web Services General Reference ."
+       },
+       "Path": {
+        "type": "string",
+        "doc": "The path to the policy. For more information about paths, see IAM identifiers in the IAM User Guide ."
+       },
+       "DefaultVersionId": {
+        "type": "string",
+        "doc": "The identifier for the version of the policy that is set as the default version."
+       },
+       "AttachmentCount": {
+        "type": "integer",
+        "doc": "The number of entities (users, groups, and roles) that the policy is attached to."
+       },
+       "PermissionsBoundaryUsageCount": {
+        "type": "integer",
+        "doc": "The number of entities (users and roles) for which the policy is used to set the permissions boundary. For more information about permissions boundaries, see Permissions boundaries for IAM identities in the IAM User Guide ."
+       },
+       "IsAttachable": {
+        "type": "boolean",
+        "doc": "Specifies whether the policy can be attached to an IAM user, group, or role."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "A friendly description of the policy. This element is included in the response to the GetPolicy operation. It is not included in the response to the ListPolicies operation."
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the policy was created."
+       },
+       "UpdateDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the policy was last updated. When a policy has only one version, this field contains the date and time when the policy was created. When a policy has more than one version, this field contains the date and time when the most recent policy version was created."
+       },
+       "Tags": {
+        "type": "list",
+        "doc": "A list of tags that are attached to the instance profile. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+        "item": {
+         "type": "structure",
+         "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+         "members": {
+          "Key": {
+           "type": "string",
+           "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+           "required": true
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+           "required": true
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_server_certificates",
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListPolicyVersions": {
+  "service": "iam",
+  "operation": "ListPolicyVersions",
+  "method": "list_policy_versions",
+  "doc": "Lists information about the versions of the specified managed policy, including the version that is currently set as the policy's default version. For more information about managed policies, see Managed policies and inline policies in the IAM User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_policy_versions.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListPolicyVersions"
+  },
+  "paginated": true,
+  "input_required": [
+   "PolicyArn"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListPolicyVersions request.",
+   "members": {
+    "Versions": {
+     "type": "list",
+     "doc": "A list of policy versions. For more information about managed policy versions, see Versioning for managed policies in the IAM User Guide .",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about a version of a managed policy. This data type is used as a response element in the CreatePolicyVersion , GetPolicyVersion , ListPolicyVersions , and GetAccountAuthorizationDetails operations. For more information about managed policies, refer to Managed policies and inline policies in the IAM User Guide .",
+      "members": {
+       "Document": {
+        "type": "string",
+        "doc": "The policy document. The policy document is returned in the response to the GetPolicyVersion and GetAccountAuthorizationDetails operations. It is not returned in the response to the CreatePolicyVersion or ListPolicyVersions operations. The policy document returned in this structure is URL-encoded compliant with RFC 3986 . You can use a URL decoding method to convert the policy back to plain JSON text. For example, if you use Java, you can use the decode method of the java.net.URLDecoder utility…"
+       },
+       "VersionId": {
+        "type": "string",
+        "doc": "The identifier for the policy version. Policy version identifiers always begin with v (always lowercase). When a policy is created, the first policy version is v1 ."
+       },
+       "IsDefaultVersion": {
+        "type": "boolean",
+        "doc": "Specifies whether the policy version is set as the policy's default version."
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the policy version was created."
+       }
+      }
+     }
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_saml_providers",
+   "iam.list_server_certificates",
+   "iam.list_users",
+   "iam.list_virtual_mfa_devices"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListRolePolicies": {
+  "service": "iam",
+  "operation": "ListRolePolicies",
+  "method": "list_role_policies",
+  "doc": "Lists the names of the inline policies that are embedded in the specified IAM role. An IAM role can also have managed policies attached to it. To list the managed policies that are attached to a role, use ListAttachedRolePolicies . For more information about policies, see Managed policies and inline policies in the IAM User Guide . You can paginate the results using the MaxItems and Marker parameters. If there are no inline policies embedded with the specified role, the operation returns an empty list.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_role_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListRolePolicies"
+  },
+  "paginated": true,
+  "input_required": [
+   "RoleName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListRolePolicies request.",
+   "members": {
+    "PolicyNames": {
+     "type": "list",
+     "doc": "A list of policy names.",
+     "item": {
+      "type": "string"
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_saml_providers",
+   "iam.list_server_certificates",
+   "iam.list_users",
+   "iam.list_virtual_mfa_devices"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListRoleTags": {
+  "service": "iam",
+  "operation": "ListRoleTags",
+  "method": "list_role_tags",
+  "doc": "Lists the tags that are attached to the specified role. The returned list of tags is sorted by tag key. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_role_tags.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListRoleTags"
+  },
+  "paginated": true,
+  "input_required": [
+   "RoleName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Tags": {
+     "type": "list",
+     "doc": "The list of tags that are currently attached to the role. Each tag consists of a key name and an associated value. If no tags are attached to the specified resource, the response contains an empty list.",
+     "item": {
+      "type": "structure",
+      "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+        "required": true
+       },
+       "Value": {
+        "type": "string",
+        "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_roles"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0105900005",
+   "REME-0100100016",
+   "REME-0100100018"
+  ]
+ },
+ "iam.ListRoles": {
+  "service": "iam",
+  "operation": "ListRoles",
+  "method": "list_roles",
+  "doc": "Lists the IAM roles that have the specified path prefix. If there are none, the operation returns an empty list. For more information about roles, see IAM roles in the IAM User Guide . IAM resource-listing operations return a subset of the available attributes for the resource. This operation does not return the following attributes, even though they are an attribute of the returned object: PermissionsBoundary RoleLastUsed Tags To view all of the information for a role, see GetRole . You can paginate the results using the MaxItems and Marker parameters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_roles.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListRoles"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListRoles request.",
+   "members": {
+    "Roles": {
+     "type": "list",
+     "doc": "A list of roles.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an IAM role. This structure is returned as a response element in several API operations that interact with roles.",
+      "members": {
+       "Path": {
+        "type": "string",
+        "doc": "The path to the role. For more information about paths, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "RoleName": {
+        "type": "string",
+        "doc": "The friendly name that identifies the role.",
+        "required": true
+       },
+       "RoleId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the role. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) specifying the role. For more information about ARNs and how to use them in policies, see IAM identifiers in the IAM User Guide guide.",
+        "required": true
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the role was created.",
+        "required": true
+       },
+       "AssumeRolePolicyDocument": {
+        "type": "string",
+        "doc": "The policy that grants an entity permission to assume the role."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "A description of the role that you provide."
+       },
+       "MaxSessionDuration": {
+        "type": "integer",
+        "doc": "The maximum session duration (in seconds) for the specified role. Anyone who uses the CLI, or API to assume the role can specify the duration using the optional DurationSeconds API parameter or duration-seconds CLI parameter."
+       },
+       "PermissionsBoundary": {
+        "type": "structure",
+        "doc": "The ARN of the policy used to set the permissions boundary for the role. For more information about permissions boundaries, see Permissions boundaries for IAM identities in the IAM User Guide .",
+        "members": {
+         "PermissionsBoundaryType": {
+          "type": "string",
+          "doc": "The permissions boundary usage type that indicates what type of IAM resource is used as the permissions boundary for an entity. This data type can only have a value of Policy .",
+          "enum": [
+           "PermissionsBoundaryPolicy"
+          ]
+         },
+         "PermissionsBoundaryArn": {
+          "type": "string",
+          "doc": "The ARN of the policy used to set the permissions boundary for the user or role."
+         }
+        }
+       },
+       "Tags": {
+        "type": "list",
+        "doc": "A list of tags that are attached to the role. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+        "item": {
+         "type": "structure",
+         "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+         "members": {
+          "Key": {
+           "type": "string",
+           "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+           "required": true
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+           "required": true
+          }
+         }
+        }
+       },
+       "RoleLastUsed": {
+        "type": "structure",
+        "doc": "Contains information about the last time that an IAM role was used. This includes the date and time and the Region in which the role was last used. Activity is only reported for the trailing 400 days. This period can be shorter if your Region began supporting these features within the last year. The role might have been used more than 400 days ago. For more information, see Regions where data is tracked in the IAM user Guide .",
+        "members": {
+         "LastUsedDate": {
+          "type": "timestamp",
+          "doc": "The date and time, in ISO 8601 date-time format that the role was last used. This field is null if the role has not been used within the IAM tracking period. For more information about the tracking period, see Regions where data is tracked in the IAM User Guide ."
+         },
+         "Region": {
+          "type": "string",
+          "doc": "The name of the Amazon Web Services Region in which the role was last used."
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [
+   "Roles[].SourceRoleTemplate",
+   "Roles[].SourceRoleTemplate.TemplateArn",
+   "Roles[].SourceRoleTemplate.TemplateMinorVersion"
+  ],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_server_certificates",
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListSAMLProviderTags": {
+  "service": "iam",
+  "operation": "ListSAMLProviderTags",
+  "method": "list_saml_provider_tags",
+  "doc": "Lists the tags that are attached to the specified Security Assertion Markup Language (SAML) identity provider. The returned list of tags is sorted by tag key. For more information, see About SAML 2.0-based federation . For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_saml_provider_tags.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSAMLProviderTags"
+  },
+  "paginated": true,
+  "input_required": [
+   "SAMLProviderArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Tags": {
+     "type": "list",
+     "doc": "The list of tags that are currently attached to the Security Assertion Markup Language (SAML) identity provider. Each tag consists of a key name and an associated value. If no tags are attached to the specified resource, the response contains an empty list.",
+     "item": {
+      "type": "structure",
+      "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+        "required": true
+       },
+       "Value": {
+        "type": "string",
+        "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_saml_providers"
+  ]
+ },
+ "iam.ListSAMLProviders": {
+  "service": "iam",
+  "operation": "ListSAMLProviders",
+  "method": "list_saml_providers",
+  "doc": "Lists the SAML provider resource objects defined in IAM in the account. IAM resource-listing operations return a subset of the available attributes for the resource. For example, this operation does not return tags, even though they are an attribute of the returned object. To view all of the information for a SAML provider, see GetSAMLProvider . This operation requires Signature Version 4 .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_saml_providers.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListSAMLProviders"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListSAMLProviders request.",
+   "members": {
+    "SAMLProviderList": {
+     "type": "list",
+     "doc": "The list of SAML provider resource objects defined in IAM for this Amazon Web Services account.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains the list of SAML providers for this account.",
+      "members": {
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the SAML provider."
+       },
+       "ValidUntil": {
+        "type": "timestamp",
+        "doc": "The expiration date and time for the SAML provider."
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date and time when the SAML provider was created."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_saml_providers"
+  ]
+ },
+ "iam.ListServerCertificateTags": {
+  "service": "iam",
+  "operation": "ListServerCertificateTags",
+  "method": "list_server_certificate_tags",
+  "doc": "Lists the tags that are attached to the specified IAM server certificate. The returned list of tags is sorted by tag key. For more information about tagging, see Tagging IAM resources in the IAM User Guide . For certificates in a Region supported by Certificate Manager (ACM), we recommend that you don't use IAM server certificates. Instead, use ACM to provision, manage, and deploy your server certificates. For more information about IAM server certificates, Working with server certificates in the IAM User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_server_certificate_tags.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListServerCertificateTags"
+  },
+  "paginated": true,
+  "input_required": [
+   "ServerCertificateName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Tags": {
+     "type": "list",
+     "doc": "The list of tags that are currently attached to the IAM server certificate. Each tag consists of a key name and an associated value. If no tags are attached to the specified resource, the response contains an empty list.",
+     "item": {
+      "type": "structure",
+      "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+        "required": true
+       },
+       "Value": {
+        "type": "string",
+        "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_server_certificates"
+  ],
+  "rules": [
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListServerCertificates": {
+  "service": "iam",
+  "operation": "ListServerCertificates",
+  "method": "list_server_certificates",
+  "doc": "Lists the server certificates stored in IAM that have the specified path prefix. If none exist, the operation returns an empty list. You can paginate the results using the MaxItems and Marker parameters. For more information about working with server certificates, see Working with server certificates in the IAM User Guide . This topic also includes a list of Amazon Web Services services that can use the server certificates that you manage with IAM. IAM resource-listing operations return a subset of the available attributes for the resource. For example, this operation does not return tags, even though they are an attribute of the returned object. To view all of the information for a servercertificate, see GetServerCertificate .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_server_certificates.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListServerCertificates"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListServerCertificates request.",
+   "members": {
+    "ServerCertificateMetadataList": {
+     "type": "list",
+     "doc": "A list of server certificates.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about a server certificate without its certificate body, certificate chain, and private key. This data type is used as a response element in the UploadServerCertificate and ListServerCertificates operations.",
+      "members": {
+       "Path": {
+        "type": "string",
+        "doc": "The path to the server certificate. For more information about paths, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "ServerCertificateName": {
+        "type": "string",
+        "doc": "The name that identifies the server certificate.",
+        "required": true
+       },
+       "ServerCertificateId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the server certificate. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) specifying the server certificate. For more information about ARNs and how to use them in policies, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "UploadDate": {
+        "type": "timestamp",
+        "doc": "The date when the server certificate was uploaded."
+       },
+       "Expiration": {
+        "type": "timestamp",
+        "doc": "The date on which the certificate is set to expire."
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_server_certificates",
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListUserPolicies": {
+  "service": "iam",
+  "operation": "ListUserPolicies",
+  "method": "list_user_policies",
+  "doc": "Lists the names of the inline policies embedded in the specified IAM user. An IAM user can also have managed policies attached to it. To list the managed policies that are attached to a user, use ListAttachedUserPolicies . For more information about policies, see Managed policies and inline policies in the IAM User Guide . You can paginate the results using the MaxItems and Marker parameters. If there are no inline policies embedded with the specified user, the operation returns an empty list.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_user_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListUserPolicies"
+  },
+  "paginated": true,
+  "input_required": [
+   "UserName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListUserPolicies request.",
+   "members": {
+    "PolicyNames": {
+     "type": "list",
+     "doc": "A list of policy names.",
+     "item": {
+      "type": "string"
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_saml_providers",
+   "iam.list_server_certificates",
+   "iam.list_users",
+   "iam.list_virtual_mfa_devices"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListUsers": {
+  "service": "iam",
+  "operation": "ListUsers",
+  "method": "list_users",
+  "doc": "Lists the IAM users that have the specified path prefix. If no path prefix is specified, the operation returns all users in the Amazon Web Services account. If there are none, the operation returns an empty list. IAM resource-listing operations return a subset of the available attributes for the resource. This operation does not return the following attributes, even though they are an attribute of the returned object: PermissionsBoundary Tags To view all of the information for a user, see GetUser . You can paginate the results using the MaxItems and Marker parameters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_users.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListUsers"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListUsers request.",
+   "members": {
+    "Users": {
+     "type": "list",
+     "doc": "A list of users.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about an IAM user entity. This data type is used as a response element in the following operations: CreateUser GetUser ListUsers",
+      "members": {
+       "Path": {
+        "type": "string",
+        "doc": "The path to the user. For more information about paths, see IAM identifiers in the IAM User Guide . The ARN of the policy used to set the permissions boundary for the user.",
+        "required": true
+       },
+       "UserName": {
+        "type": "string",
+        "doc": "The friendly name identifying the user.",
+        "required": true
+       },
+       "UserId": {
+        "type": "string",
+        "doc": "The stable and unique string identifying the user. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) that identifies the user. For more information about ARNs and how to use ARNs in policies, see IAM Identifiers in the IAM User Guide .",
+        "required": true
+       },
+       "CreateDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the user was created.",
+        "required": true
+       },
+       "PasswordLastUsed": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO 8601 date-time format , when the user's password was last used to sign in to an Amazon Web Services website. For a list of Amazon Web Services websites that capture a user's last sign-in time, see the Credential reports topic in the IAM User Guide . If a password is used more than once in a five-minute span, only the first use is returned in this field. If the field is null (no value), then it indicates that they never signed in with a password. This can be because: Th…"
+       },
+       "PermissionsBoundary": {
+        "type": "structure",
+        "doc": "For more information about permissions boundaries, see Permissions boundaries for IAM identities in the IAM User Guide .",
+        "members": {
+         "PermissionsBoundaryType": {
+          "type": "string",
+          "doc": "The permissions boundary usage type that indicates what type of IAM resource is used as the permissions boundary for an entity. This data type can only have a value of Policy .",
+          "enum": [
+           "PermissionsBoundaryPolicy"
+          ]
+         },
+         "PermissionsBoundaryArn": {
+          "type": "string",
+          "doc": "The ARN of the policy used to set the permissions boundary for the user or role."
+         }
+        }
+       },
+       "Tags": {
+        "type": "list",
+        "doc": "A list of tags that are associated with the user. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+        "item": {
+         "type": "structure",
+         "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+         "members": {
+          "Key": {
+           "type": "string",
+           "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+           "required": true
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+           "required": true
+          }
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_groups",
+   "iam.list_policies",
+   "iam.list_roles",
+   "iam.list_server_certificates",
+   "iam.list_users"
+  ],
+  "rules": [
+   "REME-0102000005",
+   "REME-0106300018",
+   "REME-0106000002",
+   "REME-0105900005",
+   "REME-0100100004",
+   "REME-0100100010",
+   "REME-0100100011",
+   "REME-0100100012",
+   "REME-0100100013",
+   "REME-0100100016",
+   "REME-0100100017",
+   "REME-0100100018",
+   "REME-0100100019",
+   "REME-0100100020"
+  ]
+ },
+ "iam.ListVirtualMFADevices": {
+  "service": "iam",
+  "operation": "ListVirtualMFADevices",
+  "method": "list_virtual_mfa_devices",
+  "doc": "Lists the virtual MFA devices defined in the Amazon Web Services account by assignment status. If you do not specify an assignment status, the operation returns a list of all virtual MFA devices. Assignment status can be Assigned , Unassigned , or Any . IAM resource-listing operations return a subset of the available attributes for the resource. For example, this operation does not return tags, even though they are an attribute of the returned object. To view tag information for a virtual MFA device, see ListMFADeviceTags . You can paginate the results using the MaxItems and Marker parameters.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/list_virtual_mfa_devices.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/ListVirtualMFADevices"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful ListVirtualMFADevices request.",
+   "members": {
+    "VirtualMFADevices": {
+     "type": "list",
+     "doc": "The list of virtual MFA devices in the current account that match the AssignmentStatus value that was passed in the request.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains information about a virtual MFA device.",
+      "members": {
+       "SerialNumber": {
+        "type": "string",
+        "doc": "The serial number associated with VirtualMFADevice .",
+        "required": true
+       },
+       "Base32StringSeed": {
+        "type": "blob",
+        "doc": "The base32 seed defined as specified in RFC3548 . The Base32StringSeed is base32-encoded."
+       },
+       "QRCodePNG": {
+        "type": "blob",
+        "doc": "A QR code PNG image that encodes otpauth://totp/$virtualMFADeviceName@$AccountName?secret=$Base32String where $virtualMFADeviceName is one of the create call arguments. AccountName is the user name if set (otherwise, the account ID otherwise), and Base32String is the seed in base32 format. The Base32String value is base64-encoded."
+       },
+       "User": {
+        "type": "structure",
+        "doc": "The IAM user associated with this virtual MFA device.",
+        "members": {
+         "Path": {
+          "type": "string",
+          "doc": "The path to the user. For more information about paths, see IAM identifiers in the IAM User Guide . The ARN of the policy used to set the permissions boundary for the user.",
+          "required": true
+         },
+         "UserName": {
+          "type": "string",
+          "doc": "The friendly name identifying the user.",
+          "required": true
+         },
+         "UserId": {
+          "type": "string",
+          "doc": "The stable and unique string identifying the user. For more information about IDs, see IAM identifiers in the IAM User Guide .",
+          "required": true
+         },
+         "Arn": {
+          "type": "string",
+          "doc": "The Amazon Resource Name (ARN) that identifies the user. For more information about ARNs and how to use ARNs in policies, see IAM Identifiers in the IAM User Guide .",
+          "required": true
+         },
+         "CreateDate": {
+          "type": "timestamp",
+          "doc": "The date and time, in ISO 8601 date-time format , when the user was created.",
+          "required": true
+         },
+         "PasswordLastUsed": {
+          "type": "timestamp",
+          "doc": "The date and time, in ISO 8601 date-time format , when the user's password was last used to sign in to an Amazon Web Services website. For a list of Amazon Web Services websites that capture a user's last sign-in time, see the Credential reports topic in the IAM User Guide . If a password is used more than once in a five-minute span, only the first use is returned in this field. If the field is null (no value), then it indicates that they never signed in with a password. This can be because: Th…"
+         },
+         "PermissionsBoundary": {
+          "type": "structure",
+          "doc": "For more information about permissions boundaries, see Permissions boundaries for IAM identities in the IAM User Guide .",
+          "members": {
+           "PermissionsBoundaryType": {
+            "type": "string",
+            "doc": "The permissions boundary usage type that indicates what type of IAM resource is used as the permissions boundary for an entity. This data type can only have a value of Policy .",
+            "enum": [
+             "PermissionsBoundaryPolicy"
+            ]
+           },
+           "PermissionsBoundaryArn": {
+            "type": "string",
+            "doc": "The ARN of the policy used to set the permissions boundary for the user or role."
+           }
+          }
+         },
+         "Tags": {
+          "type": "list",
+          "doc": "A list of tags that are associated with the user. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+          "item": {
+           "type": "structure",
+           "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+           "members": {
+            "Key": {
+             "type": "string",
+             "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+             "required": true
+            },
+            "Value": {
+             "type": "string",
+             "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+             "required": true
+            }
+           }
+          }
+         }
+        }
+       },
+       "EnableDate": {
+        "type": "timestamp",
+        "doc": "The date and time on which the virtual MFA device was enabled."
+       },
+       "Tags": {
+        "type": "list",
+        "doc": "A list of tags that are attached to the virtual MFA device. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+        "item": {
+         "type": "structure",
+         "doc": "A structure that represents user-provided metadata that can be associated with an IAM resource. For more information about tagging, see Tagging IAM resources in the IAM User Guide .",
+         "members": {
+          "Key": {
+           "type": "string",
+           "doc": "The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.",
+           "required": true
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources , Accounting , and Support . Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. Amazon Web Services always interprets the tag Value as a single string. If you need to store an array, you can store …",
+           "required": true
+          }
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "iam.list_virtual_mfa_devices"
+  ]
+ },
+ "iam.SimulatePrincipalPolicy": {
+  "service": "iam",
+  "operation": "SimulatePrincipalPolicy",
+  "method": "simulate_principal_policy",
+  "doc": "Simulate how a set of IAM policies attached to an IAM entity works with a list of API operations and Amazon Web Services resources to determine the policies' effective permissions. The entity can be an IAM user, group, or role. If you specify a user, then the simulation also includes all of the policies that are attached to groups that the user belongs to. You can simulate resources that don't exist in your account. You can optionally include a list of one or more additional policies specified as strings to include in the simulation. If you want to simulate only policies specified as strings, use SimulateCustomPolicy instead. You can also optionally include one resource-based policy to be evaluated with each of the resources included in the simulation for IAM users only. The simulation does not perform the API operations; it only checks the authorization to determine if the simulated policies allow or deny the operations. Note: This operation discloses information about the permissions granted to other users. If you do not want users to see other user's permissions, then consider allowing them to use SimulateCustomPolicy instead. Context keys are variables maintained by Amazon Web…",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam/client/simulate_principal_policy.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/iam-2010-05-08/SimulatePrincipalPolicy"
+  },
+  "paginated": true,
+  "input_required": [
+   "PolicySourceArn",
+   "ActionNames"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the response to a successful SimulatePrincipalPolicy or SimulateCustomPolicy request.",
+   "members": {
+    "EvaluationResults": {
+     "type": "list",
+     "doc": "The results of the simulation.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains the results of a simulation. This data type is used by the return parameter of SimulateCustomPolicy and SimulatePrincipalPolicy .",
+      "members": {
+       "EvalActionName": {
+        "type": "string",
+        "doc": "The name of the API operation tested on the indicated resource.",
+        "required": true
+       },
+       "EvalResourceName": {
+        "type": "string",
+        "doc": "The ARN of the resource that the indicated API operation was tested on."
+       },
+       "EvalDecision": {
+        "type": "string",
+        "doc": "The result of the simulation.",
+        "enum": [
+         "allowed",
+         "explicitDeny",
+         "implicitDeny"
+        ],
+        "required": true
+       },
+       "MatchedStatements": {
+        "type": "list",
+        "doc": "A list of the statements in the input policies that determine the result for this scenario. Remember that even if multiple statements allow the operation on the resource, if only one statement denies that operation, then the explicit deny overrides any allow. In addition, the deny statement is the only entry included in the result.",
+        "item": {
+         "type": "structure",
+         "doc": "Contains a reference to a Statement element in a policy document that determines the result of the simulation. This data type is used by the MatchedStatements member of the EvaluationResult type.",
+         "members": {
+          "SourcePolicyId": {
+           "type": "string",
+           "doc": "The identifier of the policy that was provided as an input."
+          },
+          "SourcePolicyType": {
+           "type": "string",
+           "doc": "The type of the policy.",
+           "enum": [
+            "user",
+            "group",
+            "role",
+            "aws-managed",
+            "user-managed",
+            "resource",
+            "none"
+           ]
+          },
+          "StartPosition": {
+           "type": "structure",
+           "doc": "The row and column of the beginning of the Statement in an IAM policy.",
+           "members": {
+            "Line": {
+             "type": "integer",
+             "doc": "The line containing the specified position in the document."
+            },
+            "Column": {
+             "type": "integer",
+             "doc": "The column in the line containing the specified position in the document."
+            }
+           }
+          },
+          "EndPosition": {
+           "type": "structure",
+           "doc": "The row and column of the end of a Statement in an IAM policy.",
+           "members": {
+            "Line": {
+             "type": "integer",
+             "doc": "The line containing the specified position in the document."
+            },
+            "Column": {
+             "type": "integer",
+             "doc": "The column in the line containing the specified position in the document."
+            }
+           }
+          }
+         }
+        }
+       },
+       "MissingContextValues": {
+        "type": "list",
+        "doc": "A list of context keys that are required by the included input policies but that were not provided by one of the input parameters. This list is used when the resource in a simulation is \"*\", either explicitly, or when the ResourceArns parameter blank. If you include a list of resources, then any missing context values are instead included under the ResourceSpecificResults section. To discover the context keys used by a set of policies, you can call GetContextKeysForCustomPolicy or GetContextKey…",
+        "item": {
+         "type": "string"
+        }
+       },
+       "OrganizationsDecisionDetail": {
+        "type": "structure",
+        "doc": "A structure that details how Organizations and its service control policies affect the results of the simulation. Only applies if the simulated user's account is part of an organization.",
+        "members": {
+         "AllowedByOrganizations": {
+          "type": "boolean",
+          "doc": "Specifies whether the simulated operation is allowed by the Organizations service control policies that impact the simulated user's account."
+         }
+        }
+       },
+       "PermissionsBoundaryDecisionDetail": {
+        "type": "structure",
+        "doc": "Contains information about the effect that a permissions boundary has on a policy simulation when the boundary is applied to an IAM entity.",
+        "members": {
+         "AllowedByPermissionsBoundary": {
+          "type": "boolean",
+          "doc": "Specifies whether an action is allowed by a permissions boundary that is applied to an IAM entity (user or role). A value of true means that the permissions boundary does not deny the action. This means that the policy includes an Allow statement that matches the request. In this case, if an identity-based policy also allows the action, the request is allowed. A value of false means that either the requested action is not allowed (implicitly denied) or that the action is explicitly denied by th…"
+         }
+        }
+       },
+       "EvalDecisionDetails": {
+        "type": "map",
+        "doc": "Additional details about the results of the cross-account evaluation decision. This parameter is populated for only cross-account simulations. It contains a brief summary of how each policy type contributes to the final evaluation decision. If the simulation evaluates policies within the same account and includes a resource ARN, then the parameter is present but the response is empty. If the simulation evaluates policies within the same account and specifies all resources ( * ), then the parame…",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string",
+         "enum": [
+          "allowed",
+          "explicitDeny",
+          "implicitDeny"
+         ]
+        }
+       },
+       "ResourceSpecificResults": {
+        "type": "list",
+        "doc": "The individual results of the simulation of the API operation specified in EvalActionName on each resource.",
+        "item": {
+         "type": "structure",
+         "doc": "Contains the result of the simulation of a single API operation call on a single resource. This data type is used by a member of the EvaluationResult data type.",
+         "members": {
+          "EvalResourceName": {
+           "type": "string",
+           "doc": "The name of the simulated resource, in Amazon Resource Name (ARN) format.",
+           "required": true
+          },
+          "EvalResourceDecision": {
+           "type": "string",
+           "doc": "The result of the simulation of the simulated API operation on the resource specified in EvalResourceName .",
+           "enum": [
+            "allowed",
+            "explicitDeny",
+            "implicitDeny"
+           ],
+           "required": true
+          },
+          "MatchedStatements": {
+           "type": "list",
+           "doc": "A list of the statements in the input policies that determine the result for this part of the simulation. Remember that even if multiple statements allow the operation on the resource, if any statement denies that operation, then the explicit deny overrides any allow. In addition, the deny statement is the only entry included in the result.",
+           "item": {
+            "type": "structure",
+            "doc": "Contains a reference to a Statement element in a policy document that determines the result of the simulation. This data type is used by the MatchedStatements member of the EvaluationResult type.",
+            "members": {
+             "SourcePolicyId": {
+              "type": "string",
+              "doc": "The identifier of the policy that was provided as an input."
+             },
+             "SourcePolicyType": {
+              "type": "string",
+              "doc": "The type of the policy.",
+              "enum": [
+               "user",
+               "group",
+               "role",
+               "aws-managed",
+               "user-managed",
+               "resource",
+               "none"
+              ]
+             },
+             "StartPosition": {
+              "type": "structure",
+              "doc": "The row and column of the beginning of the Statement in an IAM policy.",
+              "members": {
+               "Line": {
+                "type": "integer",
+                "doc": "The line containing the specified position in the document."
+               },
+               "Column": {
+                "type": "integer",
+                "doc": "The column in the line containing the specified position in the document."
+               }
+              }
+             },
+             "EndPosition": {
+              "type": "structure",
+              "doc": "The row and column of the end of a Statement in an IAM policy.",
+              "members": {
+               "Line": {
+                "type": "integer",
+                "doc": "The line containing the specified position in the document."
+               },
+               "Column": {
+                "type": "integer",
+                "doc": "The column in the line containing the specified position in the document."
+               }
+              }
+             }
+            }
+           }
+          },
+          "MissingContextValues": {
+           "type": "list",
+           "doc": "A list of context keys that are required by the included input policies but that were not provided by one of the input parameters. This list is used when a list of ARNs is included in the ResourceArns parameter instead of \"*\". If you do not specify individual resources, by setting ResourceArns to \"*\" or by not including the ResourceArns parameter, then any missing context values are instead included under the EvaluationResults section. To discover the context keys used by a set of policies, you…",
+           "item": {
+            "type": "string"
+           }
+          },
+          "EvalDecisionDetails": {
+           "type": "map",
+           "doc": "Additional details about the results of the evaluation decision on a single resource. This parameter is returned only for cross-account simulations. This parameter explains how each policy type contributes to the resource-specific evaluation decision.",
+           "key": {
+            "type": "string"
+           },
+           "value": {
+            "type": "string",
+            "enum": [
+             "allowed",
+             "explicitDeny",
+             "implicitDeny"
+            ]
+           }
+          },
+          "PermissionsBoundaryDecisionDetail": {
+           "type": "structure",
+           "doc": "Contains information about the effect that a permissions boundary has on a policy simulation when that boundary is applied to an IAM entity.",
+           "members": {
+            "AllowedByPermissionsBoundary": {
+             "type": "boolean",
+             "doc": "Specifies whether an action is allowed by a permissions boundary that is applied to an IAM entity (user or role). A value of true means that the permissions boundary does not deny the action. This means that the policy includes an Allow statement that matches the request. In this case, if an identity-based policy also allows the action, the request is allowed. A value of false means that either the requested action is not allowed (implicitly denied) or that the action is explicitly denied by th…"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether there are more items to return. If your results were truncated, you can make a subsequent pagination request using the Marker request parameter to retrieve more items. Note that IAM might return fewer than the MaxItems number of results even when there are more results available. We recommend that you check IsTruncated after every call to ensure that you receive all your results."
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "When IsTruncated is true , this element is present and contains the value to use for the Marker parameter in a subsequent pagination request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ecs.describe_task_definition",
+   "eks.describe_cluster"
+  ],
+  "rules": [
+   "REME-0105800001",
+   "REME-0105800002",
+   "REME-0105800003",
+   "REME-0105800004",
+   "REME-0105800006",
+   "REME-0105800007",
+   "REME-0105800008",
+   "REME-0105800009",
+   "REME-0105900001",
+   "REME-0105900002",
+   "REME-0105900003",
+   "REME-0105900004",
+   "REME-0105900005",
+   "REME-0105900006",
+   "REME-0105900007",
+   "REME-0105900008"
+  ]
+ }
+}

@@ -1,0 +1,228 @@
+{
+ "fms.ListComplianceStatus": {
+  "service": "fms",
+  "operation": "ListComplianceStatus",
+  "method": "list_compliance_status",
+  "doc": "Returns an array of PolicyComplianceStatus objects. Use PolicyComplianceStatus to get a summary of which member accounts are protected by the specified policy.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/fms/client/list_compliance_status.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/fms-2018-01-01/ListComplianceStatus"
+  },
+  "paginated": true,
+  "input_required": [
+   "PolicyId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "PolicyComplianceStatusList": {
+     "type": "list",
+     "doc": "An array of PolicyComplianceStatus objects.",
+     "item": {
+      "type": "structure",
+      "doc": "Indicates whether the account is compliant with the specified policy. An account is considered noncompliant if it includes resources that are not protected by the policy, for WAF and Shield Advanced policies, or that are noncompliant with the policy, for security group policies.",
+      "members": {
+       "PolicyOwner": {
+        "type": "string",
+        "doc": "The Amazon Web Services account that created the Firewall Manager policy."
+       },
+       "PolicyId": {
+        "type": "string",
+        "doc": "The ID of the Firewall Manager policy."
+       },
+       "PolicyName": {
+        "type": "string",
+        "doc": "The name of the Firewall Manager policy."
+       },
+       "MemberAccount": {
+        "type": "string",
+        "doc": "The member account ID."
+       },
+       "EvaluationResults": {
+        "type": "list",
+        "doc": "An array of EvaluationResult objects.",
+        "item": {
+         "type": "structure",
+         "doc": "Describes the compliance status for the account. An account is considered noncompliant if it includes resources that are not protected by the specified policy or that don't comply with the policy.",
+         "members": {
+          "ComplianceStatus": {
+           "type": "string",
+           "doc": "Describes an Amazon Web Services account's compliance with the Firewall Manager policy.",
+           "enum": [
+            "COMPLIANT",
+            "NON_COMPLIANT"
+           ]
+          },
+          "ViolatorCount": {
+           "type": "long",
+           "doc": "The number of resources that are noncompliant with the specified policy. For WAF and Shield Advanced policies, a resource is considered noncompliant if it is not associated with the policy. For security group policies, a resource is considered noncompliant if it doesn't comply with the rules of the policy and remediation is disabled or not possible."
+          },
+          "EvaluationLimitExceeded": {
+           "type": "boolean",
+           "doc": "Indicates that over 100 resources are noncompliant with the Firewall Manager policy."
+          }
+         }
+        }
+       },
+       "LastUpdated": {
+        "type": "timestamp",
+        "doc": "Timestamp of the last update to the EvaluationResult objects."
+       },
+       "IssueInfoMap": {
+        "type": "map",
+        "doc": "Details about problems with dependent services, such as WAF or Config, and the error message received that indicates the problem with the service.",
+        "key": {
+         "type": "string",
+         "enum": [
+          "AWSCONFIG",
+          "AWSWAF",
+          "AWSSHIELD_ADVANCED",
+          "AWSVPC"
+         ]
+        },
+        "value": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "If you have more PolicyComplianceStatus objects than the number that you specified for MaxResults in the request, the response includes a NextToken value. To list more PolicyComplianceStatus objects, submit another ListComplianceStatus request, and specify the NextToken value from the response in the NextToken value in the next request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "fms.list_policies"
+  ]
+ },
+ "fms.ListPolicies": {
+  "service": "fms",
+  "operation": "ListPolicies",
+  "method": "list_policies",
+  "doc": "Returns an array of PolicySummary objects.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/fms/client/list_policies.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/fms-2018-01-01/ListPolicies"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "PolicyList": {
+     "type": "list",
+     "doc": "An array of PolicySummary objects.",
+     "item": {
+      "type": "structure",
+      "doc": "Details of the Firewall Manager policy.",
+      "members": {
+       "PolicyArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the specified policy."
+       },
+       "PolicyId": {
+        "type": "string",
+        "doc": "The ID of the specified policy."
+       },
+       "PolicyName": {
+        "type": "string",
+        "doc": "The name of the specified policy."
+       },
+       "ResourceType": {
+        "type": "string",
+        "doc": "The type of resource protected by or in scope of the policy. This is in the format shown in the Amazon Web Services Resource Types Reference ."
+       },
+       "SecurityServiceType": {
+        "type": "string",
+        "doc": "The service that the policy is using to protect the resources. This specifies the type of policy that is created, either an WAF policy, a Shield Advanced policy, or a security group policy.",
+        "enum": [
+         "WAF",
+         "WAFV2",
+         "SHIELD_ADVANCED",
+         "SECURITY_GROUPS_COMMON",
+         "SECURITY_GROUPS_CONTENT_AUDIT",
+         "SECURITY_GROUPS_USAGE_AUDIT",
+         "NETWORK_FIREWALL",
+         "DNS_FIREWALL",
+         "THIRD_PARTY_FIREWALL",
+         "IMPORT_NETWORK_FIREWALL",
+         "NETWORK_ACL_COMMON"
+        ]
+       },
+       "RemediationEnabled": {
+        "type": "boolean",
+        "doc": "Indicates if the policy should be automatically applied to new resources."
+       },
+       "DeleteUnusedFMManagedResources": {
+        "type": "boolean",
+        "doc": "Indicates whether Firewall Manager should automatically remove protections from resources that leave the policy scope and clean up resources that Firewall Manager is managing for accounts when those accounts leave policy scope. For example, Firewall Manager will disassociate a Firewall Manager managed web ACL from a protected customer resource when the customer resource leaves policy scope. By default, Firewall Manager doesn't remove protections or delete Firewall Manager managed resources. Thi…"
+       },
+       "PolicyStatus": {
+        "type": "string",
+        "doc": "Indicates whether the policy is in or out of an admin's policy or Region scope. ACTIVE - The administrator can manage and delete the policy. OUT_OF_ADMIN_SCOPE - The administrator can view the policy, but they can't edit or delete the policy. Existing policy protections stay in place. Any new resources that come into scope of the policy won't be protected.",
+        "enum": [
+         "ACTIVE",
+         "OUT_OF_ADMIN_SCOPE"
+        ]
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "If you have more PolicySummary objects than the number that you specified for MaxResults in the request, the response includes a NextToken value. To list more PolicySummary objects, submit another ListPolicies request, and specify the NextToken value from the response in the NextToken value in the next request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "fms.list_policies"
+  ]
+ },
+ "fms.ListTagsForResource": {
+  "service": "fms",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "Retrieves the list of tags for the specified Amazon Web Services resource.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/fms/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/fms-2018-01-01/ListTagsForResource"
+  },
+  "paginated": false,
+  "input_required": [
+   "ResourceArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "TagList": {
+     "type": "list",
+     "doc": "The tags associated with the resource.",
+     "item": {
+      "type": "structure",
+      "doc": "A collection of key:value pairs associated with an Amazon Web Services resource. The key:value pair can be anything you define. Typically, the tag key represents a category (such as \"environment\") and the tag value represents a specific value within that category (such as \"test,\" \"development,\" or \"production\"). You can add up to 50 tags to each Amazon Web Services resource.",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "Part of the key:value pair that defines a tag. You can use a tag key to describe a category of information, such as \"customer.\" Tag keys are case-sensitive.",
+        "required": true
+       },
+       "Value": {
+        "type": "string",
+        "doc": "Part of the key:value pair that defines a tag. You can use a tag value to describe a specific value within a category, such as \"companyA\" or \"companyB.\" Tag values are case-sensitive.",
+        "required": true
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "fms.list_policies"
+  ]
+ }
+}

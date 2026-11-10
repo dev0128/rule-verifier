@@ -1,0 +1,693 @@
+{
+ "acm.DescribeCertificate": {
+  "service": "acm",
+  "operation": "DescribeCertificate",
+  "method": "describe_certificate",
+  "doc": "Returns detailed metadata about the specified ACM certificate. If you have just created a certificate using the RequestCertificate action, there is a delay of several seconds before you can retrieve information about it.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/acm/client/describe_certificate.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/DescribeCertificate"
+  },
+  "paginated": false,
+  "input_required": [
+   "CertificateArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Certificate": {
+     "type": "structure",
+     "doc": "Metadata about an ACM certificate.",
+     "members": {
+      "CertificateArn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of the certificate. For more information about ARNs, see Amazon Resource Names (ARNs) in the Amazon Web Services General Reference ."
+      },
+      "DomainName": {
+       "type": "string",
+       "doc": "The fully qualified domain name for the certificate, such as www.example.com or example.com."
+      },
+      "SubjectAlternativeNames": {
+       "type": "list",
+       "doc": "One or more domain names (subject alternative names) included in the certificate. This list contains the domain names that are bound to the public key that is contained in the certificate. The subject alternative names include the canonical domain name (CN) of the certificate and additional domain names that can be used to connect to the website.",
+       "item": {
+        "type": "string"
+       }
+      },
+      "DomainValidationOptions": {
+       "type": "list",
+       "doc": "Contains information about the initial validation of each domain name that occurs as a result of the RequestCertificate request. This field exists only when the certificate type is AMAZON_ISSUED .",
+       "item": {
+        "type": "structure",
+        "doc": "Contains information about the validation of each domain name in the certificate.",
+        "members": {
+         "DomainName": {
+          "type": "string",
+          "doc": "A fully qualified domain name (FQDN) in the certificate. For example, www.example.com or example.com .",
+          "required": true
+         },
+         "ValidationEmails": {
+          "type": "list",
+          "doc": "A list of email addresses that ACM used to send domain validation emails.",
+          "item": {
+           "type": "string"
+          }
+         },
+         "ValidationDomain": {
+          "type": "string",
+          "doc": "The domain name that ACM used to send domain validation emails."
+         },
+         "ValidationStatus": {
+          "type": "string",
+          "doc": "The validation status of the domain name. This can be one of the following values: PENDING_VALIDATION SUCCESS FAILED",
+          "enum": [
+           "PENDING_VALIDATION",
+           "SUCCESS",
+           "FAILED"
+          ]
+         },
+         "ResourceRecord": {
+          "type": "structure",
+          "doc": "Contains the CNAME record that you add to your DNS database for domain validation. For more information, see Use DNS to Validate Domain Ownership . Note: The CNAME information that you need does not include the name of your domain. If you include  your domain name in the DNS database CNAME record, validation fails.  For example, if the name is \"_a79865eb4cd1a6ab990a45779b4e0b96.yourdomain.com\", only \"_a79865eb4cd1a6ab990a45779b4e0b96\" must be used.",
+          "members": {
+           "Name": {
+            "type": "string",
+            "doc": "The name of the DNS record to create in your domain. This is supplied by ACM.",
+            "required": true
+           },
+           "Type": {
+            "type": "string",
+            "doc": "The type of DNS record. Currently this can be CNAME .",
+            "enum": [
+             "CNAME"
+            ],
+            "required": true
+           },
+           "Value": {
+            "type": "string",
+            "doc": "The value of the CNAME record to add to your DNS database. This is supplied by ACM.",
+            "required": true
+           }
+          }
+         },
+         "ValidationMethod": {
+          "type": "string",
+          "doc": "Specifies the domain validation method.",
+          "enum": [
+           "EMAIL",
+           "DNS"
+          ]
+         }
+        }
+       }
+      },
+      "Serial": {
+       "type": "string",
+       "doc": "The serial number of the certificate."
+      },
+      "Subject": {
+       "type": "string",
+       "doc": "The name of the entity that is associated with the public key contained in the certificate."
+      },
+      "Issuer": {
+       "type": "string",
+       "doc": "The name of the certificate authority that issued and signed the certificate."
+      },
+      "CreatedAt": {
+       "type": "timestamp",
+       "doc": "The time at which the certificate was requested."
+      },
+      "IssuedAt": {
+       "type": "timestamp",
+       "doc": "The time at which the certificate was issued. This value exists only when the certificate type is AMAZON_ISSUED ."
+      },
+      "ImportedAt": {
+       "type": "timestamp",
+       "doc": "The date and time when the certificate was imported. This value exists only when the certificate type is IMPORTED ."
+      },
+      "Status": {
+       "type": "string",
+       "doc": "The status of the certificate. A certificate enters status PENDING_VALIDATION upon being requested, unless it fails for any of the reasons given in the troubleshooting topic Certificate request fails . ACM makes repeated attempts to validate a certificate for 72 hours and then times out. If a certificate shows status FAILED or VALIDATION_TIMED_OUT, delete the request, correct the issue with DNS validation or Email validation , and try again. If validation succeeds, the certificate enters status…",
+       "enum": [
+        "PENDING_VALIDATION",
+        "ISSUED",
+        "INACTIVE",
+        "EXPIRED",
+        "VALIDATION_TIMED_OUT",
+        "REVOKED",
+        "FAILED"
+       ]
+      },
+      "RevokedAt": {
+       "type": "timestamp",
+       "doc": "The time at which the certificate was revoked. This value exists only when the certificate status is REVOKED ."
+      },
+      "RevocationReason": {
+       "type": "string",
+       "doc": "The reason the certificate was revoked. This value exists only when the certificate status is REVOKED .",
+       "enum": [
+        "UNSPECIFIED",
+        "KEY_COMPROMISE",
+        "CA_COMPROMISE",
+        "AFFILIATION_CHANGED",
+        "SUPERCEDED",
+        "CESSATION_OF_OPERATION",
+        "CERTIFICATE_HOLD",
+        "REMOVE_FROM_CRL",
+        "PRIVILEGE_WITHDRAWN",
+        "A_A_COMPROMISE"
+       ]
+      },
+      "NotBefore": {
+       "type": "timestamp",
+       "doc": "The time before which the certificate is not valid."
+      },
+      "NotAfter": {
+       "type": "timestamp",
+       "doc": "The time after which the certificate is not valid."
+      },
+      "KeyAlgorithm": {
+       "type": "string",
+       "doc": "The algorithm that was used to generate the public-private key pair.",
+       "enum": [
+        "RSA_1024",
+        "RSA_2048",
+        "RSA_3072",
+        "RSA_4096",
+        "EC_prime256v1",
+        "EC_secp384r1",
+        "EC_secp521r1"
+       ]
+      },
+      "SignatureAlgorithm": {
+       "type": "string",
+       "doc": "The algorithm that was used to sign the certificate."
+      },
+      "InUseBy": {
+       "type": "list",
+       "doc": "A list of ARNs for the Amazon Web Services resources that are using the certificate. A certificate can be used by multiple Amazon Web Services resources.",
+       "item": {
+        "type": "string"
+       }
+      },
+      "FailureReason": {
+       "type": "string",
+       "doc": "The reason the certificate request failed. This value exists only when the certificate status is FAILED . For more information, see Certificate Request Failed in the Certificate Manager User Guide .",
+       "enum": [
+        "NO_AVAILABLE_CONTACTS",
+        "ADDITIONAL_VERIFICATION_REQUIRED",
+        "DOMAIN_NOT_ALLOWED",
+        "INVALID_PUBLIC_DOMAIN",
+        "DOMAIN_VALIDATION_DENIED",
+        "CAA_ERROR",
+        "PCA_LIMIT_EXCEEDED",
+        "PCA_INVALID_ARN",
+        "PCA_INVALID_STATE",
+        "PCA_REQUEST_FAILED",
+        "PCA_NAME_CONSTRAINTS_VALIDATION",
+        "PCA_RESOURCE_NOT_FOUND",
+        "PCA_INVALID_ARGS",
+        "PCA_INVALID_DURATION",
+        "PCA_ACCESS_DENIED",
+        "SLR_NOT_FOUND",
+        "OTHER"
+       ]
+      },
+      "Type": {
+       "type": "string",
+       "doc": "The source of the certificate. For certificates provided by ACM, this value is AMAZON_ISSUED . For certificates that you imported with ImportCertificate , this value is IMPORTED . ACM does not provide managed renewal for imported certificates. For more information about the differences between certificates that you import and those that ACM provides, see Importing Certificates in the Certificate Manager User Guide .",
+       "enum": [
+        "IMPORTED",
+        "AMAZON_ISSUED",
+        "PRIVATE"
+       ]
+      },
+      "RenewalSummary": {
+       "type": "structure",
+       "doc": "Contains information about the status of ACM's managed renewal for the certificate. This field exists only when the certificate type is AMAZON_ISSUED .",
+       "members": {
+        "RenewalStatus": {
+         "type": "string",
+         "doc": "The status of ACM's managed renewal of the certificate.",
+         "enum": [
+          "PENDING_AUTO_RENEWAL",
+          "PENDING_VALIDATION",
+          "SUCCESS",
+          "FAILED"
+         ],
+         "required": true
+        },
+        "DomainValidationOptions": {
+         "type": "list",
+         "doc": "Contains information about the validation of each domain name in the certificate, as it pertains to ACM's managed renewal . This is different from the initial validation that occurs as a result of the RequestCertificate request. This field exists only when the certificate type is AMAZON_ISSUED .",
+         "item": {
+          "type": "structure",
+          "doc": "Contains information about the validation of each domain name in the certificate.",
+          "members": {
+           "DomainName": {
+            "type": "string",
+            "doc": "A fully qualified domain name (FQDN) in the certificate. For example, www.example.com or example.com .",
+            "required": true
+           },
+           "ValidationEmails": {
+            "type": "list",
+            "doc": "A list of email addresses that ACM used to send domain validation emails.",
+            "item": {
+             "type": "string"
+            }
+           },
+           "ValidationDomain": {
+            "type": "string",
+            "doc": "The domain name that ACM used to send domain validation emails."
+           },
+           "ValidationStatus": {
+            "type": "string",
+            "doc": "The validation status of the domain name. This can be one of the following values: PENDING_VALIDATION SUCCESS FAILED",
+            "enum": [
+             "PENDING_VALIDATION",
+             "SUCCESS",
+             "FAILED"
+            ]
+           },
+           "ResourceRecord": {
+            "type": "structure",
+            "doc": "Contains the CNAME record that you add to your DNS database for domain validation. For more information, see Use DNS to Validate Domain Ownership . Note: The CNAME information that you need does not include the name of your domain. If you include  your domain name in the DNS database CNAME record, validation fails.  For example, if the name is \"_a79865eb4cd1a6ab990a45779b4e0b96.yourdomain.com\", only \"_a79865eb4cd1a6ab990a45779b4e0b96\" must be used.",
+            "members": {
+             "Name": {
+              "type": "string",
+              "doc": "The name of the DNS record to create in your domain. This is supplied by ACM.",
+              "required": true
+             },
+             "Type": {
+              "type": "string",
+              "doc": "The type of DNS record. Currently this can be CNAME .",
+              "enum": [
+               "CNAME"
+              ],
+              "required": true
+             },
+             "Value": {
+              "type": "string",
+              "doc": "The value of the CNAME record to add to your DNS database. This is supplied by ACM.",
+              "required": true
+             }
+            }
+           },
+           "ValidationMethod": {
+            "type": "string",
+            "doc": "Specifies the domain validation method.",
+            "enum": [
+             "EMAIL",
+             "DNS"
+            ]
+           }
+          }
+         },
+         "required": true
+        },
+        "RenewalStatusReason": {
+         "type": "string",
+         "doc": "The reason that a renewal request was unsuccessful.",
+         "enum": [
+          "NO_AVAILABLE_CONTACTS",
+          "ADDITIONAL_VERIFICATION_REQUIRED",
+          "DOMAIN_NOT_ALLOWED",
+          "INVALID_PUBLIC_DOMAIN",
+          "DOMAIN_VALIDATION_DENIED",
+          "CAA_ERROR",
+          "PCA_LIMIT_EXCEEDED",
+          "PCA_INVALID_ARN",
+          "PCA_INVALID_STATE",
+          "PCA_REQUEST_FAILED",
+          "PCA_NAME_CONSTRAINTS_VALIDATION",
+          "PCA_RESOURCE_NOT_FOUND",
+          "PCA_INVALID_ARGS",
+          "PCA_INVALID_DURATION",
+          "PCA_ACCESS_DENIED",
+          "SLR_NOT_FOUND",
+          "OTHER"
+         ]
+        },
+        "UpdatedAt": {
+         "type": "timestamp",
+         "doc": "The time at which the renewal summary was last updated.",
+         "required": true
+        }
+       }
+      },
+      "KeyUsages": {
+       "type": "list",
+       "doc": "A list of Key Usage X.509 v3 extension objects. Each object is a string value that identifies the purpose of the public key contained in the certificate. Possible extension values include DIGITAL_SIGNATURE, KEY_ENCHIPHERMENT, NON_REPUDIATION, and more.",
+       "item": {
+        "type": "structure",
+        "doc": "The Key Usage X.509 v3 extension defines the purpose of the public key contained in the certificate.",
+        "members": {
+         "Name": {
+          "type": "string",
+          "doc": "A string value that contains a Key Usage extension name.",
+          "enum": [
+           "DIGITAL_SIGNATURE",
+           "NON_REPUDIATION",
+           "KEY_ENCIPHERMENT",
+           "DATA_ENCIPHERMENT",
+           "KEY_AGREEMENT",
+           "CERTIFICATE_SIGNING",
+           "CRL_SIGNING",
+           "ENCIPHER_ONLY",
+           "DECIPHER_ONLY",
+           "ANY",
+           "CUSTOM"
+          ]
+         }
+        }
+       }
+      },
+      "ExtendedKeyUsages": {
+       "type": "list",
+       "doc": "Contains a list of Extended Key Usage X.509 v3 extension objects. Each object specifies a purpose for which the certificate public key can be used and consists of a name and an object identifier (OID).",
+       "item": {
+        "type": "structure",
+        "doc": "The Extended Key Usage X.509 v3 extension defines one or more purposes for which the public key can be used. This is in addition to or in place of the basic purposes specified by the Key Usage extension.",
+        "members": {
+         "Name": {
+          "type": "string",
+          "doc": "The name of an Extended Key Usage value.",
+          "enum": [
+           "TLS_WEB_SERVER_AUTHENTICATION",
+           "TLS_WEB_CLIENT_AUTHENTICATION",
+           "CODE_SIGNING",
+           "EMAIL_PROTECTION",
+           "TIME_STAMPING",
+           "OCSP_SIGNING",
+           "IPSEC_END_SYSTEM",
+           "IPSEC_TUNNEL",
+           "IPSEC_USER",
+           "ANY",
+           "NONE",
+           "CUSTOM"
+          ]
+         },
+         "OID": {
+          "type": "string",
+          "doc": "An object identifier (OID) for the extension value. OIDs are strings of numbers separated by periods. The following OIDs are defined in RFC 3280 and RFC 5280. 1.3.6.1.5.5.7.3.1 (TLS_WEB_SERVER_AUTHENTICATION) 1.3.6.1.5.5.7.3.2 (TLS_WEB_CLIENT_AUTHENTICATION) 1.3.6.1.5.5.7.3.3 (CODE_SIGNING) 1.3.6.1.5.5.7.3.4 (EMAIL_PROTECTION) 1.3.6.1.5.5.7.3.8 (TIME_STAMPING) 1.3.6.1.5.5.7.3.9 (OCSP_SIGNING) 1.3.6.1.5.5.7.3.5 (IPSEC_END_SYSTEM) 1.3.6.1.5.5.7.3.6 (IPSEC_TUNNEL) 1.3.6.1.5.5.7.3.7 (IPSEC_USER)"
+         }
+        }
+       }
+      },
+      "CertificateAuthorityArn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of the private certificate authority (CA) that issued the certificate. This has the following format: arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012"
+      },
+      "RenewalEligibility": {
+       "type": "string",
+       "doc": "Specifies whether the certificate is eligible for renewal. At this time, only exported private certificates can be renewed with the RenewCertificate command.",
+       "enum": [
+        "ELIGIBLE",
+        "INELIGIBLE"
+       ]
+      },
+      "Options": {
+       "type": "structure",
+       "doc": "Value that specifies whether to add the certificate to a transparency log. Certificate transparency makes it possible to detect SSL certificates that have been mistakenly or maliciously issued. A browser might respond to certificate that has not been logged by showing an error message. The logs are cryptographically secure.",
+       "members": {
+        "CertificateTransparencyLoggingPreference": {
+         "type": "string",
+         "doc": "You can opt out of certificate transparency logging by specifying the DISABLED option. Opt in by specifying ENABLED .",
+         "enum": [
+          "ENABLED",
+          "DISABLED"
+         ]
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "Certificate.AcmeAccountId",
+   "Certificate.AcmeEndpointArn",
+   "Certificate.CertificateKeyPairOrigin",
+   "Certificate.DomainValidationOptions[].HttpRedirect",
+   "Certificate.DomainValidationOptions[].HttpRedirect.RedirectFrom",
+   "Certificate.DomainValidationOptions[].HttpRedirect.RedirectTo",
+   "Certificate.ManagedBy",
+   "Certificate.Options.Export",
+   "Certificate.Options.ValidationMethod",
+   "Certificate.RenewalSummary.DomainValidationOptions[].HttpRedirect",
+   "Certificate.RenewalSummary.DomainValidationOptions[].HttpRedirect.RedirectFrom",
+   "Certificate.RenewalSummary.DomainValidationOptions[].HttpRedirect.RedirectTo",
+   "Certificate.UpdateSummary",
+   "Certificate.UpdateSummary.DomainValidationMethodUpdateSummary",
+   "Certificate.UpdateSummary.DomainValidationMethodUpdateSummary.From",
+   "Certificate.UpdateSummary.DomainValidationMethodUpdateSummary.To",
+   "Certificate.UpdateSummary.RequestedAt",
+   "Certificate.UpdateSummary.Status",
+   "Certificate.UpdateSummary.Type",
+   "Certificate.UpdateSummary.UpdatedAt"
+  ],
+  "raw_keys": [
+   "acm.describe_certificate",
+   "acm.list_certificates",
+   "acm.list_tags_for_certificate"
+  ],
+  "rules": [
+   "REME-0101100001",
+   "REME-0101100002",
+   "REME-0101100003",
+   "REME-0101100004"
+  ]
+ },
+ "acm.ListCertificates": {
+  "service": "acm",
+  "operation": "ListCertificates",
+  "method": "list_certificates",
+  "doc": "Retrieves a list of certificate ARNs and domain names. By default, the API returns RSA_2048 certificates. To return all certificates in the account, include the keyType filter with the values [RSA_1024, RSA_2048, RSA_3072, RSA_4096, EC_prime256v1, EC_secp384r1, EC_secp521r1] . In addition to keyType , you can also filter by the CertificateStatuses , keyUsage , and extendedKeyUsage attributes on the certificate. For more information, see Filters .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/acm/client/list_certificates.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ListCertificates"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextToken": {
+     "type": "string",
+     "doc": "When the list is truncated, this value is present and contains the value to use for the NextToken parameter in a subsequent pagination request."
+    },
+    "CertificateSummaryList": {
+     "type": "list",
+     "doc": "A list of ACM certificates.",
+     "item": {
+      "type": "structure",
+      "doc": "This structure is returned in the response object of ListCertificates action.",
+      "members": {
+       "CertificateArn": {
+        "type": "string",
+        "doc": "Amazon Resource Name (ARN) of the certificate. This is of the form: arn:aws:acm:region:123456789012:certificate/12345678-1234-1234-1234-123456789012 For more information about ARNs, see Amazon Resource Names (ARNs) ."
+       },
+       "DomainName": {
+        "type": "string",
+        "doc": "Fully qualified domain name (FQDN), such as www.example.com or example.com, for the certificate."
+       },
+       "SubjectAlternativeNameSummaries": {
+        "type": "list",
+        "doc": "One or more domain names (subject alternative names) included in the certificate. This list contains the domain names that are bound to the public key that is contained in the certificate. The subject alternative names include the canonical domain name (CN) of the certificate and additional domain names that can be used to connect to the website. When called by ListCertificates , this parameter will only return the first 100 subject alternative names included in the certificate. To display the …",
+        "item": {
+         "type": "string"
+        }
+       },
+       "HasAdditionalSubjectAlternativeNames": {
+        "type": "boolean",
+        "doc": "When called by ListCertificates , indicates whether the full list of subject alternative names has been included in the response. If false, the response includes all of the subject alternative names included in the certificate. If true, the response only includes the first 100 subject alternative names included in the certificate. To display the full list of subject alternative names, use DescribeCertificate ."
+       },
+       "Status": {
+        "type": "string",
+        "doc": "The status of the certificate. A certificate enters status PENDING_VALIDATION upon being requested, unless it fails for any of the reasons given in the troubleshooting topic Certificate request fails . ACM makes repeated attempts to validate a certificate for 72 hours and then times out. If a certificate shows status FAILED or VALIDATION_TIMED_OUT, delete the request, correct the issue with DNS validation or Email validation , and try again. If validation succeeds, the certificate enters status…",
+        "enum": [
+         "PENDING_VALIDATION",
+         "ISSUED",
+         "INACTIVE",
+         "EXPIRED",
+         "VALIDATION_TIMED_OUT",
+         "REVOKED",
+         "FAILED"
+        ]
+       },
+       "Type": {
+        "type": "string",
+        "doc": "The source of the certificate. For certificates provided by ACM, this value is AMAZON_ISSUED . For certificates that you imported with ImportCertificate , this value is IMPORTED . ACM does not provide managed renewal for imported certificates. For more information about the differences between certificates that you import and those that ACM provides, see Importing Certificates in the Certificate Manager User Guide .",
+        "enum": [
+         "IMPORTED",
+         "AMAZON_ISSUED",
+         "PRIVATE"
+        ]
+       },
+       "KeyAlgorithm": {
+        "type": "string",
+        "doc": "The algorithm that was used to generate the public-private key pair.",
+        "enum": [
+         "RSA_1024",
+         "RSA_2048",
+         "RSA_3072",
+         "RSA_4096",
+         "EC_prime256v1",
+         "EC_secp384r1",
+         "EC_secp521r1"
+        ]
+       },
+       "KeyUsages": {
+        "type": "list",
+        "doc": "A list of Key Usage X.509 v3 extension objects. Each object is a string value that identifies the purpose of the public key contained in the certificate. Possible extension values include DIGITAL_SIGNATURE, KEY_ENCHIPHERMENT, NON_REPUDIATION, and more.",
+        "item": {
+         "type": "string",
+         "enum": [
+          "DIGITAL_SIGNATURE",
+          "NON_REPUDIATION",
+          "KEY_ENCIPHERMENT",
+          "DATA_ENCIPHERMENT",
+          "KEY_AGREEMENT",
+          "CERTIFICATE_SIGNING",
+          "CRL_SIGNING",
+          "ENCIPHER_ONLY",
+          "DECIPHER_ONLY",
+          "ANY",
+          "CUSTOM"
+         ]
+        }
+       },
+       "ExtendedKeyUsages": {
+        "type": "list",
+        "doc": "Contains a list of Extended Key Usage X.509 v3 extension objects. Each object specifies a purpose for which the certificate public key can be used and consists of a name and an object identifier (OID).",
+        "item": {
+         "type": "string",
+         "enum": [
+          "TLS_WEB_SERVER_AUTHENTICATION",
+          "TLS_WEB_CLIENT_AUTHENTICATION",
+          "CODE_SIGNING",
+          "EMAIL_PROTECTION",
+          "TIME_STAMPING",
+          "OCSP_SIGNING",
+          "IPSEC_END_SYSTEM",
+          "IPSEC_TUNNEL",
+          "IPSEC_USER",
+          "ANY",
+          "NONE",
+          "CUSTOM"
+         ]
+        }
+       },
+       "InUse": {
+        "type": "boolean",
+        "doc": "Indicates whether the certificate is currently in use by any Amazon Web Services resources."
+       },
+       "Exported": {
+        "type": "boolean",
+        "doc": "Indicates whether the certificate has been exported. This value exists only when the certificate type is PRIVATE ."
+       },
+       "RenewalEligibility": {
+        "type": "string",
+        "doc": "Specifies whether the certificate is eligible for renewal. At this time, only exported private certificates can be renewed with the RenewCertificate command.",
+        "enum": [
+         "ELIGIBLE",
+         "INELIGIBLE"
+        ]
+       },
+       "NotBefore": {
+        "type": "timestamp",
+        "doc": "The time before which the certificate is not valid."
+       },
+       "NotAfter": {
+        "type": "timestamp",
+        "doc": "The time after which the certificate is not valid."
+       },
+       "CreatedAt": {
+        "type": "timestamp",
+        "doc": "The time at which the certificate was requested."
+       },
+       "IssuedAt": {
+        "type": "timestamp",
+        "doc": "The time at which the certificate was issued. This value exists only when the certificate type is AMAZON_ISSUED ."
+       },
+       "ImportedAt": {
+        "type": "timestamp",
+        "doc": "The date and time when the certificate was imported. This value exists only when the certificate type is IMPORTED ."
+       },
+       "RevokedAt": {
+        "type": "timestamp",
+        "doc": "The time at which the certificate was revoked. This value exists only when the certificate status is REVOKED ."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "CertificateSummaryList[].CertificateKeyPairOrigin",
+   "CertificateSummaryList[].ExportOption",
+   "CertificateSummaryList[].ManagedBy"
+  ],
+  "raw_keys": [
+   "acm.describe_certificate",
+   "acm.list_certificates",
+   "acm.list_tags_for_certificate"
+  ],
+  "rules": [
+   "REME-0101100001",
+   "REME-0101100002",
+   "REME-0101100003",
+   "REME-0101100004"
+  ]
+ },
+ "acm.ListTagsForCertificate": {
+  "service": "acm",
+  "operation": "ListTagsForCertificate",
+  "method": "list_tags_for_certificate",
+  "doc": "Lists the tags that have been applied to the ACM certificate. Use the certificate's Amazon Resource Name (ARN) to specify the certificate. To add a tag to an ACM certificate, use the AddTagsToCertificate action. To delete a tag, use the RemoveTagsFromCertificate action.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/acm/client/list_tags_for_certificate.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ListTagsForCertificate"
+  },
+  "paginated": false,
+  "input_required": [
+   "CertificateArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Tags": {
+     "type": "list",
+     "doc": "The key-value pairs that define the applied tags.",
+     "item": {
+      "type": "structure",
+      "doc": "A key-value pair that identifies or specifies metadata about an ACM resource.",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "The key of the tag.",
+        "required": true
+       },
+       "Value": {
+        "type": "string",
+        "doc": "The value of the tag."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "acm.describe_certificate",
+   "acm.list_certificates",
+   "acm.list_tags_for_certificate"
+  ],
+  "rules": [
+   "REME-0101100001",
+   "REME-0101100002",
+   "REME-0101100003",
+   "REME-0101100004"
+  ]
+ }
+}

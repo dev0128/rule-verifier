@@ -1,0 +1,132 @@
+{
+ "securityhub.DescribeHub": {
+  "service": "securityhub",
+  "operation": "DescribeHub",
+  "method": "describe_hub",
+  "doc": "Returns details about the Hub resource in your account, including the HubArn and the time when you enabled Security Hub.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/securityhub/client/describe_hub.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeHub"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "HubArn": {
+     "type": "string",
+     "doc": "The ARN of the Hub resource that was retrieved."
+    },
+    "SubscribedAt": {
+     "type": "string",
+     "doc": "The date and time when Security Hub was enabled in the account."
+    },
+    "AutoEnableControls": {
+     "type": "boolean",
+     "doc": "Whether to automatically enable new controls when they are added to standards that are enabled. If set to true , then new controls for enabled standards are enabled automatically. If set to false , then new controls are not enabled. When you automatically enable new controls, you can interact with the controls in the console and programmatically immediately after release. However, automatically enabled controls have a temporary default status of DISABLED . It can take up to several days for Sec…"
+    },
+    "ControlFindingGenerator": {
+     "type": "string",
+     "doc": "Specifies whether the calling account has consolidated control findings turned on. If the value for this field is set to SECURITY_CONTROL , Security Hub generates a single finding for a control check even when the check applies to multiple enabled standards. If the value for this field is set to STANDARD_CONTROL , Security Hub generates separate findings for a control check when the check applies to multiple enabled standards. The value for this field in a member account matches the value in th…",
+     "enum": [
+      "STANDARD_CONTROL",
+      "SECURITY_CONTROL"
+     ]
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "securityhub.describe_hub"
+  ],
+  "rules": [
+   "REME-0105100001"
+  ]
+ },
+ "securityhub.GetEnabledStandards": {
+  "service": "securityhub",
+  "operation": "GetEnabledStandards",
+  "method": "get_enabled_standards",
+  "doc": "Returns a list of the standards that are currently enabled.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/securityhub/client/get_enabled_standards.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetEnabledStandards"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "StandardsSubscriptions": {
+     "type": "list",
+     "doc": "The list of StandardsSubscriptions objects that include information about the enabled standards.",
+     "item": {
+      "type": "structure",
+      "doc": "A resource that represents your subscription to a supported standard.",
+      "members": {
+       "StandardsSubscriptionArn": {
+        "type": "string",
+        "doc": "The ARN of a resource that represents your subscription to a supported standard.",
+        "required": true
+       },
+       "StandardsArn": {
+        "type": "string",
+        "doc": "The ARN of a standard.",
+        "required": true
+       },
+       "StandardsInput": {
+        "type": "map",
+        "doc": "A key-value pair of input for the standard.",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string"
+        },
+        "required": true
+       },
+       "StandardsStatus": {
+        "type": "string",
+        "doc": "The status of the standard subscription. The status values are as follows: PENDING - Standard is in the process of being enabled. READY - Standard is enabled. INCOMPLETE - Standard could not be enabled completely. Some controls may not be available. DELETING - Standard is in the process of being disabled. FAILED - Standard could not be disabled.",
+        "enum": [
+         "PENDING",
+         "READY",
+         "FAILED",
+         "DELETING",
+         "INCOMPLETE"
+        ],
+        "required": true
+       },
+       "StandardsStatusReason": {
+        "type": "structure",
+        "doc": "The reason for the current status.",
+        "members": {
+         "StatusReasonCode": {
+          "type": "string",
+          "doc": "The reason code that represents the reason for the current status of a standard subscription.",
+          "enum": [
+           "NO_AVAILABLE_CONFIGURATION_RECORDER",
+           "INTERNAL_ERROR"
+          ],
+          "required": true
+         }
+        }
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The pagination token to use to request the next page of results."
+    }
+   }
+  },
+  "added_in_latest": [
+   "StandardsSubscriptions[].Provider",
+   "StandardsSubscriptions[].StandardsControlsUpdatable"
+  ],
+  "raw_keys": [
+   "securityhub.get_enabled_standards"
+  ]
+ }
+}

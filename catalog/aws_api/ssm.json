@@ -1,0 +1,832 @@
+{
+ "ssm.DescribeDocumentPermission": {
+  "service": "ssm",
+  "operation": "DescribeDocumentPermission",
+  "method": "describe_document_permission",
+  "doc": "Describes the permissions for a Amazon Web Services Systems Manager document (SSM document). If you created the document, you are the owner. If a document is shared, it can either be shared privately (by specifying a user's Amazon Web Services account ID) or publicly ( All ).",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm/client/describe_document_permission.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeDocumentPermission"
+  },
+  "paginated": false,
+  "input_required": [
+   "Name",
+   "PermissionType"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "AccountIds": {
+     "type": "list",
+     "doc": "The account IDs that have permission to use this document. The ID can be either an Amazon Web Services account or All .",
+     "item": {
+      "type": "string"
+     }
+    },
+    "AccountSharingInfoList": {
+     "type": "list",
+     "doc": "A list of Amazon Web Services accounts where the current document is shared and the version shared with each account.",
+     "item": {
+      "type": "structure",
+      "doc": "Information includes the Amazon Web Services account ID where the current document is shared and the version shared with that account.",
+      "members": {
+       "AccountId": {
+        "type": "string",
+        "doc": "The Amazon Web Services account ID where the current document is shared."
+       },
+       "SharedDocumentVersion": {
+        "type": "string",
+        "doc": "The version of the current document shared with the account."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The token for the next set of items to return. Use this token to get the next set of results."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ssm.list_documents"
+  ],
+  "rules": [
+   "REME-0103200005",
+   "REME-0103200006"
+  ]
+ },
+ "ssm.DescribeInstanceInformation": {
+  "service": "ssm",
+  "operation": "DescribeInstanceInformation",
+  "method": "describe_instance_information",
+  "doc": "Provides information about one or more of your managed nodes, including the operating system platform, SSM Agent version, association status, and IP address. This operation does not return information for nodes that are either Stopped or Terminated. If you specify one or more node IDs, the operation returns information for those managed nodes. If you don't specify node IDs, it returns information for all your managed nodes. If you specify a node ID that isn't valid or a node that you don't own, you receive an error. The IamRole field returned for this API operation is the role assigned to an Amazon EC2 instance configured with a Systems Manager Quick Setup host management configuration or the role assigned to an on-premises managed node.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm/client/describe_instance_information.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeInstanceInformation"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "InstanceInformationList": {
+     "type": "list",
+     "doc": "The managed node information list.",
+     "item": {
+      "type": "structure",
+      "doc": "Describes a filter for a specific list of managed nodes.",
+      "members": {
+       "InstanceId": {
+        "type": "string",
+        "doc": "The managed node ID."
+       },
+       "PingStatus": {
+        "type": "string",
+        "doc": "Connection status of SSM Agent. The status Inactive has been deprecated and is no longer in use.",
+        "enum": [
+         "Online",
+         "ConnectionLost",
+         "Inactive"
+        ]
+       },
+       "LastPingDateTime": {
+        "type": "timestamp",
+        "doc": "The date and time when the agent last pinged the Systems Manager service."
+       },
+       "AgentVersion": {
+        "type": "string",
+        "doc": "The version of SSM Agent running on your Linux managed node."
+       },
+       "IsLatestVersion": {
+        "type": "boolean",
+        "doc": "Indicates whether the latest version of SSM Agent is running on your Linux managed node. This field doesn't indicate whether or not the latest version is installed on Windows managed nodes, because some older versions of Windows Server use the EC2Config service to process Systems Manager requests."
+       },
+       "PlatformType": {
+        "type": "string",
+        "doc": "The operating system platform type.",
+        "enum": [
+         "Windows",
+         "Linux",
+         "MacOS"
+        ]
+       },
+       "PlatformName": {
+        "type": "string",
+        "doc": "The name of the operating system platform running on your managed node."
+       },
+       "PlatformVersion": {
+        "type": "string",
+        "doc": "The version of the OS platform running on your managed node."
+       },
+       "ActivationId": {
+        "type": "string",
+        "doc": "The activation ID created by Amazon Web Services Systems Manager when the server or virtual machine (VM) was registered."
+       },
+       "IamRole": {
+        "type": "string",
+        "doc": "The role assigned to an Amazon EC2 instance configured with a Systems Manager Quick Setup host management configuration or the role assigned to an on-premises managed node. This call doesn't return the IAM role for unmanaged Amazon EC2 instances (instances not configured for Systems Manager). To retrieve the role for an unmanaged instance, use the Amazon EC2 DescribeInstances operation. For information, see DescribeInstances in the Amazon EC2 API Reference or describe-instances in the Amazon We…"
+       },
+       "RegistrationDate": {
+        "type": "timestamp",
+        "doc": "The date the server or VM was registered with Amazon Web Services as a managed node."
+       },
+       "ResourceType": {
+        "type": "string",
+        "doc": "The type of instance. Instances are either EC2 instances or managed instances.",
+        "enum": [
+         "ManagedInstance",
+         "EC2Instance"
+        ]
+       },
+       "Name": {
+        "type": "string",
+        "doc": "The name assigned to an on-premises server, edge device, or virtual machine (VM) when it is activated as a Systems Manager managed node. The name is specified as the DefaultInstanceName property using the CreateActivation command. It is applied to the managed node by specifying the Activation Code and Activation ID when you install SSM Agent on the node, as explained in How to install SSM Agent on hybrid Linux nodes and How to install SSM Agent on hybrid Windows Server nodes . To retrieve the N…"
+       },
+       "IPAddress": {
+        "type": "string",
+        "doc": "The IP address of the managed node."
+       },
+       "ComputerName": {
+        "type": "string",
+        "doc": "The fully qualified host name of the managed node."
+       },
+       "AssociationStatus": {
+        "type": "string",
+        "doc": "The status of the association."
+       },
+       "LastAssociationExecutionDate": {
+        "type": "timestamp",
+        "doc": "The date the association was last run."
+       },
+       "LastSuccessfulAssociationExecutionDate": {
+        "type": "timestamp",
+        "doc": "The last date the association was successfully run."
+       },
+       "AssociationOverview": {
+        "type": "structure",
+        "doc": "Information about the association.",
+        "members": {
+         "DetailedStatus": {
+          "type": "string",
+          "doc": "Detailed status information about the aggregated associations."
+         },
+         "InstanceAssociationStatusAggregatedCount": {
+          "type": "map",
+          "doc": "The number of associations for the managed nodes.",
+          "key": {
+           "type": "string"
+          },
+          "value": {
+           "type": "integer"
+          }
+         }
+        }
+       },
+       "SourceId": {
+        "type": "string",
+        "doc": "The ID of the source resource. For IoT Greengrass devices, SourceId is the Thing name."
+       },
+       "SourceType": {
+        "type": "string",
+        "doc": "The type of the source resource. For IoT Greengrass devices, SourceType is AWS::IoT::Thing .",
+        "enum": [
+         "AWS::EC2::Instance",
+         "AWS::IoT::Thing",
+         "AWS::SSM::ManagedInstance"
+        ]
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The token to use when requesting the next set of items. If there are no additional items to return, the string is empty."
+    }
+   }
+  },
+  "added_in_latest": [
+   "InstanceInformationList[].SourceLocation"
+  ],
+  "raw_keys": [
+   "ssm.describe_instance_information",
+   "ssm.describe_parameters"
+  ],
+  "rules": [
+   "REME-0103200001",
+   "REME-0103200002"
+  ]
+ },
+ "ssm.DescribeParameters": {
+  "service": "ssm",
+  "operation": "DescribeParameters",
+  "method": "describe_parameters",
+  "doc": "Lists the parameters in your Amazon Web Services account or the parameters shared with you when you enable the Shared option. Request results are returned on a best-effort basis. If you specify MaxResults in the request, the response includes information up to the limit specified. The number of items returned, however, can be between zero and the value of MaxResults . If the service reaches an internal limit while processing the results, it stops the operation and returns the matching values up to that point and a NextToken . You can specify the NextToken in a subsequent call to get the next set of results. If you change the KMS key alias for the KMS key used to encrypt a parameter, then you must also update the key alias the parameter uses to reference KMS. Otherwise, DescribeParameters retrieves whatever the original key alias was referencing.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm/client/describe_parameters.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeParameters"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Parameters": {
+     "type": "list",
+     "doc": "Parameters returned by the request.",
+     "item": {
+      "type": "structure",
+      "doc": "Metadata includes information like the Amazon Resource Name (ARN) of the last user to update the parameter and the date and time the parameter was last used.",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "The parameter name."
+       },
+       "ARN": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the parameter."
+       },
+       "Type": {
+        "type": "string",
+        "doc": "The type of parameter. Valid parameter types include the following: String , StringList , and SecureString .",
+        "enum": [
+         "String",
+         "StringList",
+         "SecureString"
+        ]
+       },
+       "KeyId": {
+        "type": "string",
+        "doc": "The alias of the Key Management Service (KMS) key used to encrypt the parameter. Applies to SecureString parameters only."
+       },
+       "LastModifiedDate": {
+        "type": "timestamp",
+        "doc": "Date the parameter was last changed or updated."
+       },
+       "LastModifiedUser": {
+        "type": "string",
+        "doc": "Amazon Resource Name (ARN) of the Amazon Web Services user who last changed the parameter."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "Description of the parameter actions."
+       },
+       "AllowedPattern": {
+        "type": "string",
+        "doc": "A parameter name can include only the following letters and symbols. a-zA-Z0-9_.-"
+       },
+       "Version": {
+        "type": "long",
+        "doc": "The parameter version."
+       },
+       "Tier": {
+        "type": "string",
+        "doc": "The parameter tier.",
+        "enum": [
+         "Standard",
+         "Advanced",
+         "Intelligent-Tiering"
+        ]
+       },
+       "Policies": {
+        "type": "list",
+        "doc": "A list of policies associated with a parameter.",
+        "item": {
+         "type": "structure",
+         "doc": "One or more policies assigned to a parameter.",
+         "members": {
+          "PolicyText": {
+           "type": "string",
+           "doc": "The JSON text of the policy."
+          },
+          "PolicyType": {
+           "type": "string",
+           "doc": "The type of policy. Parameter Store, a tool in Amazon Web Services Systems Manager, supports the following policy types: Expiration, ExpirationNotification, and NoChangeNotification."
+          },
+          "PolicyStatus": {
+           "type": "string",
+           "doc": "The status of the policy. Policies report the following statuses: Pending (the policy hasn't been enforced or applied yet), Finished (the policy was applied), Failed (the policy wasn't applied), or InProgress (the policy is being applied now)."
+          }
+         }
+        }
+       },
+       "DataType": {
+        "type": "string",
+        "doc": "The data type of the parameter, such as text or aws:ec2:image . The default is text ."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The token to use when requesting the next set of items."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ssm.describe_instance_information",
+   "ssm.describe_parameters"
+  ],
+  "rules": [
+   "REME-0103200001",
+   "REME-0103200002"
+  ]
+ },
+ "ssm.DescribeSessions": {
+  "service": "ssm",
+  "operation": "DescribeSessions",
+  "method": "describe_sessions",
+  "doc": "Retrieves a list of all active sessions (both connected and disconnected) or terminated sessions from the past 30 days.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm/client/describe_sessions.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeSessions"
+  },
+  "paginated": true,
+  "input_required": [
+   "State"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Sessions": {
+     "type": "list",
+     "doc": "A list of sessions meeting the request parameters.",
+     "item": {
+      "type": "structure",
+      "doc": "Information about a Session Manager connection to a managed node.",
+      "members": {
+       "SessionId": {
+        "type": "string",
+        "doc": "The ID of the session."
+       },
+       "Target": {
+        "type": "string",
+        "doc": "The managed node that the Session Manager session connected to."
+       },
+       "Status": {
+        "type": "string",
+        "doc": "The status of the session. For example, \"Connected\" or \"Terminated\".",
+        "enum": [
+         "Connected",
+         "Connecting",
+         "Disconnected",
+         "Terminated",
+         "Terminating",
+         "Failed"
+        ]
+       },
+       "StartDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO-8601 Extended format, when the session began."
+       },
+       "EndDate": {
+        "type": "timestamp",
+        "doc": "The date and time, in ISO-8601 Extended format, when the session was terminated."
+       },
+       "DocumentName": {
+        "type": "string",
+        "doc": "The name of the Session Manager SSM document used to define the parameters and plugin settings for the session. For example, SSM-SessionManagerRunShell ."
+       },
+       "Owner": {
+        "type": "string",
+        "doc": "The ID of the Amazon Web Services user that started the session."
+       },
+       "Reason": {
+        "type": "string",
+        "doc": "The reason for connecting to the instance."
+       },
+       "Details": {
+        "type": "string",
+        "doc": "Reserved for future use."
+       },
+       "OutputUrl": {
+        "type": "structure",
+        "doc": "Reserved for future use.",
+        "members": {
+         "S3OutputUrl": {
+          "type": "string",
+          "doc": "Reserved for future use."
+         },
+         "CloudWatchOutputUrl": {
+          "type": "string",
+          "doc": "Reserved for future use."
+         }
+        }
+       },
+       "MaxSessionDuration": {
+        "type": "string",
+        "doc": "The maximum duration of a session before it terminates."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The token for the next set of items to return. (You received this token from a previous call.)"
+    }
+   }
+  },
+  "added_in_latest": [
+   "Sessions[].AccessType"
+  ],
+  "raw_keys": [
+   "ssm.describe_sessions"
+  ],
+  "rules": [
+   "REME-0103200003"
+  ]
+ },
+ "ssm.GetDocument": {
+  "service": "ssm",
+  "operation": "GetDocument",
+  "method": "get_document",
+  "doc": "Gets the contents of the specified Amazon Web Services Systems Manager document (SSM document).",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm/client/get_document.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/GetDocument"
+  },
+  "paginated": false,
+  "input_required": [
+   "Name"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Name": {
+     "type": "string",
+     "doc": "The name of the SSM document."
+    },
+    "CreatedDate": {
+     "type": "timestamp",
+     "doc": "The date the SSM document was created."
+    },
+    "DisplayName": {
+     "type": "string",
+     "doc": "The friendly name of the SSM document. This value can differ for each version of the document. If you want to update this value, see UpdateDocument ."
+    },
+    "VersionName": {
+     "type": "string",
+     "doc": "The version of the artifact associated with the document. For example, 12.6. This value is unique across all versions of a document, and can't be changed."
+    },
+    "DocumentVersion": {
+     "type": "string",
+     "doc": "The document version."
+    },
+    "Status": {
+     "type": "string",
+     "doc": "The status of the SSM document, such as Creating , Active , Updating , Failed , and Deleting .",
+     "enum": [
+      "Creating",
+      "Active",
+      "Updating",
+      "Deleting",
+      "Failed"
+     ]
+    },
+    "StatusInformation": {
+     "type": "string",
+     "doc": "A message returned by Amazon Web Services Systems Manager that explains the Status value. For example, a Failed status might be explained by the StatusInformation message, \"The specified S3 bucket doesn't exist. Verify that the URL of the S3 bucket is correct.\""
+    },
+    "Content": {
+     "type": "string",
+     "doc": "The contents of the SSM document."
+    },
+    "DocumentType": {
+     "type": "string",
+     "doc": "The document type.",
+     "enum": [
+      "Command",
+      "Policy",
+      "Automation",
+      "Session",
+      "Package",
+      "ApplicationConfiguration",
+      "ApplicationConfigurationSchema",
+      "DeploymentStrategy",
+      "ChangeCalendar",
+      "Automation.ChangeTemplate",
+      "ProblemAnalysis",
+      "ProblemAnalysisTemplate",
+      "CloudFormation",
+      "ConformancePackTemplate",
+      "QuickSetup"
+     ]
+    },
+    "DocumentFormat": {
+     "type": "string",
+     "doc": "The document format, either JSON or YAML.",
+     "enum": [
+      "YAML",
+      "JSON",
+      "TEXT"
+     ]
+    },
+    "Requires": {
+     "type": "list",
+     "doc": "A list of SSM documents required by a document. For example, an ApplicationConfiguration document requires an ApplicationConfigurationSchema document.",
+     "item": {
+      "type": "structure",
+      "doc": "An SSM document required by the current document.",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "The name of the required SSM document. The name can be an Amazon Resource Name (ARN).",
+        "required": true
+       },
+       "Version": {
+        "type": "string",
+        "doc": "The document version required by the current document."
+       },
+       "RequireType": {
+        "type": "string",
+        "doc": "The document type of the required SSM document."
+       },
+       "VersionName": {
+        "type": "string",
+        "doc": "An optional field specifying the version of the artifact associated with the document. For example, 12.6. This value is unique across all versions of a document, and can't be changed."
+       }
+      }
+     }
+    },
+    "AttachmentsContent": {
+     "type": "list",
+     "doc": "A description of the document attachments, including names, locations, sizes, and so on.",
+     "item": {
+      "type": "structure",
+      "doc": "A structure that includes attributes that describe a document attachment.",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "The name of an attachment."
+       },
+       "Size": {
+        "type": "long",
+        "doc": "The size of an attachment in bytes."
+       },
+       "Hash": {
+        "type": "string",
+        "doc": "The cryptographic hash value of the document content."
+       },
+       "HashType": {
+        "type": "string",
+        "doc": "The hash algorithm used to calculate the hash value.",
+        "enum": [
+         "Sha256"
+        ]
+       },
+       "Url": {
+        "type": "string",
+        "doc": "The URL location of the attachment content."
+       }
+      }
+     }
+    },
+    "ReviewStatus": {
+     "type": "string",
+     "doc": "The current review status of a new custom Systems Manager document (SSM document) created by a member of your organization, or of the latest version of an existing SSM document. Only one version of an SSM document can be in the APPROVED state at a time. When a new version is approved, the status of the previous version changes to REJECTED. Only one version of an SSM document can be in review, or PENDING, at a time.",
+     "enum": [
+      "APPROVED",
+      "NOT_REVIEWED",
+      "PENDING",
+      "REJECTED"
+     ]
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ssm.list_documents"
+  ],
+  "rules": [
+   "REME-0103200005",
+   "REME-0103200006"
+  ]
+ },
+ "ssm.GetServiceSetting": {
+  "service": "ssm",
+  "operation": "GetServiceSetting",
+  "method": "get_service_setting",
+  "doc": "ServiceSetting is an account-level setting for an Amazon Web Services service. This setting defines how a user interacts with or uses a service or a feature of a service. For example, if an Amazon Web Services service charges money to the account based on feature or service usage, then the Amazon Web Services service team might create a default setting of false . This means the user can't use this feature unless they change the setting to true and intentionally opt in for a paid feature. Services map a SettingId object to a setting value. Amazon Web Services services teams define the default value for a SettingId . You can't create a new SettingId , but you can overwrite the default value if you have the ssm:UpdateServiceSetting permission for the setting. Use the UpdateServiceSetting API operation to change the default setting. Or use the ResetServiceSetting to change the value back to the original value defined by the Amazon Web Services service team. Query the current service setting for the Amazon Web Services account.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm/client/get_service_setting.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/GetServiceSetting"
+  },
+  "paginated": false,
+  "input_required": [
+   "SettingId"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "The query result body of the GetServiceSetting API operation.",
+   "members": {
+    "ServiceSetting": {
+     "type": "structure",
+     "doc": "The query result of the current service setting.",
+     "members": {
+      "SettingId": {
+       "type": "string",
+       "doc": "The ID of the service setting."
+      },
+      "SettingValue": {
+       "type": "string",
+       "doc": "The value of the service setting."
+      },
+      "LastModifiedDate": {
+       "type": "timestamp",
+       "doc": "The last time the service setting was modified."
+      },
+      "LastModifiedUser": {
+       "type": "string",
+       "doc": "The ARN of the last modified user. This field is populated only if the setting value was overwritten."
+      },
+      "ARN": {
+       "type": "string",
+       "doc": "The ARN of the service setting."
+      },
+      "Status": {
+       "type": "string",
+       "doc": "The status of the service setting. The value can be Default, Customized or PendingUpdate. Default: The current setting uses a default value provisioned by the Amazon Web Services service team. Customized: The current setting use a custom value specified by the customer. PendingUpdate: The current setting uses a default or custom value, but a setting change request is pending approval."
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": []
+ },
+ "ssm.ListDocuments": {
+  "service": "ssm",
+  "operation": "ListDocuments",
+  "method": "list_documents",
+  "doc": "Returns all Systems Manager (SSM) documents in the current Amazon Web Services account and Amazon Web Services Region. You can limit the results of this request by using a filter.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm/client/list_documents.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/ListDocuments"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "DocumentIdentifiers": {
+     "type": "list",
+     "doc": "The names of the SSM documents.",
+     "item": {
+      "type": "structure",
+      "doc": "Describes the name of a SSM document.",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "The name of the SSM document."
+       },
+       "CreatedDate": {
+        "type": "timestamp",
+        "doc": "The date the SSM document was created."
+       },
+       "DisplayName": {
+        "type": "string",
+        "doc": "An optional field where you can specify a friendly name for the SSM document. This value can differ for each version of the document. If you want to update this value, see UpdateDocument ."
+       },
+       "Owner": {
+        "type": "string",
+        "doc": "The Amazon Web Services user that created the document."
+       },
+       "VersionName": {
+        "type": "string",
+        "doc": "An optional field specifying the version of the artifact associated with the document. For example, 12.6. This value is unique across all versions of a document, and can't be changed."
+       },
+       "PlatformTypes": {
+        "type": "list",
+        "doc": "The operating system platform.",
+        "item": {
+         "type": "string",
+         "enum": [
+          "Windows",
+          "Linux",
+          "MacOS"
+         ]
+        }
+       },
+       "DocumentVersion": {
+        "type": "string",
+        "doc": "The document version."
+       },
+       "DocumentType": {
+        "type": "string",
+        "doc": "The document type.",
+        "enum": [
+         "Command",
+         "Policy",
+         "Automation",
+         "Session",
+         "Package",
+         "ApplicationConfiguration",
+         "ApplicationConfigurationSchema",
+         "DeploymentStrategy",
+         "ChangeCalendar",
+         "Automation.ChangeTemplate",
+         "ProblemAnalysis",
+         "ProblemAnalysisTemplate",
+         "CloudFormation",
+         "ConformancePackTemplate",
+         "QuickSetup"
+        ]
+       },
+       "SchemaVersion": {
+        "type": "string",
+        "doc": "The schema version."
+       },
+       "DocumentFormat": {
+        "type": "string",
+        "doc": "The document format, either JSON or YAML.",
+        "enum": [
+         "YAML",
+         "JSON",
+         "TEXT"
+        ]
+       },
+       "TargetType": {
+        "type": "string",
+        "doc": "The target type which defines the kinds of resources the document can run on. For example, /AWS::EC2::Instance . For a list of valid resource types, see Amazon Web Services resource and property types reference in the CloudFormation User Guide ."
+       },
+       "Tags": {
+        "type": "list",
+        "doc": "The tags, or metadata, that have been applied to the document.",
+        "item": {
+         "type": "structure",
+         "doc": "Metadata that you assign to your Amazon Web Services resources. Tags enable you to categorize your resources in different ways, for example, by purpose, owner, or environment. In Amazon Web Services Systems Manager, you can apply tags to Systems Manager documents (SSM documents), managed nodes, maintenance windows, parameters, patch baselines, OpsItems, and OpsMetadata.",
+         "members": {
+          "Key": {
+           "type": "string",
+           "doc": "The name of the tag.",
+           "required": true
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The value of the tag.",
+           "required": true
+          }
+         }
+        }
+       },
+       "Requires": {
+        "type": "list",
+        "doc": "A list of SSM documents required by a document. For example, an ApplicationConfiguration document requires an ApplicationConfigurationSchema document.",
+        "item": {
+         "type": "structure",
+         "doc": "An SSM document required by the current document.",
+         "members": {
+          "Name": {
+           "type": "string",
+           "doc": "The name of the required SSM document. The name can be an Amazon Resource Name (ARN).",
+           "required": true
+          },
+          "Version": {
+           "type": "string",
+           "doc": "The document version required by the current document."
+          },
+          "RequireType": {
+           "type": "string",
+           "doc": "The document type of the required SSM document."
+          },
+          "VersionName": {
+           "type": "string",
+           "doc": "An optional field specifying the version of the artifact associated with the document. For example, 12.6. This value is unique across all versions of a document, and can't be changed."
+          }
+         }
+        }
+       },
+       "ReviewStatus": {
+        "type": "string",
+        "doc": "The current status of a document review.",
+        "enum": [
+         "APPROVED",
+         "NOT_REVIEWED",
+         "PENDING",
+         "REJECTED"
+        ]
+       },
+       "Author": {
+        "type": "string",
+        "doc": "The user in your organization who created the document."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The token to use when requesting the next set of items. If there are no additional items to return, the string is empty."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ssm.list_documents"
+  ],
+  "rules": [
+   "REME-0103200005",
+   "REME-0103200006"
+  ]
+ }
+}

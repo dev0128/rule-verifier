@@ -1,0 +1,634 @@
+{
+ "mq.DescribeBroker": {
+  "service": "mq",
+  "operation": "DescribeBroker",
+  "method": "describe_broker",
+  "doc": "Returns information about the specified broker.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mq/client/describe_broker.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/DescribeBroker"
+  },
+  "paginated": false,
+  "input_required": [
+   "BrokerId"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "HTTP Status Code 200: OK.",
+   "members": {
+    "ActionsRequired": {
+     "type": "list",
+     "doc": "Actions required for a broker.",
+     "item": {
+      "type": "structure",
+      "doc": "Action required for a broker.",
+      "members": {
+       "ActionRequiredCode": {
+        "type": "string",
+        "doc": "The code you can use to find instructions on the action required to resolve your broker issue."
+       },
+       "ActionRequiredInfo": {
+        "type": "string",
+        "doc": "Information about the action required to resolve your broker issue."
+       }
+      }
+     }
+    },
+    "AuthenticationStrategy": {
+     "type": "string",
+     "doc": "The authentication strategy used to secure the broker. The default is SIMPLE.",
+     "enum": [
+      "SIMPLE",
+      "LDAP"
+     ]
+    },
+    "AutoMinorVersionUpgrade": {
+     "type": "boolean",
+     "doc": "Enables automatic upgrades to new patch versions for brokers as new versions are released and supported by Amazon MQ. Automatic upgrades occur during the scheduled maintenance window or after a manual broker reboot."
+    },
+    "BrokerArn": {
+     "type": "string",
+     "doc": "The broker's Amazon Resource Name (ARN)."
+    },
+    "BrokerId": {
+     "type": "string",
+     "doc": "The unique ID that Amazon MQ generates for the broker."
+    },
+    "BrokerInstances": {
+     "type": "list",
+     "doc": "A list of information about allocated brokers.",
+     "item": {
+      "type": "structure",
+      "doc": "Returns information about all brokers.",
+      "members": {
+       "ConsoleURL": {
+        "type": "string",
+        "doc": "The brokers web console URL."
+       },
+       "Endpoints": {
+        "type": "list",
+        "doc": "The broker's wire-level protocol endpoints.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "IpAddress": {
+        "type": "string",
+        "doc": "The IP address of the Elastic Network Interface (ENI) attached to the broker. Does not apply to RabbitMQ brokers."
+       }
+      }
+     }
+    },
+    "BrokerName": {
+     "type": "string",
+     "doc": "The broker's name. This value must be unique in your Amazon Web Services account account, 1-50 characters long, must contain only letters, numbers, dashes, and underscores, and must not contain white spaces, brackets, wildcard characters, or special characters."
+    },
+    "BrokerState": {
+     "type": "string",
+     "doc": "The broker's status.",
+     "enum": [
+      "CREATION_IN_PROGRESS",
+      "CREATION_FAILED",
+      "DELETION_IN_PROGRESS",
+      "RUNNING",
+      "REBOOT_IN_PROGRESS",
+      "CRITICAL_ACTION_REQUIRED",
+      "REPLICA"
+     ]
+    },
+    "Configurations": {
+     "type": "structure",
+     "doc": "The list of all revisions for the specified configuration.",
+     "members": {
+      "Current": {
+       "type": "structure",
+       "doc": "The broker's current configuration.",
+       "members": {
+        "Id": {
+         "type": "string",
+         "doc": "Required. The unique ID that Amazon MQ generates for the configuration.",
+         "required": true
+        },
+        "Revision": {
+         "type": "integer",
+         "doc": "The revision number of the configuration."
+        }
+       }
+      },
+      "History": {
+       "type": "list",
+       "doc": "The history of configurations applied to the broker.",
+       "item": {
+        "type": "structure",
+        "doc": "A list of information about the configuration.",
+        "members": {
+         "Id": {
+          "type": "string",
+          "doc": "Required. The unique ID that Amazon MQ generates for the configuration.",
+          "required": true
+         },
+         "Revision": {
+          "type": "integer",
+          "doc": "The revision number of the configuration."
+         }
+        }
+       }
+      },
+      "Pending": {
+       "type": "structure",
+       "doc": "The broker's pending configuration.",
+       "members": {
+        "Id": {
+         "type": "string",
+         "doc": "Required. The unique ID that Amazon MQ generates for the configuration.",
+         "required": true
+        },
+        "Revision": {
+         "type": "integer",
+         "doc": "The revision number of the configuration."
+        }
+       }
+      }
+     }
+    },
+    "Created": {
+     "type": "timestamp",
+     "doc": "The time when the broker was created."
+    },
+    "DeploymentMode": {
+     "type": "string",
+     "doc": "The broker's deployment mode.",
+     "enum": [
+      "SINGLE_INSTANCE",
+      "ACTIVE_STANDBY_MULTI_AZ",
+      "CLUSTER_MULTI_AZ"
+     ]
+    },
+    "EncryptionOptions": {
+     "type": "structure",
+     "doc": "Encryption options for the broker.",
+     "members": {
+      "KmsKeyId": {
+       "type": "string",
+       "doc": "The customer master key (CMK) to use for the A KMS (KMS). This key is used to encrypt your data at rest. If not provided, Amazon MQ will use a default CMK to encrypt your data."
+      },
+      "UseAwsOwnedKey": {
+       "type": "boolean",
+       "doc": "Enables the use of an Amazon Web Services owned CMK using KMS (KMS). Set to true by default, if no value is provided, for example, for RabbitMQ brokers.",
+       "required": true
+      }
+     }
+    },
+    "EngineType": {
+     "type": "string",
+     "doc": "The type of broker engine. Currently, Amazon MQ supports ACTIVEMQ and RABBITMQ.",
+     "enum": [
+      "ACTIVEMQ",
+      "RABBITMQ"
+     ]
+    },
+    "EngineVersion": {
+     "type": "string",
+     "doc": "The broker engine version. For more information, see the ActiveMQ version management and the RabbitMQ version management sections in the Amazon MQ Developer Guide."
+    },
+    "HostInstanceType": {
+     "type": "string",
+     "doc": "The broker's instance type."
+    },
+    "LdapServerMetadata": {
+     "type": "structure",
+     "doc": "The metadata of the LDAP server used to authenticate and authorize connections to the broker.",
+     "members": {
+      "Hosts": {
+       "type": "list",
+       "doc": "Specifies the location of the LDAP server such as Directory Service for Microsoft Active Directory. Optional failover server.",
+       "item": {
+        "type": "string"
+       },
+       "required": true
+      },
+      "RoleBase": {
+       "type": "string",
+       "doc": "The distinguished name of the node in the directory information tree (DIT) to search for roles or groups. For example, ou=group, ou=corp, dc=corp, dc=example, dc=com.",
+       "required": true
+      },
+      "RoleName": {
+       "type": "string",
+       "doc": "Specifies the LDAP attribute that identifies the group name attribute in the object returned from the group membership query."
+      },
+      "RoleSearchMatching": {
+       "type": "string",
+       "doc": "The LDAP search filter used to find roles within the roleBase. The distinguished name of the user matched by userSearchMatching is substituted into the {0} placeholder in the search filter. The client's username is substituted into the {1} placeholder. For example, if you set this option to (member=uid={1})for the user janedoe, the search filter becomes (member=uid=janedoe) after string substitution. It matches all role entries that have a member attribute equal to uid=janedoe under the subtree…",
+       "required": true
+      },
+      "RoleSearchSubtree": {
+       "type": "boolean",
+       "doc": "The directory search scope for the role. If set to true, scope is to search the entire subtree."
+      },
+      "ServiceAccountUsername": {
+       "type": "string",
+       "doc": "Service account username. A service account is an account in your LDAP server that has access to initiate a connection. For example, cn=admin,dc=corp, dc=example, dc=com.",
+       "required": true
+      },
+      "UserBase": {
+       "type": "string",
+       "doc": "Select a particular subtree of the directory information tree (DIT) to search for user entries. The subtree is specified by a DN, which specifies the base node of the subtree. For example, by setting this option to ou=Users,ou=corp, dc=corp, dc=example, dc=com, the search for user entries is restricted to the subtree beneath ou=Users, ou=corp, dc=corp, dc=example, dc=com.",
+       "required": true
+      },
+      "UserRoleName": {
+       "type": "string",
+       "doc": "Specifies the name of the LDAP attribute for the user group membership."
+      },
+      "UserSearchMatching": {
+       "type": "string",
+       "doc": "The LDAP search filter used to find users within the userBase. The client's username is substituted into the {0} placeholder in the search filter. For example, if this option is set to (uid={0}) and the received username is janedoe, the search filter becomes (uid=janedoe) after string substitution. It will result in matching an entry like uid=janedoe, ou=Users,ou=corp, dc=corp, dc=example, dc=com.",
+       "required": true
+      },
+      "UserSearchSubtree": {
+       "type": "boolean",
+       "doc": "The directory search scope for the user. If set to true, scope is to search the entire subtree."
+      }
+     }
+    },
+    "Logs": {
+     "type": "structure",
+     "doc": "The list of information about logs currently enabled and pending to be deployed for the specified broker.",
+     "members": {
+      "Audit": {
+       "type": "boolean",
+       "doc": "Enables audit logging. Every user management action made using JMX or the ActiveMQ Web Console is logged."
+      },
+      "AuditLogGroup": {
+       "type": "string",
+       "doc": "The location of the CloudWatch Logs log group where audit logs are sent."
+      },
+      "General": {
+       "type": "boolean",
+       "doc": "Enables general logging.",
+       "required": true
+      },
+      "GeneralLogGroup": {
+       "type": "string",
+       "doc": "The location of the CloudWatch Logs log group where general logs are sent.",
+       "required": true
+      },
+      "Pending": {
+       "type": "structure",
+       "doc": "The list of information about logs pending to be deployed for the specified broker.",
+       "members": {
+        "Audit": {
+         "type": "boolean",
+         "doc": "Enables audit logging. Every user management action made using JMX or the ActiveMQ Web Console is logged."
+        },
+        "General": {
+         "type": "boolean",
+         "doc": "Enables general logging."
+        }
+       }
+      }
+     }
+    },
+    "MaintenanceWindowStartTime": {
+     "type": "structure",
+     "doc": "The parameters that determine the WeeklyStartTime.",
+     "members": {
+      "DayOfWeek": {
+       "type": "string",
+       "doc": "Required. The day of the week.",
+       "enum": [
+        "MONDAY",
+        "TUESDAY",
+        "WEDNESDAY",
+        "THURSDAY",
+        "FRIDAY",
+        "SATURDAY",
+        "SUNDAY"
+       ],
+       "required": true
+      },
+      "TimeOfDay": {
+       "type": "string",
+       "doc": "Required. The time, in 24-hour format.",
+       "required": true
+      },
+      "TimeZone": {
+       "type": "string",
+       "doc": "The time zone, UTC by default, in either the Country/City format, or the UTC offset format."
+      }
+     }
+    },
+    "PendingAuthenticationStrategy": {
+     "type": "string",
+     "doc": "The authentication strategy that will be applied when the broker is rebooted. The default is SIMPLE.",
+     "enum": [
+      "SIMPLE",
+      "LDAP"
+     ]
+    },
+    "PendingEngineVersion": {
+     "type": "string",
+     "doc": "The broker engine version to upgrade to. For more information, see the ActiveMQ version management and the RabbitMQ version management sections in the Amazon MQ Developer Guide."
+    },
+    "PendingHostInstanceType": {
+     "type": "string",
+     "doc": "The broker's host instance type to upgrade to. For a list of supported instance types, see Broker instance types ."
+    },
+    "PendingLdapServerMetadata": {
+     "type": "structure",
+     "doc": "The metadata of the LDAP server that will be used to authenticate and authorize connections to the broker after it is rebooted.",
+     "members": {
+      "Hosts": {
+       "type": "list",
+       "doc": "Specifies the location of the LDAP server such as Directory Service for Microsoft Active Directory. Optional failover server.",
+       "item": {
+        "type": "string"
+       },
+       "required": true
+      },
+      "RoleBase": {
+       "type": "string",
+       "doc": "The distinguished name of the node in the directory information tree (DIT) to search for roles or groups. For example, ou=group, ou=corp, dc=corp, dc=example, dc=com.",
+       "required": true
+      },
+      "RoleName": {
+       "type": "string",
+       "doc": "Specifies the LDAP attribute that identifies the group name attribute in the object returned from the group membership query."
+      },
+      "RoleSearchMatching": {
+       "type": "string",
+       "doc": "The LDAP search filter used to find roles within the roleBase. The distinguished name of the user matched by userSearchMatching is substituted into the {0} placeholder in the search filter. The client's username is substituted into the {1} placeholder. For example, if you set this option to (member=uid={1})for the user janedoe, the search filter becomes (member=uid=janedoe) after string substitution. It matches all role entries that have a member attribute equal to uid=janedoe under the subtree…",
+       "required": true
+      },
+      "RoleSearchSubtree": {
+       "type": "boolean",
+       "doc": "The directory search scope for the role. If set to true, scope is to search the entire subtree."
+      },
+      "ServiceAccountUsername": {
+       "type": "string",
+       "doc": "Service account username. A service account is an account in your LDAP server that has access to initiate a connection. For example, cn=admin,dc=corp, dc=example, dc=com.",
+       "required": true
+      },
+      "UserBase": {
+       "type": "string",
+       "doc": "Select a particular subtree of the directory information tree (DIT) to search for user entries. The subtree is specified by a DN, which specifies the base node of the subtree. For example, by setting this option to ou=Users,ou=corp, dc=corp, dc=example, dc=com, the search for user entries is restricted to the subtree beneath ou=Users, ou=corp, dc=corp, dc=example, dc=com.",
+       "required": true
+      },
+      "UserRoleName": {
+       "type": "string",
+       "doc": "Specifies the name of the LDAP attribute for the user group membership."
+      },
+      "UserSearchMatching": {
+       "type": "string",
+       "doc": "The LDAP search filter used to find users within the userBase. The client's username is substituted into the {0} placeholder in the search filter. For example, if this option is set to (uid={0}) and the received username is janedoe, the search filter becomes (uid=janedoe) after string substitution. It will result in matching an entry like uid=janedoe, ou=Users,ou=corp, dc=corp, dc=example, dc=com.",
+       "required": true
+      },
+      "UserSearchSubtree": {
+       "type": "boolean",
+       "doc": "The directory search scope for the user. If set to true, scope is to search the entire subtree."
+      }
+     }
+    },
+    "PendingSecurityGroups": {
+     "type": "list",
+     "doc": "The list of pending security groups to authorize connections to brokers.",
+     "item": {
+      "type": "string"
+     }
+    },
+    "PubliclyAccessible": {
+     "type": "boolean",
+     "doc": "Enables connections from applications outside of the VPC that hosts the broker's subnets."
+    },
+    "SecurityGroups": {
+     "type": "list",
+     "doc": "The list of rules (1 minimum, 125 maximum) that authorize connections to brokers.",
+     "item": {
+      "type": "string"
+     }
+    },
+    "StorageType": {
+     "type": "string",
+     "doc": "The broker's storage type.",
+     "enum": [
+      "EBS",
+      "EFS"
+     ]
+    },
+    "SubnetIds": {
+     "type": "list",
+     "doc": "The list of groups that define which subnets and IP ranges the broker can use from different Availability Zones.",
+     "item": {
+      "type": "string"
+     }
+    },
+    "Tags": {
+     "type": "map",
+     "doc": "The list of all tags associated with this broker.",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     }
+    },
+    "Users": {
+     "type": "list",
+     "doc": "The list of all broker usernames for the specified broker.",
+     "item": {
+      "type": "structure",
+      "doc": "Returns a list of all broker users. Does not apply to RabbitMQ brokers.",
+      "members": {
+       "PendingChange": {
+        "type": "string",
+        "doc": "The type of change pending for the broker user.",
+        "enum": [
+         "CREATE",
+         "UPDATE",
+         "DELETE"
+        ]
+       },
+       "Username": {
+        "type": "string",
+        "doc": "Required. The username of the broker user. This value can contain only alphanumeric characters, dashes, periods, underscores, and tildes (- . _ ~). This value must be 2-100 characters long.",
+        "required": true
+       }
+      }
+     }
+    },
+    "DataReplicationMetadata": {
+     "type": "structure",
+     "doc": "The replication details of the data replication-enabled broker. Only returned if dataReplicationMode is set to CRDR.",
+     "members": {
+      "DataReplicationCounterpart": {
+       "type": "structure",
+       "doc": "Describes the replica/primary broker. Only returned if this broker is currently set as a primary or replica in the broker's dataReplicationRole property.",
+       "members": {
+        "BrokerId": {
+         "type": "string",
+         "doc": "Required. The unique broker id generated by Amazon MQ.",
+         "required": true
+        },
+        "Region": {
+         "type": "string",
+         "doc": "Required. The region of the broker.",
+         "required": true
+        }
+       }
+      },
+      "DataReplicationRole": {
+       "type": "string",
+       "doc": "Defines the role of this broker in a data replication pair. When a replica broker is promoted to primary, this role is interchanged.",
+       "required": true
+      }
+     }
+    },
+    "DataReplicationMode": {
+     "type": "string",
+     "doc": "Describes whether this broker is a part of a data replication pair.",
+     "enum": [
+      "NONE",
+      "CRDR"
+     ]
+    },
+    "PendingDataReplicationMetadata": {
+     "type": "structure",
+     "doc": "The pending replication details of the data replication-enabled broker. Only returned if pendingDataReplicationMode is set to CRDR.",
+     "members": {
+      "DataReplicationCounterpart": {
+       "type": "structure",
+       "doc": "Describes the replica/primary broker. Only returned if this broker is currently set as a primary or replica in the broker's dataReplicationRole property.",
+       "members": {
+        "BrokerId": {
+         "type": "string",
+         "doc": "Required. The unique broker id generated by Amazon MQ.",
+         "required": true
+        },
+        "Region": {
+         "type": "string",
+         "doc": "Required. The region of the broker.",
+         "required": true
+        }
+       }
+      },
+      "DataReplicationRole": {
+       "type": "string",
+       "doc": "Defines the role of this broker in a data replication pair. When a replica broker is promoted to primary, this role is interchanged.",
+       "required": true
+      }
+     }
+    },
+    "PendingDataReplicationMode": {
+     "type": "string",
+     "doc": "Describes whether this broker will be a part of a data replication pair after reboot.",
+     "enum": [
+      "NONE",
+      "CRDR"
+     ]
+    }
+   }
+  },
+  "added_in_latest": [
+   "PendingStorageSize",
+   "StorageSize"
+  ],
+  "raw_keys": [
+   "mq.describe_broker"
+  ],
+  "rules": [
+   "REME-0104600001",
+   "REME-0104600002"
+  ]
+ },
+ "mq.ListBrokers": {
+  "service": "mq",
+  "operation": "ListBrokers",
+  "method": "list_brokers",
+  "doc": "Returns a list of all brokers.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/mq/client/list_brokers.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/ListBrokers"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "HTTP Status Code 200: OK.",
+   "members": {
+    "BrokerSummaries": {
+     "type": "list",
+     "doc": "A list of information about all brokers.",
+     "item": {
+      "type": "structure",
+      "doc": "Returns information about all brokers.",
+      "members": {
+       "BrokerArn": {
+        "type": "string",
+        "doc": "The broker's Amazon Resource Name (ARN)."
+       },
+       "BrokerId": {
+        "type": "string",
+        "doc": "The unique ID that Amazon MQ generates for the broker."
+       },
+       "BrokerName": {
+        "type": "string",
+        "doc": "The broker's name. This value is unique in your Amazon Web Services account, 1-50 characters long, and containing only letters, numbers, dashes, and underscores, and must not contain white spaces, brackets, wildcard characters, or special characters."
+       },
+       "BrokerState": {
+        "type": "string",
+        "doc": "The broker's status.",
+        "enum": [
+         "CREATION_IN_PROGRESS",
+         "CREATION_FAILED",
+         "DELETION_IN_PROGRESS",
+         "RUNNING",
+         "REBOOT_IN_PROGRESS",
+         "CRITICAL_ACTION_REQUIRED",
+         "REPLICA"
+        ]
+       },
+       "Created": {
+        "type": "timestamp",
+        "doc": "The time when the broker was created."
+       },
+       "DeploymentMode": {
+        "type": "string",
+        "doc": "The broker's deployment mode.",
+        "enum": [
+         "SINGLE_INSTANCE",
+         "ACTIVE_STANDBY_MULTI_AZ",
+         "CLUSTER_MULTI_AZ"
+        ],
+        "required": true
+       },
+       "EngineType": {
+        "type": "string",
+        "doc": "The type of broker engine.",
+        "enum": [
+         "ACTIVEMQ",
+         "RABBITMQ"
+        ],
+        "required": true
+       },
+       "HostInstanceType": {
+        "type": "string",
+        "doc": "The broker's instance type."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The token that specifies the next page of results Amazon MQ should return. To request the first page, leave nextToken empty."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "mq.describe_broker"
+  ],
+  "rules": [
+   "REME-0104600001",
+   "REME-0104600002"
+  ]
+ }
+}

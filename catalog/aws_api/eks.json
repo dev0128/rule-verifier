@@ -1,0 +1,1395 @@
+{
+ "eks.DescribeCluster": {
+  "service": "eks",
+  "operation": "DescribeCluster",
+  "method": "describe_cluster",
+  "doc": "Describes an Amazon EKS cluster. The API server endpoint and certificate authority data returned by this operation are required for kubelet and kubectl to communicate with your Kubernetes API server. For more information, see Creating or updating a kubeconfig file for an Amazon EKS cluster . The API server endpoint and certificate authority data aren't available until the cluster reaches the ACTIVE state.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/eks/client/describe_cluster.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeCluster"
+  },
+  "paginated": false,
+  "input_required": [
+   "name"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "cluster": {
+     "type": "structure",
+     "doc": "The full description of your specified cluster.",
+     "members": {
+      "name": {
+       "type": "string",
+       "doc": "The name of your cluster."
+      },
+      "arn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of the cluster."
+      },
+      "createdAt": {
+       "type": "timestamp",
+       "doc": "The Unix epoch timestamp at object creation."
+      },
+      "version": {
+       "type": "string",
+       "doc": "The Kubernetes server version for the cluster."
+      },
+      "endpoint": {
+       "type": "string",
+       "doc": "The endpoint for your Kubernetes API server."
+      },
+      "roleArn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of the IAM role that provides permissions for the Kubernetes control plane to make calls to Amazon Web Services API operations on your behalf."
+      },
+      "resourcesVpcConfig": {
+       "type": "structure",
+       "doc": "The VPC configuration used by the cluster control plane. Amazon EKS VPC resources have specific requirements to work properly with Kubernetes. For more information, see Cluster VPC considerations and Cluster security group considerations in the Amazon EKS User Guide .",
+       "members": {
+        "subnetIds": {
+         "type": "list",
+         "doc": "The subnets associated with your cluster.",
+         "item": {
+          "type": "string"
+         }
+        },
+        "securityGroupIds": {
+         "type": "list",
+         "doc": "The security groups associated with the cross-account elastic network interfaces that are used to allow communication between your nodes and the Kubernetes control plane.",
+         "item": {
+          "type": "string"
+         }
+        },
+        "clusterSecurityGroupId": {
+         "type": "string",
+         "doc": "The cluster security group that was created by Amazon EKS for the cluster. Managed node groups use this security group for control-plane-to-data-plane communication."
+        },
+        "vpcId": {
+         "type": "string",
+         "doc": "The VPC associated with your cluster."
+        },
+        "endpointPublicAccess": {
+         "type": "boolean",
+         "doc": "Whether the public API server endpoint is enabled."
+        },
+        "endpointPrivateAccess": {
+         "type": "boolean",
+         "doc": "This parameter indicates whether the Amazon EKS private API server endpoint is enabled. If the Amazon EKS private API server endpoint is enabled, Kubernetes API requests that originate from within your cluster's VPC use the private VPC endpoint instead of traversing the internet. If this value is disabled and you have nodes or Fargate pods in the cluster, then ensure that publicAccessCidrs includes the necessary CIDR blocks for communication with the nodes or Fargate pods. For more information,…"
+        },
+        "publicAccessCidrs": {
+         "type": "list",
+         "doc": "The CIDR blocks that are allowed access to your cluster's public Kubernetes API server endpoint.",
+         "item": {
+          "type": "string"
+         }
+        }
+       }
+      },
+      "kubernetesNetworkConfig": {
+       "type": "structure",
+       "doc": "The Kubernetes network configuration for the cluster.",
+       "members": {
+        "serviceIpv4Cidr": {
+         "type": "string",
+         "doc": "The CIDR block that Kubernetes Pod and Service object IP addresses are assigned from. Kubernetes assigns addresses from an IPv4 CIDR block assigned to a subnet that the node is in. If you didn't specify a CIDR block when you created the cluster, then Kubernetes assigns addresses from either the 10.100.0.0/16 or 172.20.0.0/16 CIDR blocks. If this was specified, then it was specified when the cluster was created and it can't be changed."
+        },
+        "serviceIpv6Cidr": {
+         "type": "string",
+         "doc": "The CIDR block that Kubernetes pod and service IP addresses are assigned from if you created a 1.21 or later cluster with version 1.10.1 or later of the Amazon VPC CNI add-on and specified ipv6 for ipFamily when you created the cluster. Kubernetes assigns service addresses from the unique local address range ( fc00::/7 ) because you can't specify a custom IPv6 CIDR block when you create the cluster."
+        },
+        "ipFamily": {
+         "type": "string",
+         "doc": "The IP family used to assign Kubernetes Pod and Service objects IP addresses. The IP family is always ipv4 , unless you have a 1.21 or later cluster running version 1.10.1 or later of the Amazon VPC CNI plugin for Kubernetes and specified ipv6 when you created the cluster.",
+         "enum": [
+          "ipv4",
+          "ipv6"
+         ]
+        },
+        "elasticLoadBalancing": {
+         "type": "structure",
+         "doc": "Indicates the current configuration of the load balancing capability on your EKS Auto Mode cluster. For example, if the capability is enabled or disabled.",
+         "members": {
+          "enabled": {
+           "type": "boolean",
+           "doc": "Indicates if the load balancing capability is enabled on your EKS Auto Mode cluster. If the load balancing capability is enabled, EKS Auto Mode will create and delete load balancers in your Amazon Web Services account."
+          }
+         }
+        }
+       }
+      },
+      "logging": {
+       "type": "structure",
+       "doc": "The logging configuration for your cluster.",
+       "members": {
+        "clusterLogging": {
+         "type": "list",
+         "doc": "The cluster control plane logging configuration for your cluster.",
+         "item": {
+          "type": "structure",
+          "doc": "An object representing the enabled or disabled Kubernetes control plane logs for your cluster.",
+          "members": {
+           "types": {
+            "type": "list",
+            "doc": "The available cluster control plane log types.",
+            "item": {
+             "type": "string",
+             "enum": [
+              "api",
+              "audit",
+              "authenticator",
+              "controllerManager",
+              "scheduler"
+             ]
+            }
+           },
+           "enabled": {
+            "type": "boolean",
+            "doc": "If a log type is enabled, that log type exports its control plane logs to CloudWatch Logs . If a log type isn't enabled, that log type doesn't export its control plane logs. Each individual log type can be enabled or disabled independently."
+           }
+          }
+         }
+        }
+       }
+      },
+      "identity": {
+       "type": "structure",
+       "doc": "The identity provider information for the cluster.",
+       "members": {
+        "oidc": {
+         "type": "structure",
+         "doc": "An object representing the OpenID Connect identity provider information.",
+         "members": {
+          "issuer": {
+           "type": "string",
+           "doc": "The issuer URL for the OIDC identity provider."
+          }
+         }
+        }
+       }
+      },
+      "status": {
+       "type": "string",
+       "doc": "The current status of the cluster.",
+       "enum": [
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "FAILED",
+        "UPDATING",
+        "PENDING"
+       ]
+      },
+      "certificateAuthority": {
+       "type": "structure",
+       "doc": "The certificate-authority-data for your cluster.",
+       "members": {
+        "data": {
+         "type": "string",
+         "doc": "The Base64-encoded certificate data required to communicate with your cluster. Add this to the certificate-authority-data section of the kubeconfig file for your cluster."
+        }
+       }
+      },
+      "clientRequestToken": {
+       "type": "string",
+       "doc": "A unique, case-sensitive identifier that you provide to ensure the idempotency of the request."
+      },
+      "platformVersion": {
+       "type": "string",
+       "doc": "The platform version of your Amazon EKS cluster. For more information about clusters deployed on the Amazon Web Services Cloud, see Platform versions in the Amazon EKS User Guide . For more information about local clusters deployed on an Outpost, see Amazon EKS local cluster platform versions in the Amazon EKS User Guide ."
+      },
+      "tags": {
+       "type": "map",
+       "doc": "Metadata that assists with categorization and organization. Each tag consists of a key and an optional value. You define both. Tags don't propagate to any other cluster or Amazon Web Services resources.",
+       "key": {
+        "type": "string",
+        "doc": "One part of a key-value pair that make up a tag. A key is a general label that acts like a category for more specific tag values."
+       },
+       "value": {
+        "type": "string",
+        "doc": "The optional part of a key-value pair that make up a tag. A value acts as a descriptor within a tag category (key)."
+       }
+      },
+      "encryptionConfig": {
+       "type": "list",
+       "doc": "The encryption configuration for the cluster.",
+       "item": {
+        "type": "structure",
+        "doc": "The encryption configuration for the cluster.",
+        "members": {
+         "resources": {
+          "type": "list",
+          "doc": "Specifies the resources to be encrypted. The only supported value is secrets .",
+          "item": {
+           "type": "string"
+          }
+         },
+         "provider": {
+          "type": "structure",
+          "doc": "Key Management Service (KMS) key. Either the ARN or the alias can be used.",
+          "members": {
+           "keyArn": {
+            "type": "string",
+            "doc": "Amazon Resource Name (ARN) or alias of the KMS key. The KMS key must be symmetric and created in the same Amazon Web Services Region as the cluster. If the KMS key was created in a different account, the IAM principal must have access to the KMS key. For more information, see Allowing users in other accounts to use a KMS key in the Key Management Service Developer Guide ."
+           }
+          }
+         }
+        }
+       }
+      },
+      "connectorConfig": {
+       "type": "structure",
+       "doc": "The configuration used to connect to a cluster for registration.",
+       "members": {
+        "activationId": {
+         "type": "string",
+         "doc": "A unique ID associated with the cluster for registration purposes."
+        },
+        "activationCode": {
+         "type": "string",
+         "doc": "A unique code associated with the cluster for registration purposes."
+        },
+        "activationExpiry": {
+         "type": "timestamp",
+         "doc": "The expiration time of the connected cluster. The cluster's YAML file must be applied through the native provider."
+        },
+        "provider": {
+         "type": "string",
+         "doc": "The cluster's cloud service provider."
+        },
+        "roleArn": {
+         "type": "string",
+         "doc": "The Amazon Resource Name (ARN) of the role to communicate with services from the connected Kubernetes cluster."
+        }
+       }
+      },
+      "id": {
+       "type": "string",
+       "doc": "The ID of your local Amazon EKS cluster on an Amazon Web Services Outpost. This property isn't available for an Amazon EKS cluster on the Amazon Web Services cloud."
+      },
+      "health": {
+       "type": "structure",
+       "doc": "An object representing the health of your Amazon EKS cluster.",
+       "members": {
+        "issues": {
+         "type": "list",
+         "doc": "An object representing the health issues of your Amazon EKS cluster.",
+         "item": {
+          "type": "structure",
+          "doc": "An issue with your Amazon EKS cluster.",
+          "members": {
+           "code": {
+            "type": "string",
+            "doc": "The error code of the issue.",
+            "enum": [
+             "AccessDenied",
+             "ClusterUnreachable",
+             "ConfigurationConflict",
+             "InternalFailure",
+             "ResourceLimitExceeded",
+             "ResourceNotFound",
+             "IamRoleNotFound",
+             "VpcNotFound",
+             "InsufficientFreeAddresses",
+             "Ec2ServiceNotSubscribed",
+             "Ec2SubnetNotFound",
+             "Ec2SecurityGroupNotFound",
+             "KmsGrantRevoked",
+             "KmsKeyNotFound",
+             "KmsKeyMarkedForDeletion",
+             "KmsKeyDisabled",
+             "StsRegionalEndpointDisabled",
+             "UnsupportedVersion",
+             "Other"
+            ]
+           },
+           "message": {
+            "type": "string",
+            "doc": "A description of the issue."
+           },
+           "resourceIds": {
+            "type": "list",
+            "doc": "The resource IDs that the issue relates to.",
+            "item": {
+             "type": "string"
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "outpostConfig": {
+       "type": "structure",
+       "doc": "An object representing the configuration of your local Amazon EKS cluster on an Amazon Web Services Outpost. This object isn't available for clusters on the Amazon Web Services cloud.",
+       "members": {
+        "outpostArns": {
+         "type": "list",
+         "doc": "The ARN of the Outpost that you specified for use with your local Amazon EKS cluster on Outposts.",
+         "item": {
+          "type": "string"
+         },
+         "required": true
+        },
+        "controlPlaneInstanceType": {
+         "type": "string",
+         "doc": "The Amazon EC2 instance type used for the control plane. The instance type is the same for all control plane instances.",
+         "required": true
+        },
+        "controlPlanePlacement": {
+         "type": "structure",
+         "doc": "An object representing the placement configuration for all the control plane instances of your local Amazon EKS cluster on an Amazon Web Services Outpost. For more information, see Capacity considerations in the Amazon EKS User Guide .",
+         "members": {
+          "groupName": {
+           "type": "string",
+           "doc": "The name of the placement group for the Kubernetes control plane instances."
+          }
+         }
+        }
+       }
+      },
+      "accessConfig": {
+       "type": "structure",
+       "doc": "The access configuration for the cluster.",
+       "members": {
+        "bootstrapClusterCreatorAdminPermissions": {
+         "type": "boolean",
+         "doc": "Specifies whether or not the cluster creator IAM principal was set as a cluster admin access entry during cluster creation time."
+        },
+        "authenticationMode": {
+         "type": "string",
+         "doc": "The current authentication mode of the cluster.",
+         "enum": [
+          "API",
+          "API_AND_CONFIG_MAP",
+          "CONFIG_MAP"
+         ]
+        }
+       }
+      },
+      "upgradePolicy": {
+       "type": "structure",
+       "doc": "This value indicates if extended support is enabled or disabled for the cluster. Learn more about EKS Extended Support in the Amazon EKS User Guide .",
+       "members": {
+        "supportType": {
+         "type": "string",
+         "doc": "If the cluster is set to EXTENDED , it will enter extended support at the end of standard support. If the cluster is set to STANDARD , it will be automatically upgraded at the end of standard support. Learn more about EKS Extended Support in the Amazon EKS User Guide .",
+         "enum": [
+          "STANDARD",
+          "EXTENDED"
+         ]
+        }
+       }
+      },
+      "zonalShiftConfig": {
+       "type": "structure",
+       "doc": "The configuration for zonal shift for the cluster.",
+       "members": {
+        "enabled": {
+         "type": "boolean",
+         "doc": "Whether the zonal shift is enabled."
+        }
+       }
+      },
+      "remoteNetworkConfig": {
+       "type": "structure",
+       "doc": "The configuration in the cluster for EKS Hybrid Nodes. You can't change or update this configuration after the cluster is created.",
+       "members": {
+        "remoteNodeNetworks": {
+         "type": "list",
+         "doc": "The list of network CIDRs that can contain hybrid nodes.",
+         "item": {
+          "type": "structure",
+          "doc": "A network CIDR that can contain hybrid nodes. These CIDR blocks define the expected IP address range of the hybrid nodes that join the cluster. These blocks are typically determined by your network administrator. Enter one or more IPv4 CIDR blocks in decimal dotted-quad notation (for example, 10.2.0.0/16 ). It must satisfy the following requirements: Each block must be within an IPv4 RFC-1918 network range. Minimum allowed size is /24, maximum allowed size is /8. Publicly-routable addresses are…",
+          "members": {
+           "cidrs": {
+            "type": "list",
+            "doc": "A network CIDR that can contain hybrid nodes. These CIDR blocks define the expected IP address range of the hybrid nodes that join the cluster. These blocks are typically determined by your network administrator. Enter one or more IPv4 CIDR blocks in decimal dotted-quad notation (for example, 10.2.0.0/16 ). It must satisfy the following requirements: Each block must be within an IPv4 RFC-1918 network range. Minimum allowed size is /24, maximum allowed size is /8. Publicly-routable addresses are…",
+            "item": {
+             "type": "string"
+            }
+           }
+          }
+         }
+        },
+        "remotePodNetworks": {
+         "type": "list",
+         "doc": "The list of network CIDRs that can contain pods that run Kubernetes webhooks on hybrid nodes.",
+         "item": {
+          "type": "structure",
+          "doc": "A network CIDR that can contain pods that run Kubernetes webhooks on hybrid nodes. These CIDR blocks are determined by configuring your Container Network Interface (CNI) plugin. We recommend the Calico CNI or Cilium CNI. Note that the Amazon VPC CNI plugin for Kubernetes isn't available for on-premises and edge locations. Enter one or more IPv4 CIDR blocks in decimal dotted-quad notation (for example, 10.2.0.0/16 ). It must satisfy the following requirements: Each block must be within an IPv4 R…",
+          "members": {
+           "cidrs": {
+            "type": "list",
+            "doc": "A network CIDR that can contain pods that run Kubernetes webhooks on hybrid nodes. These CIDR blocks are determined by configuring your Container Network Interface (CNI) plugin. We recommend the Calico CNI or Cilium CNI. Note that the Amazon VPC CNI plugin for Kubernetes isn't available for on-premises and edge locations. Enter one or more IPv4 CIDR blocks in decimal dotted-quad notation (for example, 10.2.0.0/16 ). It must satisfy the following requirements: Each block must be within an IPv4 R…",
+            "item": {
+             "type": "string"
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "computeConfig": {
+       "type": "structure",
+       "doc": "Indicates the current configuration of the compute capability on your EKS Auto Mode cluster. For example, if the capability is enabled or disabled. If the compute capability is enabled, EKS Auto Mode will create and delete EC2 Managed Instances in your Amazon Web Services account. For more information, see EKS Auto Mode compute capability in the Amazon EKS User Guide .",
+       "members": {
+        "enabled": {
+         "type": "boolean",
+         "doc": "Indicates if the compute capability is enabled on your EKS Auto Mode cluster. If the compute capability is enabled, EKS Auto Mode will create and delete EC2 Managed Instances in your Amazon Web Services account."
+        },
+        "nodePools": {
+         "type": "list",
+         "doc": "Indicates the current configuration of node pools in your EKS Auto Mode cluster. For more information, see EKS Auto Mode Node Pools in the Amazon EKS User Guide .",
+         "item": {
+          "type": "string"
+         }
+        },
+        "nodeRoleArn": {
+         "type": "string",
+         "doc": "The ARN of the IAM Role EKS will assign to EC2 Managed Instances in your EKS Auto Mode cluster."
+        }
+       }
+      },
+      "storageConfig": {
+       "type": "structure",
+       "doc": "Indicates the current configuration of the block storage capability on your EKS Auto Mode cluster. For example, if the capability is enabled or disabled. If the block storage capability is enabled, EKS Auto Mode will create and delete EBS volumes in your Amazon Web Services account. For more information, see EKS Auto Mode block storage capability in the Amazon EKS User Guide .",
+       "members": {
+        "blockStorage": {
+         "type": "structure",
+         "doc": "Indicates the current configuration of the block storage capability on your EKS Auto Mode cluster. For example, if the capability is enabled or disabled.",
+         "members": {
+          "enabled": {
+           "type": "boolean",
+           "doc": "Indicates if the block storage capability is enabled on your EKS Auto Mode cluster. If the block storage capability is enabled, EKS Auto Mode will create and delete EBS volumes in your Amazon Web Services account."
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "cluster.certificateAuthority.active",
+   "cluster.certificateAuthority.active.activatedBy",
+   "cluster.certificateAuthority.active.id",
+   "cluster.controlPlaneScalingConfig",
+   "cluster.controlPlaneScalingConfig.tier",
+   "cluster.deletionProtection",
+   "cluster.kubeApiServerConfig",
+   "cluster.kubeApiServerConfig.eventTtl",
+   "cluster.kubeApiServerConfig.serviceNodePortRange",
+   "cluster.kubeApiServerConfig.serviceNodePortRange.maxPort",
+   "cluster.kubeApiServerConfig.serviceNodePortRange.minPort",
+   "cluster.kubeControllerManagerConfig",
+   "cluster.kubeControllerManagerConfig.horizontalPodAutoscalerControllerConfig",
+   "cluster.kubeControllerManagerConfig.horizontalPodAutoscalerControllerConfig.horizontalPodAutoscalerSyncPeriod",
+   "cluster.kubeControllerManagerConfig.podGcControllerConfig",
+   "cluster.kubeControllerManagerConfig.podGcControllerConfig.terminatedPodGcThreshold",
+   "cluster.kubeSchedulerConfig",
+   "cluster.kubeSchedulerConfig.nodeResourcesFit",
+   "cluster.kubeSchedulerConfig.nodeResourcesFit.scoringStrategy",
+   "cluster.kubeSchedulerConfig.nodeResourcesFit.scoringStrategy.resources",
+   "cluster.kubeSchedulerConfig.nodeResourcesFit.scoringStrategy.resources[].name",
+   "cluster.kubeSchedulerConfig.nodeResourcesFit.scoringStrategy.resources[].weight",
+   "cluster.kubeSchedulerConfig.nodeResourcesFit.scoringStrategy.type",
+   "cluster.kubernetesNetworkConfig.elasticLoadBalancing.gatewayApi",
+   "cluster.kubernetesNetworkConfig.elasticLoadBalancing.gatewayApi.crds",
+   "cluster.kubernetesNetworkConfig.elasticLoadBalancing.gatewayApi.crds.managed",
+   "cluster.outpostConfig.controlPlanePlacement.spreadLevel",
+   "cluster.outpostConfig.etcdInstanceType",
+   "cluster.outpostConfig.etcdPlacement",
+   "cluster.outpostConfig.etcdPlacement.spreadLevel",
+   "cluster.resourcesVpcConfig.controlPlaneEgressMode"
+  ],
+  "raw_keys": [
+   "eks.describe_cluster",
+   "eks.describe_nodegroup"
+  ],
+  "rules": [
+   "REME-0105900001",
+   "REME-0105900002",
+   "REME-0105900003",
+   "REME-0105900004",
+   "REME-0105900005",
+   "REME-0105900006",
+   "REME-0105900007",
+   "REME-0105900008"
+  ]
+ },
+ "eks.DescribeFargateProfile": {
+  "service": "eks",
+  "operation": "DescribeFargateProfile",
+  "method": "describe_fargate_profile",
+  "doc": "Describes an Fargate profile.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/eks/client/describe_fargate_profile.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeFargateProfile"
+  },
+  "paginated": false,
+  "input_required": [
+   "clusterName",
+   "fargateProfileName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "fargateProfile": {
+     "type": "structure",
+     "doc": "The full description of your Fargate profile.",
+     "members": {
+      "fargateProfileName": {
+       "type": "string",
+       "doc": "The name of the Fargate profile."
+      },
+      "fargateProfileArn": {
+       "type": "string",
+       "doc": "The full Amazon Resource Name (ARN) of the Fargate profile."
+      },
+      "clusterName": {
+       "type": "string",
+       "doc": "The name of your cluster."
+      },
+      "createdAt": {
+       "type": "timestamp",
+       "doc": "The Unix epoch timestamp at object creation."
+      },
+      "podExecutionRoleArn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of the Pod execution role to use for any Pod that matches the selectors in the Fargate profile. For more information, see Pod execution role in the Amazon EKS User Guide ."
+      },
+      "subnets": {
+       "type": "list",
+       "doc": "The IDs of subnets to launch a Pod into.",
+       "item": {
+        "type": "string"
+       }
+      },
+      "selectors": {
+       "type": "list",
+       "doc": "The selectors to match for a Pod to use this Fargate profile.",
+       "item": {
+        "type": "structure",
+        "doc": "An object representing an Fargate profile selector.",
+        "members": {
+         "namespace": {
+          "type": "string",
+          "doc": "The Kubernetes namespace that the selector should match."
+         },
+         "labels": {
+          "type": "map",
+          "doc": "The Kubernetes labels that the selector should match. A pod must contain all of the labels that are specified in the selector for it to be considered a match.",
+          "key": {
+           "type": "string"
+          },
+          "value": {
+           "type": "string"
+          }
+         }
+        }
+       }
+      },
+      "status": {
+       "type": "string",
+       "doc": "The current status of the Fargate profile.",
+       "enum": [
+        "CREATING",
+        "ACTIVE",
+        "DELETING",
+        "CREATE_FAILED",
+        "DELETE_FAILED"
+       ]
+      },
+      "tags": {
+       "type": "map",
+       "doc": "Metadata that assists with categorization and organization. Each tag consists of a key and an optional value. You define both. Tags don't propagate to any other cluster or Amazon Web Services resources.",
+       "key": {
+        "type": "string",
+        "doc": "One part of a key-value pair that make up a tag. A key is a general label that acts like a category for more specific tag values."
+       },
+       "value": {
+        "type": "string",
+        "doc": "The optional part of a key-value pair that make up a tag. A value acts as a descriptor within a tag category (key)."
+       }
+      },
+      "health": {
+       "type": "structure",
+       "doc": "The health status of the Fargate profile. If there are issues with your Fargate profile's health, they are listed here.",
+       "members": {
+        "issues": {
+         "type": "list",
+         "doc": "Any issues that are associated with the Fargate profile.",
+         "item": {
+          "type": "structure",
+          "doc": "An issue that is associated with the Fargate profile.",
+          "members": {
+           "code": {
+            "type": "string",
+            "doc": "A brief description of the error.",
+            "enum": [
+             "PodExecutionRoleAlreadyInUse",
+             "AccessDenied",
+             "ClusterUnreachable",
+             "InternalFailure"
+            ]
+           },
+           "message": {
+            "type": "string",
+            "doc": "The error message associated with the issue."
+           },
+           "resourceIds": {
+            "type": "list",
+            "doc": "The Amazon Web Services resources that are affected by this issue.",
+            "item": {
+             "type": "string"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "eks.describe_cluster"
+  ],
+  "rules": [
+   "REME-0105900001",
+   "REME-0105900002",
+   "REME-0105900003",
+   "REME-0105900004",
+   "REME-0105900005",
+   "REME-0105900006",
+   "REME-0105900007",
+   "REME-0105900008"
+  ]
+ },
+ "eks.DescribeNodegroup": {
+  "service": "eks",
+  "operation": "DescribeNodegroup",
+  "method": "describe_nodegroup",
+  "doc": "Describes a managed node group.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/eks/client/describe_nodegroup.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeNodegroup"
+  },
+  "paginated": false,
+  "input_required": [
+   "clusterName",
+   "nodegroupName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "nodegroup": {
+     "type": "structure",
+     "doc": "The full description of your node group.",
+     "members": {
+      "nodegroupName": {
+       "type": "string",
+       "doc": "The name associated with an Amazon EKS managed node group."
+      },
+      "nodegroupArn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) associated with the managed node group."
+      },
+      "clusterName": {
+       "type": "string",
+       "doc": "The name of your cluster."
+      },
+      "version": {
+       "type": "string",
+       "doc": "The Kubernetes version of the managed node group."
+      },
+      "releaseVersion": {
+       "type": "string",
+       "doc": "If the node group was deployed using a launch template with a custom AMI, then this is the AMI ID that was specified in the launch template. For node groups that weren't deployed using a launch template, this is the version of the Amazon EKS optimized AMI that the node group was deployed with."
+      },
+      "createdAt": {
+       "type": "timestamp",
+       "doc": "The Unix epoch timestamp at object creation."
+      },
+      "modifiedAt": {
+       "type": "timestamp",
+       "doc": "The Unix epoch timestamp for the last modification to the object."
+      },
+      "status": {
+       "type": "string",
+       "doc": "The current status of the managed node group.",
+       "enum": [
+        "CREATING",
+        "ACTIVE",
+        "UPDATING",
+        "DELETING",
+        "CREATE_FAILED",
+        "DELETE_FAILED",
+        "DEGRADED"
+       ]
+      },
+      "capacityType": {
+       "type": "string",
+       "doc": "The capacity type of your managed node group.",
+       "enum": [
+        "ON_DEMAND",
+        "SPOT",
+        "CAPACITY_BLOCK"
+       ]
+      },
+      "scalingConfig": {
+       "type": "structure",
+       "doc": "The scaling configuration details for the Auto Scaling group that is associated with your node group.",
+       "members": {
+        "minSize": {
+         "type": "integer",
+         "doc": "The minimum number of nodes that the managed node group can scale in to."
+        },
+        "maxSize": {
+         "type": "integer",
+         "doc": "The maximum number of nodes that the managed node group can scale out to. For information about the maximum number that you can specify, see Amazon EKS service quotas in the Amazon EKS User Guide ."
+        },
+        "desiredSize": {
+         "type": "integer",
+         "doc": "The current number of nodes that the managed node group should maintain. If you use the Kubernetes Cluster Autoscaler , you shouldn't change the desiredSize value directly, as this can cause the Cluster Autoscaler to suddenly scale up or scale down. Whenever this parameter changes, the number of worker nodes in the node group is updated to the specified size. If this parameter is given a value that is smaller than the current number of running worker nodes, the necessary number of worker nodes …"
+        }
+       }
+      },
+      "instanceTypes": {
+       "type": "list",
+       "doc": "If the node group wasn't deployed with a launch template, then this is the instance type that is associated with the node group. If the node group was deployed with a launch template, then this is null .",
+       "item": {
+        "type": "string"
+       }
+      },
+      "subnets": {
+       "type": "list",
+       "doc": "The subnets that were specified for the Auto Scaling group that is associated with your node group.",
+       "item": {
+        "type": "string"
+       }
+      },
+      "remoteAccess": {
+       "type": "structure",
+       "doc": "If the node group wasn't deployed with a launch template, then this is the remote access configuration that is associated with the node group. If the node group was deployed with a launch template, then this is null .",
+       "members": {
+        "ec2SshKey": {
+         "type": "string",
+         "doc": "The Amazon EC2 SSH key name that provides access for SSH communication with the nodes in the managed node group. For more information, see Amazon EC2 key pairs and Linux instances in the Amazon Elastic Compute Cloud User Guide for Linux Instances . For Windows, an Amazon EC2 SSH key is used to obtain the RDP password. For more information, see Amazon EC2 key pairs and Windows instances in the Amazon Elastic Compute Cloud User Guide for Windows Instances ."
+        },
+        "sourceSecurityGroups": {
+         "type": "list",
+         "doc": "The security group IDs that are allowed SSH access (port 22) to the nodes. For Windows, the port is 3389. If you specify an Amazon EC2 SSH key but don't specify a source security group when you create a managed node group, then the port on the nodes is opened to the internet ( 0.0.0.0/0 ). For more information, see Security Groups for Your VPC in the Amazon Virtual Private Cloud User Guide .",
+         "item": {
+          "type": "string"
+         }
+        }
+       }
+      },
+      "amiType": {
+       "type": "string",
+       "doc": "If the node group was deployed using a launch template with a custom AMI, then this is CUSTOM . For node groups that weren't deployed using a launch template, this is the AMI type that was specified in the node group configuration.",
+       "enum": [
+        "AL2_x86_64",
+        "AL2_x86_64_GPU",
+        "AL2_ARM_64",
+        "CUSTOM",
+        "BOTTLEROCKET_ARM_64",
+        "BOTTLEROCKET_x86_64",
+        "BOTTLEROCKET_ARM_64_NVIDIA",
+        "BOTTLEROCKET_x86_64_NVIDIA",
+        "WINDOWS_CORE_2019_x86_64",
+        "WINDOWS_FULL_2019_x86_64",
+        "WINDOWS_CORE_2022_x86_64",
+        "WINDOWS_FULL_2022_x86_64",
+        "AL2023_x86_64_STANDARD",
+        "AL2023_ARM_64_STANDARD",
+        "AL2023_x86_64_NEURON",
+        "AL2023_x86_64_NVIDIA"
+       ]
+      },
+      "nodeRole": {
+       "type": "string",
+       "doc": "The IAM role associated with your node group. The Amazon EKS node kubelet daemon makes calls to Amazon Web Services APIs on your behalf. Nodes receive permissions for these API calls through an IAM instance profile and associated policies."
+      },
+      "labels": {
+       "type": "map",
+       "doc": "The Kubernetes labels applied to the nodes in the node group. Only labels that are applied with the Amazon EKS API are shown here. There may be other Kubernetes labels applied to the nodes in this group.",
+       "key": {
+        "type": "string"
+       },
+       "value": {
+        "type": "string"
+       }
+      },
+      "taints": {
+       "type": "list",
+       "doc": "The Kubernetes taints to be applied to the nodes in the node group when they are created. Effect is one of No_Schedule , Prefer_No_Schedule , or No_Execute . Kubernetes taints can be used together with tolerations to control how workloads are scheduled to your nodes. For more information, see Node taints on managed node groups .",
+       "item": {
+        "type": "structure",
+        "doc": "A property that allows a node to repel a Pod . For more information, see Node taints on managed node groups in the Amazon EKS User Guide .",
+        "members": {
+         "key": {
+          "type": "string",
+          "doc": "The key of the taint."
+         },
+         "value": {
+          "type": "string",
+          "doc": "The value of the taint."
+         },
+         "effect": {
+          "type": "string",
+          "doc": "The effect of the taint.",
+          "enum": [
+           "NO_SCHEDULE",
+           "NO_EXECUTE",
+           "PREFER_NO_SCHEDULE"
+          ]
+         }
+        }
+       }
+      },
+      "resources": {
+       "type": "structure",
+       "doc": "The resources associated with the node group, such as Auto Scaling groups and security groups for remote access.",
+       "members": {
+        "autoScalingGroups": {
+         "type": "list",
+         "doc": "The Auto Scaling groups associated with the node group.",
+         "item": {
+          "type": "structure",
+          "doc": "An Auto Scaling group that is associated with an Amazon EKS managed node group.",
+          "members": {
+           "name": {
+            "type": "string",
+            "doc": "The name of the Auto Scaling group associated with an Amazon EKS managed node group."
+           }
+          }
+         }
+        },
+        "remoteAccessSecurityGroup": {
+         "type": "string",
+         "doc": "The remote access security group associated with the node group. This security group controls SSH access to the nodes."
+        }
+       }
+      },
+      "diskSize": {
+       "type": "integer",
+       "doc": "If the node group wasn't deployed with a launch template, then this is the disk size in the node group configuration. If the node group was deployed with a launch template, then this is null ."
+      },
+      "health": {
+       "type": "structure",
+       "doc": "The health status of the node group. If there are issues with your node group's health, they are listed here.",
+       "members": {
+        "issues": {
+         "type": "list",
+         "doc": "Any issues that are associated with the node group.",
+         "item": {
+          "type": "structure",
+          "doc": "An object representing an issue with an Amazon EKS resource.",
+          "members": {
+           "code": {
+            "type": "string",
+            "doc": "A brief description of the error. AccessDenied : Amazon EKS or one or more of your managed nodes is failing to authenticate or authorize with your Kubernetes cluster API server. AsgInstanceLaunchFailures : Your Auto Scaling group is experiencing failures while attempting to launch instances. AutoScalingGroupNotFound : We couldn't find the Auto Scaling group associated with the managed node group. You may be able to recreate an Auto Scaling group with the same settings to recover. ClusterUnreach…",
+            "enum": [
+             "AutoScalingGroupNotFound",
+             "AutoScalingGroupInvalidConfiguration",
+             "Ec2SecurityGroupNotFound",
+             "Ec2SecurityGroupDeletionFailure",
+             "Ec2LaunchTemplateNotFound",
+             "Ec2LaunchTemplateVersionMismatch",
+             "Ec2SubnetNotFound",
+             "Ec2SubnetInvalidConfiguration",
+             "IamInstanceProfileNotFound",
+             "Ec2SubnetMissingIpv6Assignment",
+             "IamLimitExceeded",
+             "IamNodeRoleNotFound",
+             "NodeCreationFailure",
+             "AsgInstanceLaunchFailures",
+             "InstanceLimitExceeded",
+             "InsufficientFreeAddresses",
+             "AccessDenied",
+             "InternalFailure",
+             "ClusterUnreachable",
+             "AmiIdNotFound",
+             "AutoScalingGroupOptInRequired",
+             "AutoScalingGroupRateLimitExceeded",
+             "Ec2LaunchTemplateDeletionFailure",
+             "Ec2LaunchTemplateInvalidConfiguration",
+             "Ec2LaunchTemplateMaxLimitExceeded",
+             "Ec2SubnetListTooLong",
+             "IamThrottling",
+             "NodeTerminationFailure",
+             "PodEvictionFailure",
+             "SourceEc2LaunchTemplateNotFound",
+             "LimitExceeded",
+             "Unknown",
+             "AutoScalingGroupInstanceRefreshActive",
+             "KubernetesLabelInvalid",
+             "Ec2LaunchTemplateVersionMaxLimitExceeded",
+             "Ec2InstanceTypeDoesNotExist"
+            ]
+           },
+           "message": {
+            "type": "string",
+            "doc": "The error message associated with the issue."
+           },
+           "resourceIds": {
+            "type": "list",
+            "doc": "The Amazon Web Services resources that are afflicted by this issue.",
+            "item": {
+             "type": "string"
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateConfig": {
+       "type": "structure",
+       "doc": "The node group update configuration.",
+       "members": {
+        "maxUnavailable": {
+         "type": "integer",
+         "doc": "The maximum number of nodes unavailable at once during a version update. Nodes are updated in parallel. This value or maxUnavailablePercentage is required to have a value.The maximum number is 100."
+        },
+        "maxUnavailablePercentage": {
+         "type": "integer",
+         "doc": "The maximum percentage of nodes unavailable during a version update. This percentage of nodes are updated in parallel, up to 100 nodes at once. This value or maxUnavailable is required to have a value."
+        },
+        "updateStrategy": {
+         "type": "string",
+         "doc": "The configuration for the behavior to follow during a node group version update of this managed node group. You choose between two possible strategies for replacing nodes during an UpdateNodegroupVersion action. An Amazon EKS managed node group updates by replacing nodes with new nodes of newer AMI versions in parallel. The update strategy changes the managed node update behavior of the managed node group for each quantity. The default strategy has guardrails to protect you from misconfiguratio…",
+         "enum": [
+          "DEFAULT",
+          "MINIMAL"
+         ]
+        }
+       }
+      },
+      "nodeRepairConfig": {
+       "type": "structure",
+       "doc": "The node auto repair configuration for the node group.",
+       "members": {
+        "enabled": {
+         "type": "boolean",
+         "doc": "Specifies whether to enable node auto repair for the node group. Node auto repair is disabled by default."
+        }
+       }
+      },
+      "launchTemplate": {
+       "type": "structure",
+       "doc": "If a launch template was used to create the node group, then this is the launch template that was used.",
+       "members": {
+        "name": {
+         "type": "string",
+         "doc": "The name of the launch template. You must specify either the launch template name or the launch template ID in the request, but not both."
+        },
+        "version": {
+         "type": "string",
+         "doc": "The version number of the launch template to use. If no version is specified, then the template's default version is used."
+        },
+        "id": {
+         "type": "string",
+         "doc": "The ID of the launch template. You must specify either the launch template ID or the launch template name in the request, but not both."
+        }
+       }
+      },
+      "tags": {
+       "type": "map",
+       "doc": "Metadata that assists with categorization and organization. Each tag consists of a key and an optional value. You define both. Tags don't propagate to any other cluster or Amazon Web Services resources.",
+       "key": {
+        "type": "string",
+        "doc": "One part of a key-value pair that make up a tag. A key is a general label that acts like a category for more specific tag values."
+       },
+       "value": {
+        "type": "string",
+        "doc": "The optional part of a key-value pair that make up a tag. A value acts as a descriptor within a tag category (key)."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "nodegroup.nodeRepairConfig.maxParallelNodesRepairedCount",
+   "nodegroup.nodeRepairConfig.maxParallelNodesRepairedPercentage",
+   "nodegroup.nodeRepairConfig.maxUnhealthyNodeThresholdCount",
+   "nodegroup.nodeRepairConfig.maxUnhealthyNodeThresholdPercentage",
+   "nodegroup.nodeRepairConfig.nodeRepairConfigOverrides",
+   "nodegroup.nodeRepairConfig.nodeRepairConfigOverrides[].minRepairWaitTimeMins",
+   "nodegroup.nodeRepairConfig.nodeRepairConfigOverrides[].nodeMonitoringCondition",
+   "nodegroup.nodeRepairConfig.nodeRepairConfigOverrides[].nodeUnhealthyReason",
+   "nodegroup.nodeRepairConfig.nodeRepairConfigOverrides[].repairAction",
+   "nodegroup.warmPoolConfig",
+   "nodegroup.warmPoolConfig.enabled",
+   "nodegroup.warmPoolConfig.maxGroupPreparedCapacity",
+   "nodegroup.warmPoolConfig.minSize",
+   "nodegroup.warmPoolConfig.poolState",
+   "nodegroup.warmPoolConfig.reuseOnScaleIn"
+  ],
+  "raw_keys": [
+   "eks.describe_cluster",
+   "eks.describe_nodegroup"
+  ],
+  "rules": [
+   "REME-0105900001",
+   "REME-0105900002",
+   "REME-0105900003",
+   "REME-0105900004",
+   "REME-0105900005",
+   "REME-0105900006",
+   "REME-0105900007",
+   "REME-0105900008"
+  ]
+ },
+ "eks.DescribeUpdate": {
+  "service": "eks",
+  "operation": "DescribeUpdate",
+  "method": "describe_update",
+  "doc": "Describes an update to an Amazon EKS resource. When the status of the update is Successful , the update is complete. If an update fails, the status is Failed , and an error detail explains the reason for the failure.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/eks/client/describe_update.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeUpdate"
+  },
+  "paginated": false,
+  "input_required": [
+   "name",
+   "updateId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "update": {
+     "type": "structure",
+     "doc": "The full description of the specified update.",
+     "members": {
+      "id": {
+       "type": "string",
+       "doc": "A UUID that is used to track the update."
+      },
+      "status": {
+       "type": "string",
+       "doc": "The current status of the update.",
+       "enum": [
+        "InProgress",
+        "Failed",
+        "Cancelled",
+        "Successful"
+       ]
+      },
+      "type": {
+       "type": "string",
+       "doc": "The type of the update.",
+       "enum": [
+        "VersionUpdate",
+        "EndpointAccessUpdate",
+        "LoggingUpdate",
+        "ConfigUpdate",
+        "AssociateIdentityProviderConfig",
+        "DisassociateIdentityProviderConfig",
+        "AssociateEncryptionConfig",
+        "AddonUpdate",
+        "VpcConfigUpdate",
+        "AccessConfigUpdate",
+        "UpgradePolicyUpdate",
+        "ZonalShiftConfigUpdate",
+        "AutoModeUpdate"
+       ]
+      },
+      "params": {
+       "type": "list",
+       "doc": "A key-value map that contains the parameters associated with the update.",
+       "item": {
+        "type": "structure",
+        "doc": "An object representing the details of an update request.",
+        "members": {
+         "type": {
+          "type": "string",
+          "doc": "The keys associated with an update request.",
+          "enum": [
+           "Version",
+           "PlatformVersion",
+           "EndpointPrivateAccess",
+           "EndpointPublicAccess",
+           "ClusterLogging",
+           "DesiredSize",
+           "LabelsToAdd",
+           "LabelsToRemove",
+           "TaintsToAdd",
+           "TaintsToRemove",
+           "MaxSize",
+           "MinSize",
+           "ReleaseVersion",
+           "PublicAccessCidrs",
+           "LaunchTemplateName",
+           "LaunchTemplateVersion",
+           "IdentityProviderConfig",
+           "EncryptionConfig",
+           "AddonVersion",
+           "ServiceAccountRoleArn",
+           "ResolveConflicts",
+           "MaxUnavailable",
+           "MaxUnavailablePercentage",
+           "NodeRepairEnabled",
+           "UpdateStrategy",
+           "ConfigurationValues",
+           "SecurityGroups",
+           "Subnets",
+           "AuthenticationMode",
+           "PodIdentityAssociations",
+           "UpgradePolicy",
+           "ZonalShiftConfig",
+           "ComputeConfig",
+           "StorageConfig",
+           "KubernetesNetworkConfig"
+          ]
+         },
+         "value": {
+          "type": "string",
+          "doc": "The value of the keys submitted as part of an update request."
+         }
+        }
+       }
+      },
+      "createdAt": {
+       "type": "timestamp",
+       "doc": "The Unix epoch timestamp at object creation."
+      },
+      "errors": {
+       "type": "list",
+       "doc": "Any errors associated with a Failed update.",
+       "item": {
+        "type": "structure",
+        "doc": "An object representing an error when an asynchronous operation fails.",
+        "members": {
+         "errorCode": {
+          "type": "string",
+          "doc": "A brief description of the error. SubnetNotFound : We couldn't find one of the subnets associated with the cluster. SecurityGroupNotFound : We couldn't find one of the security groups associated with the cluster. EniLimitReached : You have reached the elastic network interface limit for your account. IpNotAvailable : A subnet associated with the cluster doesn't have any available IP addresses. AccessDenied : You don't have permissions to perform the specified operation. OperationNotPermitted : …",
+          "enum": [
+           "SubnetNotFound",
+           "SecurityGroupNotFound",
+           "EniLimitReached",
+           "IpNotAvailable",
+           "AccessDenied",
+           "OperationNotPermitted",
+           "VpcIdNotFound",
+           "Unknown",
+           "NodeCreationFailure",
+           "PodEvictionFailure",
+           "InsufficientFreeAddresses",
+           "ClusterUnreachable",
+           "InsufficientNumberOfReplicas",
+           "ConfigurationConflict",
+           "AdmissionRequestDenied",
+           "UnsupportedAddonModification",
+           "K8sResourceNotFound"
+          ]
+         },
+         "errorMessage": {
+          "type": "string",
+          "doc": "A more complete description of the error."
+         },
+         "resourceIds": {
+          "type": "list",
+          "doc": "An optional field that contains the resource IDs associated with the error.",
+          "item": {
+           "type": "string"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "update.cancellation",
+   "update.cancellation.reason",
+   "update.cancellation.status"
+  ],
+  "raw_keys": [
+   "eks.describe_cluster"
+  ],
+  "rules": [
+   "REME-0105900001",
+   "REME-0105900002",
+   "REME-0105900003",
+   "REME-0105900004",
+   "REME-0105900005",
+   "REME-0105900006",
+   "REME-0105900007",
+   "REME-0105900008"
+  ]
+ },
+ "eks.ListClusters": {
+  "service": "eks",
+  "operation": "ListClusters",
+  "method": "list_clusters",
+  "doc": "Lists the Amazon EKS clusters in your Amazon Web Services account in the specified Amazon Web Services Region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/eks/client/list_clusters.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListClusters"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "clusters": {
+     "type": "list",
+     "doc": "A list of all of the clusters for your account in the specified Amazon Web Services Region .",
+     "item": {
+      "type": "string"
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value returned from a previous paginated request, where maxResults was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the nextToken value. This value is null when there are no more results to return. This token should be treated as an opaque identifier that is used only to retrieve the next items in a list and not for other programmatic purposes."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": []
+ },
+ "eks.ListFargateProfiles": {
+  "service": "eks",
+  "operation": "ListFargateProfiles",
+  "method": "list_fargate_profiles",
+  "doc": "Lists the Fargate profiles associated with the specified cluster in your Amazon Web Services account in the specified Amazon Web Services Region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/eks/client/list_fargate_profiles.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListFargateProfiles"
+  },
+  "paginated": true,
+  "input_required": [
+   "clusterName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "fargateProfileNames": {
+     "type": "list",
+     "doc": "A list of all of the Fargate profiles associated with the specified cluster.",
+     "item": {
+      "type": "string"
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value returned from a previous paginated request, where maxResults was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the nextToken value. This value is null when there are no more results to return. This token should be treated as an opaque identifier that is used only to retrieve the next items in a list and not for other programmatic purposes."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "eks.describe_cluster"
+  ],
+  "rules": [
+   "REME-0105900001",
+   "REME-0105900002",
+   "REME-0105900003",
+   "REME-0105900004",
+   "REME-0105900005",
+   "REME-0105900006",
+   "REME-0105900007",
+   "REME-0105900008"
+  ]
+ },
+ "eks.ListNodegroups": {
+  "service": "eks",
+  "operation": "ListNodegroups",
+  "method": "list_nodegroups",
+  "doc": "Lists the managed node groups associated with the specified cluster in your Amazon Web Services account in the specified Amazon Web Services Region. Self-managed node groups aren't listed.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/eks/client/list_nodegroups.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListNodegroups"
+  },
+  "paginated": true,
+  "input_required": [
+   "clusterName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "nodegroups": {
+     "type": "list",
+     "doc": "A list of all of the node groups associated with the specified cluster.",
+     "item": {
+      "type": "string"
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value returned from a previous paginated request, where maxResults was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the nextToken value. This value is null when there are no more results to return. This token should be treated as an opaque identifier that is used only to retrieve the next items in a list and not for other programmatic purposes."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "eks.describe_cluster",
+   "eks.describe_nodegroup"
+  ],
+  "rules": [
+   "REME-0105900001",
+   "REME-0105900002",
+   "REME-0105900003",
+   "REME-0105900004",
+   "REME-0105900005",
+   "REME-0105900006",
+   "REME-0105900007",
+   "REME-0105900008"
+  ]
+ },
+ "eks.ListUpdates": {
+  "service": "eks",
+  "operation": "ListUpdates",
+  "method": "list_updates",
+  "doc": "Lists the updates associated with an Amazon EKS resource in your Amazon Web Services account, in the specified Amazon Web Services Region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/eks/client/list_updates.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListUpdates"
+  },
+  "paginated": true,
+  "input_required": [
+   "name"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "updateIds": {
+     "type": "list",
+     "doc": "A list of all the updates for the specified cluster and Region.",
+     "item": {
+      "type": "string"
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value returned from a previous paginated request, where maxResults was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the nextToken value. This value is null when there are no more results to return. This token should be treated as an opaque identifier that is used only to retrieve the next items in a list and not for other programmatic purposes."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "eks.describe_cluster"
+  ],
+  "rules": [
+   "REME-0105900001",
+   "REME-0105900002",
+   "REME-0105900003",
+   "REME-0105900004",
+   "REME-0105900005",
+   "REME-0105900006",
+   "REME-0105900007",
+   "REME-0105900008"
+  ]
+ }
+}

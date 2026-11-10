@@ -1,0 +1,809 @@
+{
+ "route53.GetDNSSEC": {
+  "service": "route53",
+  "operation": "GetDNSSEC",
+  "method": "get_dnssec",
+  "doc": "Returns information about DNSSEC for a specific hosted zone, including the key-signing keys (KSKs) in the hosted zone.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53/client/get_dnssec.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetDNSSEC"
+  },
+  "paginated": false,
+  "input_required": [
+   "HostedZoneId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Status": {
+     "type": "structure",
+     "doc": "A string representing the status of DNSSEC.",
+     "members": {
+      "ServeSignature": {
+       "type": "string",
+       "doc": "A string that represents the current hosted zone signing status. Status can have one of the following values: SIGNING DNSSEC signing is enabled for the hosted zone. NOT_SIGNING DNSSEC signing is not enabled for the hosted zone. DELETING DNSSEC signing is in the process of being removed for the hosted zone. ACTION_NEEDED There is a problem with signing in the hosted zone that requires you to take action to resolve. For example, the customer managed key might have been deleted, or the permissions…"
+      },
+      "StatusMessage": {
+       "type": "string",
+       "doc": "The status message provided for the following DNSSEC signing status: INTERNAL_FAILURE . The status message includes information about what the problem might be and steps that you can take to correct the issue."
+      }
+     },
+     "required": true
+    },
+    "KeySigningKeys": {
+     "type": "list",
+     "doc": "The key-signing keys (KSKs) in your account.",
+     "item": {
+      "type": "structure",
+      "doc": "A key-signing key (KSK) is a complex type that represents a public/private key pair. The private key is used to generate a digital signature for the zone signing key (ZSK). The public key is stored in the DNS and is used to authenticate the ZSK. A KSK is always associated with a hosted zone; it cannot exist by itself.",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "A string used to identify a key-signing key (KSK). Name can include numbers, letters, and underscores (_). Name must be unique for each key-signing key in the same hosted zone."
+       },
+       "KmsArn": {
+        "type": "string",
+        "doc": "The Amazon resource name (ARN) used to identify the customer managed key in Key Management Service (KMS). The KmsArn must be unique for each key-signing key (KSK) in a single hosted zone. You must configure the customer managed key as follows: Status Enabled Key spec ECC_NIST_P256 Key usage Sign and verify Key policy The key policy must give permission for the following actions: DescribeKey GetPublicKey Sign The key policy must also include the Amazon Route 53 service in the principal for your …"
+       },
+       "Flag": {
+        "type": "integer",
+        "doc": "An integer that specifies how the key is used. For key-signing key (KSK), this value is always 257."
+       },
+       "SigningAlgorithmMnemonic": {
+        "type": "string",
+        "doc": "A string used to represent the signing algorithm. This value must follow the guidelines provided by RFC-8624 Section 3.1 ."
+       },
+       "SigningAlgorithmType": {
+        "type": "integer",
+        "doc": "An integer used to represent the signing algorithm. This value must follow the guidelines provided by RFC-8624 Section 3.1 ."
+       },
+       "DigestAlgorithmMnemonic": {
+        "type": "string",
+        "doc": "A string used to represent the delegation signer digest algorithm. This value must follow the guidelines provided by RFC-8624 Section 3.3 ."
+       },
+       "DigestAlgorithmType": {
+        "type": "integer",
+        "doc": "An integer used to represent the delegation signer digest algorithm. This value must follow the guidelines provided by RFC-8624 Section 3.3 ."
+       },
+       "KeyTag": {
+        "type": "integer",
+        "doc": "An integer used to identify the DNSSEC record for the domain name. The process used to calculate the value is described in RFC-4034 Appendix B ."
+       },
+       "DigestValue": {
+        "type": "string",
+        "doc": "A cryptographic digest of a DNSKEY resource record (RR). DNSKEY records are used to publish the public key that resolvers can use to verify DNSSEC signatures that are used to secure certain kinds of information provided by the DNS system."
+       },
+       "PublicKey": {
+        "type": "string",
+        "doc": "The public key, represented as a Base64 encoding, as required by RFC-4034 Page 5 ."
+       },
+       "DSRecord": {
+        "type": "string",
+        "doc": "A string that represents a delegation signer (DS) record."
+       },
+       "DNSKEYRecord": {
+        "type": "string",
+        "doc": "A string that represents a DNSKEY record."
+       },
+       "Status": {
+        "type": "string",
+        "doc": "A string that represents the current key-signing key (KSK) status. Status can have one of the following values: ACTIVE The KSK is being used for signing. INACTIVE The KSK is not being used for signing. DELETING The KSK is in the process of being deleted. ACTION_NEEDED There is a problem with the KSK that requires you to take action to resolve. For example, the customer managed key might have been deleted, or the permissions for the customer managed key might have been changed. INTERNAL_FAILURE …"
+       },
+       "StatusMessage": {
+        "type": "string",
+        "doc": "The status message provided for the following key-signing key (KSK) statuses: ACTION_NEEDED or INTERNAL_FAILURE . The status message includes information about what the problem might be and steps that you can take to correct the issue."
+       },
+       "CreatedDate": {
+        "type": "timestamp",
+        "doc": "The date when the key-signing key (KSK) was created."
+       },
+       "LastModifiedDate": {
+        "type": "timestamp",
+        "doc": "The last time that the key-signing key (KSK) was changed."
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "route53.get_hosted_zone"
+  ],
+  "rules": [
+   "REME-0103900001",
+   "REME-0103900004"
+  ]
+ },
+ "route53.GetHostedZone": {
+  "service": "route53",
+  "operation": "GetHostedZone",
+  "method": "get_hosted_zone",
+  "doc": "Gets information about a specified hosted zone including the four name servers assigned to the hosted zone. returns the VPCs associated with the specified hosted zone and does not reflect the VPC associations by Route 53 Profiles. To get the associations to a Profile, call the ListProfileAssociations API.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53/client/get_hosted_zone.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHostedZone"
+  },
+  "paginated": false,
+  "input_required": [
+   "Id"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "A complex type that contain the response to a GetHostedZone request.",
+   "members": {
+    "HostedZone": {
+     "type": "structure",
+     "doc": "A complex type that contains general information about the specified hosted zone.",
+     "members": {
+      "Id": {
+       "type": "string",
+       "doc": "The ID that Amazon Route 53 assigned to the hosted zone when you created it.",
+       "required": true
+      },
+      "Name": {
+       "type": "string",
+       "doc": "The name of the domain. For public hosted zones, this is the name that you have registered with your DNS registrar. For information about how to specify characters other than a-z , 0-9 , and - (hyphen) and how to specify internationalized domain names, see CreateHostedZone .",
+       "required": true
+      },
+      "CallerReference": {
+       "type": "string",
+       "doc": "The value that you specified for CallerReference when you created the hosted zone.",
+       "required": true
+      },
+      "Config": {
+       "type": "structure",
+       "doc": "A complex type that includes the Comment and PrivateZone elements. If you omitted the HostedZoneConfig and Comment elements from the request, the Config and Comment elements don't appear in the response.",
+       "members": {
+        "Comment": {
+         "type": "string",
+         "doc": "Any comments that you want to include about the hosted zone."
+        },
+        "PrivateZone": {
+         "type": "boolean",
+         "doc": "A value that indicates whether this is a private hosted zone."
+        }
+       }
+      },
+      "ResourceRecordSetCount": {
+       "type": "long",
+       "doc": "The number of resource record sets in the hosted zone."
+      },
+      "LinkedService": {
+       "type": "structure",
+       "doc": "If the hosted zone was created by another service, the service that created the hosted zone. When a hosted zone is created by another service, you can't edit or delete it using Route 53.",
+       "members": {
+        "ServicePrincipal": {
+         "type": "string",
+         "doc": "If the health check or hosted zone was created by another service, the service that created the resource. When a resource is created by another service, you can't edit or delete it using Amazon Route 53."
+        },
+        "Description": {
+         "type": "string",
+         "doc": "If the health check or hosted zone was created by another service, an optional description that can be provided by the other service. When a resource is created by another service, you can't edit or delete it using Amazon Route 53."
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "DelegationSet": {
+     "type": "structure",
+     "doc": "A complex type that lists the Amazon Route 53 name servers for the specified hosted zone.",
+     "members": {
+      "Id": {
+       "type": "string",
+       "doc": "The ID that Amazon Route 53 assigns to a reusable delegation set."
+      },
+      "CallerReference": {
+       "type": "string",
+       "doc": "The value that you specified for CallerReference when you created the reusable delegation set."
+      },
+      "NameServers": {
+       "type": "list",
+       "doc": "A complex type that contains a list of the authoritative name servers for a hosted zone or for a reusable delegation set.",
+       "item": {
+        "type": "string"
+       },
+       "required": true
+      }
+     }
+    },
+    "VPCs": {
+     "type": "list",
+     "doc": "A complex type that contains information about the VPCs that are associated with the specified hosted zone.",
+     "item": {
+      "type": "structure",
+      "doc": "(Private hosted zones only) A complex type that contains information about an Amazon VPC. If you associate a private hosted zone with an Amazon VPC when you make a CreateHostedZone request, the following parameters are also required.",
+      "members": {
+       "VPCRegion": {
+        "type": "string",
+        "doc": "(Private hosted zones only) The region that an Amazon VPC was created in.",
+        "enum": [
+         "us-east-1",
+         "us-east-2",
+         "us-west-1",
+         "us-west-2",
+         "eu-west-1",
+         "eu-west-2",
+         "eu-west-3",
+         "eu-central-1",
+         "eu-central-2",
+         "ap-east-1",
+         "me-south-1",
+         "us-gov-west-1",
+         "us-gov-east-1",
+         "us-iso-east-1",
+         "us-iso-west-1",
+         "us-isob-east-1",
+         "me-central-1",
+         "ap-southeast-1",
+         "ap-southeast-2",
+         "ap-southeast-3",
+         "ap-south-1",
+         "ap-south-2",
+         "ap-northeast-1",
+         "ap-northeast-2",
+         "ap-northeast-3",
+         "eu-north-1",
+         "sa-east-1",
+         "ca-central-1",
+         "cn-north-1",
+         "cn-northwest-1",
+         "af-south-1",
+         "eu-south-1",
+         "eu-south-2",
+         "ap-southeast-4",
+         "il-central-1",
+         "ca-west-1",
+         "ap-southeast-5",
+         "mx-central-1",
+         "ap-southeast-7"
+        ]
+       },
+       "VPCId": {
+        "type": "string",
+        "doc": "(Private hosted zones only) The ID of an Amazon VPC."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "HostedZone.Features",
+   "HostedZone.Features.AcceleratedRecoveryStatus",
+   "HostedZone.Features.FailureReasons",
+   "HostedZone.Features.FailureReasons.AcceleratedRecovery"
+  ],
+  "raw_keys": [
+   "route53.get_domain_detail",
+   "route53.get_hosted_zone"
+  ],
+  "rules": [
+   "REME-0103900001",
+   "REME-0103900003",
+   "REME-0103900004",
+   "REME-0103900005",
+   "REME-0103900006",
+   "REME-0103900007"
+  ]
+ },
+ "route53.ListHostedZones": {
+  "service": "route53",
+  "operation": "ListHostedZones",
+  "method": "list_hosted_zones",
+  "doc": "Retrieves a list of the public and private hosted zones that are associated with the current Amazon Web Services account. The response includes a HostedZones child element for each hosted zone. Amazon Route 53 returns a maximum of 100 items in each response. If you have a lot of hosted zones, you can use the maxitems parameter to list them in groups of up to 100.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53/client/list_hosted_zones.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHostedZones"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "HostedZones": {
+     "type": "list",
+     "doc": "A complex type that contains general information about the hosted zone.",
+     "item": {
+      "type": "structure",
+      "doc": "A complex type that contains general information about the hosted zone.",
+      "members": {
+       "Id": {
+        "type": "string",
+        "doc": "The ID that Amazon Route 53 assigned to the hosted zone when you created it.",
+        "required": true
+       },
+       "Name": {
+        "type": "string",
+        "doc": "The name of the domain. For public hosted zones, this is the name that you have registered with your DNS registrar. For information about how to specify characters other than a-z , 0-9 , and - (hyphen) and how to specify internationalized domain names, see CreateHostedZone .",
+        "required": true
+       },
+       "CallerReference": {
+        "type": "string",
+        "doc": "The value that you specified for CallerReference when you created the hosted zone.",
+        "required": true
+       },
+       "Config": {
+        "type": "structure",
+        "doc": "A complex type that includes the Comment and PrivateZone elements. If you omitted the HostedZoneConfig and Comment elements from the request, the Config and Comment elements don't appear in the response.",
+        "members": {
+         "Comment": {
+          "type": "string",
+          "doc": "Any comments that you want to include about the hosted zone."
+         },
+         "PrivateZone": {
+          "type": "boolean",
+          "doc": "A value that indicates whether this is a private hosted zone."
+         }
+        }
+       },
+       "ResourceRecordSetCount": {
+        "type": "long",
+        "doc": "The number of resource record sets in the hosted zone."
+       },
+       "LinkedService": {
+        "type": "structure",
+        "doc": "If the hosted zone was created by another service, the service that created the hosted zone. When a hosted zone is created by another service, you can't edit or delete it using Route 53.",
+        "members": {
+         "ServicePrincipal": {
+          "type": "string",
+          "doc": "If the health check or hosted zone was created by another service, the service that created the resource. When a resource is created by another service, you can't edit or delete it using Amazon Route 53."
+         },
+         "Description": {
+          "type": "string",
+          "doc": "If the health check or hosted zone was created by another service, an optional description that can be provided by the other service. When a resource is created by another service, you can't edit or delete it using Amazon Route 53."
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "Marker": {
+     "type": "string",
+     "doc": "For the second and subsequent calls to ListHostedZones , Marker is the value that you specified for the marker parameter in the request that produced the current response.",
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag indicating whether there are more hosted zones to be listed. If the response was truncated, you can get more hosted zones by submitting another ListHostedZones request and specifying the value of NextMarker in the marker parameter.",
+     "required": true
+    },
+    "NextMarker": {
+     "type": "string",
+     "doc": "If IsTruncated is true , the value of NextMarker identifies the first hosted zone in the next group of hosted zones. Submit another ListHostedZones request, and specify the value of NextMarker from the response in the marker parameter. This element is present only if IsTruncated is true ."
+    },
+    "MaxItems": {
+     "type": "string",
+     "doc": "The value that you specified for the maxitems parameter in the call to ListHostedZones that produced the current response.",
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [
+   "HostedZones[].Features",
+   "HostedZones[].Features.AcceleratedRecoveryStatus",
+   "HostedZones[].Features.FailureReasons",
+   "HostedZones[].Features.FailureReasons.AcceleratedRecovery"
+  ],
+  "raw_keys": [
+   "route53.get_hosted_zone"
+  ],
+  "rules": [
+   "REME-0103900001",
+   "REME-0103900004"
+  ]
+ },
+ "route53.ListQueryLoggingConfigs": {
+  "service": "route53",
+  "operation": "ListQueryLoggingConfigs",
+  "method": "list_query_logging_configs",
+  "doc": "Lists the configurations for DNS query logging that are associated with the current Amazon Web Services account or the configuration that is associated with a specified hosted zone. For more information about DNS query logs, see CreateQueryLoggingConfig . Additional information, including the format of DNS query logs, appears in Logging DNS Queries in the Amazon Route 53 Developer Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53/client/list_query_logging_configs.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListQueryLoggingConfigs"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "QueryLoggingConfigs": {
+     "type": "list",
+     "doc": "An array that contains one QueryLoggingConfig element for each configuration for DNS query logging that is associated with the current Amazon Web Services account.",
+     "item": {
+      "type": "structure",
+      "doc": "A complex type that contains information about a configuration for DNS query logging.",
+      "members": {
+       "Id": {
+        "type": "string",
+        "doc": "The ID for a configuration for DNS query logging.",
+        "required": true
+       },
+       "HostedZoneId": {
+        "type": "string",
+        "doc": "The ID of the hosted zone that CloudWatch Logs is logging queries for.",
+        "required": true
+       },
+       "CloudWatchLogsLogGroupArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the CloudWatch Logs log group that Amazon Route 53 is publishing logs to.",
+        "required": true
+       }
+      }
+     },
+     "required": true
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "If a response includes the last of the query logging configurations that are associated with the current Amazon Web Services account, NextToken doesn't appear in the response. If a response doesn't include the last of the configurations, you can get more configurations by submitting another ListQueryLoggingConfigs request. Get the value of NextToken that Amazon Route 53 returned in the previous response and include it in NextToken in the next request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "route53.list_query_logging_configs"
+  ],
+  "rules": [
+   "REME-0103900002"
+  ]
+ },
+ "route53.ListResourceRecordSets": {
+  "service": "route53",
+  "operation": "ListResourceRecordSets",
+  "method": "list_resource_record_sets",
+  "doc": "Lists the resource record sets in a specified hosted zone. ListResourceRecordSets returns up to 300 resource record sets at a time in ASCII order, beginning at a position specified by the name and type elements. Sort order ListResourceRecordSets sorts results first by DNS name with the labels reversed, for example: com.example.www. Note the trailing dot, which can change the sort order when the record name contains characters that appear before . (decimal 46) in the ASCII table. These characters include the following: ! \" # $ % & ' ( ) * + , - When multiple records have the same DNS name, ListResourceRecordSets sorts results by the record type. Specifying where to start listing records You can use the name and type elements to specify the resource record set that the list begins with: If you do not specify Name or Type The results begin with the first resource record set that the hosted zone contains. If you specify Name but not Type The results begin with the first resource record set in the list whose name is greater than or equal to Name . If you specify Type but not Name Amazon Route 53 returns the InvalidInput error. If you specify both Name and Type The results begin with th…",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53/client/list_resource_record_sets.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListResourceRecordSets"
+  },
+  "paginated": true,
+  "input_required": [
+   "HostedZoneId"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "A complex type that contains list information for the resource record set.",
+   "members": {
+    "ResourceRecordSets": {
+     "type": "list",
+     "doc": "Information about multiple resource record sets.",
+     "item": {
+      "type": "structure",
+      "doc": "Information about the resource record set to create or delete.",
+      "members": {
+       "Name": {
+        "type": "string",
+        "doc": "For ChangeResourceRecordSets requests, the name of the record that you want to create, update, or delete. For ListResourceRecordSets responses, the name of a record in the specified hosted zone. ChangeResourceRecordSets Only Enter a fully qualified domain name, for example, www.example.com . You can optionally include a trailing dot. If you omit the trailing dot, Amazon Route 53 assumes that the domain name that you specify is fully qualified. This means that Route 53 treats www.example.com (wi…",
+        "required": true
+       },
+       "Type": {
+        "type": "string",
+        "doc": "The DNS record type. For information about different record types and how data is encoded for them, see Supported DNS Resource Record Types in the Amazon Route 53 Developer Guide . Valid values for basic resource record sets: A | AAAA | CAA | CNAME | DS | MX | NAPTR | NS | PTR | SOA | SPF | SRV | TXT | TLSA | SSHFP | SVCB | HTTPS Values for weighted, latency, geolocation, and failover resource record sets: A | AAAA | CAA | CNAME | MX | NAPTR | PTR | SPF | SRV | TXT | TLSA | SSHFP | SVCB | HTTPS…",
+        "enum": [
+         "SOA",
+         "A",
+         "TXT",
+         "NS",
+         "CNAME",
+         "MX",
+         "NAPTR",
+         "PTR",
+         "SRV",
+         "SPF",
+         "AAAA",
+         "CAA",
+         "DS",
+         "TLSA",
+         "SSHFP",
+         "SVCB",
+         "HTTPS"
+        ],
+        "required": true
+       },
+       "SetIdentifier": {
+        "type": "string",
+        "doc": "Resource record sets that have a routing policy other than simple: An identifier that differentiates among multiple resource record sets that have the same combination of name and type, such as multiple weighted resource record sets named acme.example.com that have a type of A. In a group of resource record sets that have the same name and type, the value of SetIdentifier must be unique for each resource record set. For information about routing policies, see Choosing a Routing Policy in the Am…"
+       },
+       "Weight": {
+        "type": "long",
+        "doc": "Weighted resource record sets only: Among resource record sets that have the same combination of DNS name and type, a value that determines the proportion of DNS queries that Amazon Route 53 responds to using the current resource record set. Route 53 calculates the sum of the weights for the resource record sets that have the same combination of DNS name and type. Route 53 then responds to queries based on the ratio of a resource's weight to the total. Note the following: You must specify a val…"
+       },
+       "Region": {
+        "type": "string",
+        "doc": "Latency-based resource record sets only: The Amazon EC2 Region where you created the resource that this resource record set refers to. The resource typically is an Amazon Web Services resource, such as an EC2 instance or an ELB load balancer, and is referred to by an IP address or a DNS domain name, depending on the record type. When Amazon Route 53 receives a DNS query for a domain name and type for which you have created latency resource record sets, Route 53 selects the latency resource reco…",
+        "enum": [
+         "us-east-1",
+         "us-east-2",
+         "us-west-1",
+         "us-west-2",
+         "ca-central-1",
+         "eu-west-1",
+         "eu-west-2",
+         "eu-west-3",
+         "eu-central-1",
+         "eu-central-2",
+         "ap-southeast-1",
+         "ap-southeast-2",
+         "ap-southeast-3",
+         "ap-northeast-1",
+         "ap-northeast-2",
+         "ap-northeast-3",
+         "eu-north-1",
+         "sa-east-1",
+         "cn-north-1",
+         "cn-northwest-1",
+         "ap-east-1",
+         "me-south-1",
+         "me-central-1",
+         "ap-south-1",
+         "ap-south-2",
+         "af-south-1",
+         "eu-south-1",
+         "eu-south-2",
+         "ap-southeast-4",
+         "il-central-1",
+         "ca-west-1",
+         "ap-southeast-5",
+         "mx-central-1",
+         "ap-southeast-7"
+        ]
+       },
+       "GeoLocation": {
+        "type": "structure",
+        "doc": "Geolocation resource record sets only: A complex type that lets you control how Amazon Route 53 responds to DNS queries based on the geographic origin of the query. For example, if you want all queries from Africa to be routed to a web server with an IP address of 192.0.2.111 , create a resource record set with a Type of A and a ContinentCode of AF . If you create separate resource record sets for overlapping geographic regions (for example, one resource record set for a continent and one for a…",
+        "members": {
+         "ContinentCode": {
+          "type": "string",
+          "doc": "The two-letter code for the continent. Amazon Route 53 supports the following continent codes: AF : Africa AN : Antarctica AS : Asia EU : Europe OC : Oceania NA : North America SA : South America Constraint: Specifying ContinentCode with either CountryCode or SubdivisionCode returns an InvalidInput error."
+         },
+         "CountryCode": {
+          "type": "string",
+          "doc": "For geolocation resource record sets, the two-letter code for a country. Amazon Route 53 uses the two-letter country codes that are specified in ISO standard 3166-1 alpha-2 . Route 53 also supports the country code UA for Ukraine."
+         },
+         "SubdivisionCode": {
+          "type": "string",
+          "doc": "For geolocation resource record sets, the two-letter code for a state of the United States. Route 53 doesn't support any other values for SubdivisionCode . For a list of state abbreviations, see Appendix B: Two–Letter State and Possession Abbreviations on the United States Postal Service website. If you specify subdivisioncode , you must also specify US for CountryCode ."
+         }
+        }
+       },
+       "Failover": {
+        "type": "string",
+        "doc": "Failover resource record sets only: To configure failover, you add the Failover element to two resource record sets. For one resource record set, you specify PRIMARY as the value for Failover ; for the other resource record set, you specify SECONDARY . In addition, you include the HealthCheckId element and specify the health check that you want Amazon Route 53 to perform for each resource record set. Except where noted, the following failover behaviors assume that you have included the HealthCh…",
+        "enum": [
+         "PRIMARY",
+         "SECONDARY"
+        ]
+       },
+       "MultiValueAnswer": {
+        "type": "boolean",
+        "doc": "Multivalue answer resource record sets only : To route traffic approximately randomly to multiple resources, such as web servers, create one multivalue answer record for each resource and specify true for MultiValueAnswer . Note the following: If you associate a health check with a multivalue answer resource record set, Amazon Route 53 responds to DNS queries with the corresponding IP address only when the health check is healthy. If you don't associate a health check with a multivalue answer r…"
+       },
+       "TTL": {
+        "type": "long",
+        "doc": "The resource record cache time to live (TTL), in seconds. Note the following: If you're creating or updating an alias resource record set, omit TTL . Amazon Route 53 uses the value of TTL for the alias target. If you're associating this resource record set with a health check (if you're adding a HealthCheckId element), we recommend that you specify a TTL of 60 seconds or less so clients respond quickly to changes in health status. All of the resource record sets in a group of weighted resource …"
+       },
+       "ResourceRecords": {
+        "type": "list",
+        "doc": "Information about the resource records to act upon. If you're creating an alias resource record set, omit ResourceRecords .",
+        "item": {
+         "type": "structure",
+         "doc": "Information specific to the resource record. If you're creating an alias resource record set, omit ResourceRecord .",
+         "members": {
+          "Value": {
+           "type": "string",
+           "doc": "The current or new DNS record value, not to exceed 4,000 characters. In the case of a DELETE action, if the current value does not match the actual value, an error is returned. For descriptions about how to format Value for different record types, see Supported DNS Resource Record Types in the Amazon Route 53 Developer Guide . You can specify more than one value for all record types except CNAME and SOA . If you're creating an alias resource record set, omit Value .",
+           "required": true
+          }
+         }
+        }
+       },
+       "AliasTarget": {
+        "type": "structure",
+        "doc": "Alias resource record sets only: Information about the Amazon Web Services resource, such as a CloudFront distribution or an Amazon S3 bucket, that you want to route traffic to. If you're creating resource records sets for a private hosted zone, note the following: You can't create an alias resource record set in a private hosted zone to route traffic to a CloudFront distribution. For information about creating failover resource record sets in a private hosted zone, see Configuring Failover in …",
+        "members": {
+         "HostedZoneId": {
+          "type": "string",
+          "doc": "Alias resource records sets only : The value used depends on where you want to route traffic: Amazon API Gateway custom regional APIs and edge-optimized APIs Specify the hosted zone ID for your API. You can get the applicable value using the CLI command get-domain-names : For regional APIs, specify the value of regionalHostedZoneId . For edge-optimized APIs, specify the value of distributionHostedZoneId . Amazon Virtual Private Cloud interface VPC endpoint Specify the hosted zone ID for your in…",
+          "required": true
+         },
+         "DNSName": {
+          "type": "string",
+          "doc": "Alias resource record sets only: The value that you specify depends on where you want to route queries: Amazon API Gateway custom regional APIs and edge-optimized APIs Specify the applicable domain name for your API. You can get the applicable value using the CLI command get-domain-names : For regional APIs, specify the value of regionalDomainName . For edge-optimized APIs, specify the value of distributionDomainName . This is the name of the associated CloudFront distribution, such as da1b2c3d…",
+          "required": true
+         },
+         "EvaluateTargetHealth": {
+          "type": "boolean",
+          "doc": "Applies only to alias, failover alias, geolocation alias, latency alias, and weighted alias resource record sets: When EvaluateTargetHealth is true , an alias resource record set inherits the health of the referenced Amazon Web Services resource, such as an ELB load balancer or another resource record set in the hosted zone. Note the following: CloudFront distributions You can't set EvaluateTargetHealth to true when the alias target is a CloudFront distribution. Elastic Beanstalk environments t…",
+          "required": true
+         }
+        }
+       },
+       "HealthCheckId": {
+        "type": "string",
+        "doc": "If you want Amazon Route 53 to return this resource record set in response to a DNS query only when the status of a health check is healthy, include the HealthCheckId element and specify the ID of the applicable health check. Route 53 determines whether a resource record set is healthy based on one of the following: By periodically sending a request to the endpoint that is specified in the health check By aggregating the status of a specified group of health checks (calculated health checks) By…"
+       },
+       "TrafficPolicyInstanceId": {
+        "type": "string",
+        "doc": "When you create a traffic policy instance, Amazon Route 53 automatically creates a resource record set. TrafficPolicyInstanceId is the ID of the traffic policy instance that Route 53 created this resource record set for. To delete the resource record set that is associated with a traffic policy instance, use DeleteTrafficPolicyInstance . Route 53 will delete the resource record set automatically. If you delete the resource record set by using ChangeResourceRecordSets , Route 53 doesn't automati…"
+       },
+       "CidrRoutingConfig": {
+        "type": "structure",
+        "doc": "The object that is specified in resource record set object when you are linking a resource record set to a CIDR location. A LocationName with an asterisk “*” can be used to create a default CIDR record. CollectionId is still required for default record.",
+        "members": {
+         "CollectionId": {
+          "type": "string",
+          "doc": "The CIDR collection ID.",
+          "required": true
+         },
+         "LocationName": {
+          "type": "string",
+          "doc": "The CIDR collection location name.",
+          "required": true
+         }
+        }
+       },
+       "GeoProximityLocation": {
+        "type": "structure",
+        "doc": "GeoproximityLocation resource record sets only: A complex type that lets you control how Route 53 responds to DNS queries based on the geographic origin of the query and your resources.",
+        "members": {
+         "AWSRegion": {
+          "type": "string",
+          "doc": "The Amazon Web Services Region the resource you are directing DNS traffic to, is in."
+         },
+         "LocalZoneGroup": {
+          "type": "string",
+          "doc": "Specifies an Amazon Web Services Local Zone Group. A local Zone Group is usually the Local Zone code without the ending character. For example, if the Local Zone is us-east-1-bue-1a the Local Zone Group is us-east-1-bue-1 . You can identify the Local Zones Group for a specific Local Zone by using the describe-availability-zones CLI command: This command returns: \"GroupName\": \"us-west-2-den-1\" , specifying that the Local Zone us-west-2-den-1a belongs to the Local Zone Group us-west-2-den-1 ."
+         },
+         "Coordinates": {
+          "type": "structure",
+          "doc": "Contains the longitude and latitude for a geographic region.",
+          "members": {
+           "Latitude": {
+            "type": "string",
+            "doc": "Specifies a coordinate of the north–south position of a geographic point on the surface of the Earth (-90 - 90).",
+            "required": true
+           },
+           "Longitude": {
+            "type": "string",
+            "doc": "Specifies a coordinate of the east–west position of a geographic point on the surface of the Earth (-180 - 180).",
+            "required": true
+           }
+          }
+         },
+         "Bias": {
+          "type": "integer",
+          "doc": "The bias increases or decreases the size of the geographic region from which Route 53 routes traffic to a resource. To use Bias to change the size of the geographic region, specify the applicable value for the bias: To expand the size of the geographic region from which Route 53 routes traffic to a resource, specify a positive integer from 1 to 99 for the bias. Route 53 shrinks the size of adjacent regions. To shrink the size of the geographic region from which Route 53 routes traffic to a reso…"
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    },
+    "IsTruncated": {
+     "type": "boolean",
+     "doc": "A flag that indicates whether more resource record sets remain to be listed. If your results were truncated, you can make a follow-up pagination request by using the NextRecordName element.",
+     "required": true
+    },
+    "NextRecordName": {
+     "type": "string",
+     "doc": "If the results were truncated, the name of the next record in the list. This element is present only if IsTruncated is true."
+    },
+    "NextRecordType": {
+     "type": "string",
+     "doc": "If the results were truncated, the type of the next record in the list. This element is present only if IsTruncated is true.",
+     "enum": [
+      "SOA",
+      "A",
+      "TXT",
+      "NS",
+      "CNAME",
+      "MX",
+      "NAPTR",
+      "PTR",
+      "SRV",
+      "SPF",
+      "AAAA",
+      "CAA",
+      "DS",
+      "TLSA",
+      "SSHFP",
+      "SVCB",
+      "HTTPS"
+     ]
+    },
+    "NextRecordIdentifier": {
+     "type": "string",
+     "doc": "Resource record sets that have a routing policy other than simple: If results were truncated for a given DNS name and type, the value of SetIdentifier for the next resource record set that has the current DNS name and type. For information about routing policies, see Choosing a Routing Policy in the Amazon Route 53 Developer Guide ."
+    },
+    "MaxItems": {
+     "type": "string",
+     "doc": "The maximum number of records you requested.",
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "route53.get_hosted_zone"
+  ],
+  "rules": [
+   "REME-0103900001",
+   "REME-0103900004"
+  ]
+ },
+ "route53.ListTagsForResource": {
+  "service": "route53",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "Lists tags for one health check or hosted zone. For information about using tags for cost allocation, see Using Cost Allocation Tags in the Billing and Cost Management User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTagsForResource"
+  },
+  "paginated": false,
+  "input_required": [
+   "ResourceType",
+   "ResourceId"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "A complex type that contains information about the health checks or hosted zones for which you want to list tags.",
+   "members": {
+    "ResourceTagSet": {
+     "type": "structure",
+     "doc": "A ResourceTagSet containing tags associated with the specified resource.",
+     "members": {
+      "ResourceType": {
+       "type": "string",
+       "doc": "The type of the resource. The resource type for health checks is healthcheck . The resource type for hosted zones is hostedzone .",
+       "enum": [
+        "healthcheck",
+        "hostedzone"
+       ]
+      },
+      "ResourceId": {
+       "type": "string",
+       "doc": "The ID for the specified resource."
+      },
+      "Tags": {
+       "type": "list",
+       "doc": "The tags associated with the specified resource.",
+       "item": {
+        "type": "structure",
+        "doc": "A complex type that contains information about a tag that you want to add or edit for the specified health check or hosted zone.",
+        "members": {
+         "Key": {
+          "type": "string",
+          "doc": "The value of Key depends on the operation that you want to perform: Add a tag to a health check or hosted zone : Key is the name that you want to give the new tag. Edit a tag : Key is the name of the tag that you want to change the Value for. Delete a key : Key is the name of the tag you want to remove. Give a name to a health check : Edit the default Name tag. In the Amazon Route 53 console, the list of your health checks includes a Name column that lets you see the name that you've given to e…"
+         },
+         "Value": {
+          "type": "string",
+          "doc": "The value of Value depends on the operation that you want to perform: Add a tag to a health check or hosted zone : Value is the value that you want to give the new tag. Edit a tag : Value is the new value that you want to assign the tag."
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "route53.get_domain_detail",
+   "route53.get_hosted_zone"
+  ],
+  "rules": [
+   "REME-0103900001",
+   "REME-0103900003",
+   "REME-0103900004",
+   "REME-0103900005",
+   "REME-0103900006",
+   "REME-0103900007"
+  ]
+ }
+}

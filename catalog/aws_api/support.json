@@ -1,0 +1,368 @@
+{
+ "support.DescribeServices": {
+  "service": "support",
+  "operation": "DescribeServices",
+  "method": "describe_services",
+  "doc": "Returns the current list of Amazon Web Services services and a list of service categories for each service. You then use service names and categories in your CreateCase requests. Each Amazon Web Services service has its own set of categories. The service codes and category codes correspond to the values that appear in the Service and Category lists on the Amazon Web Services Support Center Create Case page. The values in those fields don't necessarily match the service codes and categories returned by the DescribeServices operation. Always use the service codes and categories that the DescribeServices operation returns, so that you have the most recent set of service and category codes. You must have a Business, Enterprise On-Ramp, or Enterprise Support plan to use the Amazon Web Services Support API. If you call the Amazon Web Services Support API from an account that doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan, the SubscriptionRequiredException error message appears. For information about changing your support plan, see Amazon Web Services Support .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/support/client/describe_services.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeServices"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "The list of Amazon Web Services services returned by the DescribeServices operation.",
+   "members": {
+    "services": {
+     "type": "list",
+     "doc": "A JSON-formatted list of Amazon Web Services services.",
+     "item": {
+      "type": "structure",
+      "doc": "Information about an Amazon Web Services service returned by the DescribeServices operation.",
+      "members": {
+       "code": {
+        "type": "string",
+        "doc": "The code for an Amazon Web Services service returned by the DescribeServices response. The name element contains the corresponding friendly name."
+       },
+       "name": {
+        "type": "string",
+        "doc": "The friendly name for an Amazon Web Services service. The code element contains the corresponding code."
+       },
+       "categories": {
+        "type": "list",
+        "doc": "A list of categories that describe the type of support issue a case describes. Categories consist of a category name and a category code. Category names and codes are passed to Amazon Web Services Support when you call CreateCase .",
+        "item": {
+         "type": "structure",
+         "doc": "A JSON-formatted name/value pair that represents the category name and category code of the problem, selected from the DescribeServices response for each Amazon Web Services service.",
+         "members": {
+          "code": {
+           "type": "string",
+           "doc": "The category code for the support case."
+          },
+          "name": {
+           "type": "string",
+           "doc": "The category name for the support case."
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "support.support_premium_plan"
+  ]
+ },
+ "support.DescribeTrustedAdvisorCheckResult": {
+  "service": "support",
+  "operation": "DescribeTrustedAdvisorCheckResult",
+  "method": "describe_trusted_advisor_check_result",
+  "doc": "Returns the results of the Trusted Advisor check that has the specified check ID. You can get the check IDs by calling the DescribeTrustedAdvisorChecks operation. The response contains a TrustedAdvisorCheckResult object, which contains these three objects: TrustedAdvisorCategorySpecificSummary TrustedAdvisorResourceDetail TrustedAdvisorResourcesSummary In addition, the response contains these fields: status - The alert status of the check can be ok (green), warning (yellow), error (red), or not_available . timestamp - The time of the last refresh of the check. checkId - The unique identifier for the check. You must have a Business, Enterprise On-Ramp, or Enterprise Support plan to use the Amazon Web Services Support API. If you call the Amazon Web Services Support API from an account that doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan, the SubscriptionRequiredException error message appears. For information about changing your support plan, see Amazon Web Services Support . To call the Trusted Advisor operations in the Amazon Web Services Support API, you must use the US East (N. Virginia) endpoint. Currently, the US West (Oregon) and Europe (Ireland) endp…",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/support/client/describe_trusted_advisor_check_result.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckResult"
+  },
+  "paginated": false,
+  "input_required": [
+   "checkId"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "The result of the Trusted Advisor check returned by the DescribeTrustedAdvisorCheckResult operation.",
+   "members": {
+    "result": {
+     "type": "structure",
+     "doc": "The detailed results of the Trusted Advisor check.",
+     "members": {
+      "checkId": {
+       "type": "string",
+       "doc": "The unique identifier for the Trusted Advisor check.",
+       "required": true
+      },
+      "timestamp": {
+       "type": "string",
+       "doc": "The time of the last refresh of the check.",
+       "required": true
+      },
+      "status": {
+       "type": "string",
+       "doc": "The alert status of the check: \"ok\" (green), \"warning\" (yellow), \"error\" (red), or \"not_available\".",
+       "required": true
+      },
+      "resourcesSummary": {
+       "type": "structure",
+       "doc": "Details about Amazon Web Services resources that were analyzed in a call to Trusted Advisor DescribeTrustedAdvisorCheckSummaries .",
+       "members": {
+        "resourcesProcessed": {
+         "type": "long",
+         "doc": "The number of Amazon Web Services resources that were analyzed by the Trusted Advisor check.",
+         "required": true
+        },
+        "resourcesFlagged": {
+         "type": "long",
+         "doc": "The number of Amazon Web Services resources that were flagged (listed) by the Trusted Advisor check.",
+         "required": true
+        },
+        "resourcesIgnored": {
+         "type": "long",
+         "doc": "The number of Amazon Web Services resources ignored by Trusted Advisor because information was unavailable.",
+         "required": true
+        },
+        "resourcesSuppressed": {
+         "type": "long",
+         "doc": "The number of Amazon Web Services resources ignored by Trusted Advisor because they were marked as suppressed by the user.",
+         "required": true
+        }
+       },
+       "required": true
+      },
+      "categorySpecificSummary": {
+       "type": "structure",
+       "doc": "Summary information that relates to the category of the check. Cost Optimizing is the only category that is currently supported.",
+       "members": {
+        "costOptimizing": {
+         "type": "structure",
+         "doc": "The summary information about cost savings for a Trusted Advisor check that is in the Cost Optimizing category.",
+         "members": {
+          "estimatedMonthlySavings": {
+           "type": "double",
+           "doc": "The estimated monthly savings that might be realized if the recommended operations are taken.",
+           "required": true
+          },
+          "estimatedPercentMonthlySavings": {
+           "type": "double",
+           "doc": "The estimated percentage of savings that might be realized if the recommended operations are taken.",
+           "required": true
+          }
+         }
+        }
+       },
+       "required": true
+      },
+      "flaggedResources": {
+       "type": "list",
+       "doc": "The details about each resource listed in the check result.",
+       "item": {
+        "type": "structure",
+        "doc": "Contains information about a resource identified by a Trusted Advisor check.",
+        "members": {
+         "status": {
+          "type": "string",
+          "doc": "The status code for the resource identified in the Trusted Advisor check.",
+          "required": true
+         },
+         "region": {
+          "type": "string",
+          "doc": "The Amazon Web Services Region in which the identified resource is located."
+         },
+         "resourceId": {
+          "type": "string",
+          "doc": "The unique identifier for the identified resource.",
+          "required": true
+         },
+         "isSuppressed": {
+          "type": "boolean",
+          "doc": "Specifies whether the Amazon Web Services resource was ignored by Trusted Advisor because it was marked as suppressed by the user."
+         },
+         "metadata": {
+          "type": "list",
+          "doc": "Additional information about the identified resource. The exact metadata and its order can be obtained by inspecting the TrustedAdvisorCheckDescription object returned by the call to DescribeTrustedAdvisorChecks . Metadata contains all the data that is shown in the Excel download, even in those cases where the UI shows just summary data.",
+          "item": {
+           "type": "string"
+          },
+          "required": true
+         }
+        }
+       },
+       "required": true
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "support.describe_trusted_advisor_checks"
+  ],
+  "rules": [
+   "REME-0105200001"
+  ]
+ },
+ "support.DescribeTrustedAdvisorCheckSummaries": {
+  "service": "support",
+  "operation": "DescribeTrustedAdvisorCheckSummaries",
+  "method": "describe_trusted_advisor_check_summaries",
+  "doc": "Returns the results for the Trusted Advisor check summaries for the check IDs that you specified. You can get the check IDs by calling the DescribeTrustedAdvisorChecks operation. The response contains an array of TrustedAdvisorCheckSummary objects. You must have a Business, Enterprise On-Ramp, or Enterprise Support plan to use the Amazon Web Services Support API. If you call the Amazon Web Services Support API from an account that doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan, the SubscriptionRequiredException error message appears. For information about changing your support plan, see Amazon Web Services Support . To call the Trusted Advisor operations in the Amazon Web Services Support API, you must use the US East (N. Virginia) endpoint. Currently, the US West (Oregon) and Europe (Ireland) endpoints don't support the Trusted Advisor operations. For more information, see About the Amazon Web Services Support API in the Amazon Web Services Support User Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/support/client/describe_trusted_advisor_check_summaries.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckSummaries"
+  },
+  "paginated": false,
+  "input_required": [
+   "checkIds"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "The summaries of the Trusted Advisor checks returned by the DescribeTrustedAdvisorCheckSummaries operation.",
+   "members": {
+    "summaries": {
+     "type": "list",
+     "doc": "The summary information for the requested Trusted Advisor checks.",
+     "item": {
+      "type": "structure",
+      "doc": "A summary of a Trusted Advisor check result, including the alert status, last refresh, and number of resources examined.",
+      "members": {
+       "checkId": {
+        "type": "string",
+        "doc": "The unique identifier for the Trusted Advisor check.",
+        "required": true
+       },
+       "timestamp": {
+        "type": "string",
+        "doc": "The time of the last refresh of the check.",
+        "required": true
+       },
+       "status": {
+        "type": "string",
+        "doc": "The alert status of the check: \"ok\" (green), \"warning\" (yellow), \"error\" (red), or \"not_available\".",
+        "required": true
+       },
+       "hasFlaggedResources": {
+        "type": "boolean",
+        "doc": "Specifies whether the Trusted Advisor check has flagged resources."
+       },
+       "resourcesSummary": {
+        "type": "structure",
+        "doc": "Details about Amazon Web Services resources that were analyzed in a call to Trusted Advisor DescribeTrustedAdvisorCheckSummaries .",
+        "members": {
+         "resourcesProcessed": {
+          "type": "long",
+          "doc": "The number of Amazon Web Services resources that were analyzed by the Trusted Advisor check.",
+          "required": true
+         },
+         "resourcesFlagged": {
+          "type": "long",
+          "doc": "The number of Amazon Web Services resources that were flagged (listed) by the Trusted Advisor check.",
+          "required": true
+         },
+         "resourcesIgnored": {
+          "type": "long",
+          "doc": "The number of Amazon Web Services resources ignored by Trusted Advisor because information was unavailable.",
+          "required": true
+         },
+         "resourcesSuppressed": {
+          "type": "long",
+          "doc": "The number of Amazon Web Services resources ignored by Trusted Advisor because they were marked as suppressed by the user.",
+          "required": true
+         }
+        },
+        "required": true
+       },
+       "categorySpecificSummary": {
+        "type": "structure",
+        "doc": "Summary information that relates to the category of the check. Cost Optimizing is the only category that is currently supported.",
+        "members": {
+         "costOptimizing": {
+          "type": "structure",
+          "doc": "The summary information about cost savings for a Trusted Advisor check that is in the Cost Optimizing category.",
+          "members": {
+           "estimatedMonthlySavings": {
+            "type": "double",
+            "doc": "The estimated monthly savings that might be realized if the recommended operations are taken.",
+            "required": true
+           },
+           "estimatedPercentMonthlySavings": {
+            "type": "double",
+            "doc": "The estimated percentage of savings that might be realized if the recommended operations are taken.",
+            "required": true
+           }
+          }
+         }
+        },
+        "required": true
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "support.describe_trusted_advisor_checks"
+  ],
+  "rules": [
+   "REME-0105200001"
+  ]
+ },
+ "support.DescribeTrustedAdvisorChecks": {
+  "service": "support",
+  "operation": "DescribeTrustedAdvisorChecks",
+  "method": "describe_trusted_advisor_checks",
+  "doc": "Returns information about all available Trusted Advisor checks, including the name, ID, category, description, and metadata. You must specify a language code. The response contains a TrustedAdvisorCheckDescription object for each check. You must set the Amazon Web Services Region to us-east-1. You must have a Business, Enterprise On-Ramp, or Enterprise Support plan to use the Amazon Web Services Support API. If you call the Amazon Web Services Support API from an account that doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan, the SubscriptionRequiredException error message appears. For information about changing your support plan, see Amazon Web Services Support . The names and descriptions for Trusted Advisor checks are subject to change. We recommend that you specify the check ID in your code to uniquely identify a check. To call the Trusted Advisor operations in the Amazon Web Services Support API, you must use the US East (N. Virginia) endpoint. Currently, the US West (Oregon) and Europe (Ireland) endpoints don't support the Trusted Advisor operations. For more information, see About the Amazon Web Services Support API in the Amazon Web Services Support U…",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/support/client/describe_trusted_advisor_checks.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorChecks"
+  },
+  "paginated": false,
+  "input_required": [
+   "language"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Information about the Trusted Advisor checks returned by the DescribeTrustedAdvisorChecks operation.",
+   "members": {
+    "checks": {
+     "type": "list",
+     "doc": "Information about all available Trusted Advisor checks.",
+     "item": {
+      "type": "structure",
+      "doc": "The description and metadata for a Trusted Advisor check.",
+      "members": {
+       "id": {
+        "type": "string",
+        "doc": "The unique identifier for the Trusted Advisor check.",
+        "required": true
+       },
+       "name": {
+        "type": "string",
+        "doc": "The display name for the Trusted Advisor check.",
+        "required": true
+       },
+       "description": {
+        "type": "string",
+        "doc": "The description of the Trusted Advisor check, which includes the alert criteria and recommended operations (contains HTML markup).",
+        "required": true
+       },
+       "category": {
+        "type": "string",
+        "doc": "The category of the Trusted Advisor check.",
+        "required": true
+       },
+       "metadata": {
+        "type": "list",
+        "doc": "The column headings for the data returned by the Trusted Advisor check. The order of the headings corresponds to the order of the data in the Metadata element of the TrustedAdvisorResourceDetail for the check. Metadata contains all the data that is shown in the Excel download, even in those cases where the UI shows just summary data.",
+        "item": {
+         "type": "string"
+        },
+        "required": true
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "support.describe_trusted_advisor_checks"
+  ],
+  "rules": [
+   "REME-0105200001"
+  ]
+ }
+}

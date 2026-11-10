@@ -1,0 +1,415 @@
+{
+ "network-firewall.DescribeFirewall": {
+  "service": "network-firewall",
+  "operation": "DescribeFirewall",
+  "method": "describe_firewall",
+  "doc": "Returns the data objects for the specified firewall.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/network-firewall/client/describe_firewall.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/network-firewall-2020-11-12/DescribeFirewall"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "UpdateToken": {
+     "type": "string",
+     "doc": "An optional token that you can use for optimistic locking. Network Firewall returns a token to your requests that access the firewall. The token marks the state of the firewall resource at the time of the request. To make an unconditional change to the firewall, omit the token in your update request. Without the token, Network Firewall performs your updates regardless of whether the firewall has changed since you last retrieved it. To make a conditional change to the firewall, provide the token…"
+    },
+    "Firewall": {
+     "type": "structure",
+     "doc": "The configuration settings for the firewall. These settings include the firewall policy and the subnets in your VPC to use for the firewall endpoints.",
+     "members": {
+      "FirewallName": {
+       "type": "string",
+       "doc": "The descriptive name of the firewall. You can't change the name of a firewall after you create it."
+      },
+      "FirewallArn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of the firewall."
+      },
+      "FirewallPolicyArn": {
+       "type": "string",
+       "doc": "The Amazon Resource Name (ARN) of the firewall policy. The relationship of firewall to firewall policy is many to one. Each firewall requires one firewall policy association, and you can use the same firewall policy for multiple firewalls.",
+       "required": true
+      },
+      "VpcId": {
+       "type": "string",
+       "doc": "The unique identifier of the VPC where the firewall is in use.",
+       "required": true
+      },
+      "SubnetMappings": {
+       "type": "list",
+       "doc": "The public subnets that Network Firewall is using for the firewall. Each subnet must belong to a different Availability Zone.",
+       "item": {
+        "type": "structure",
+        "doc": "The ID for a subnet that you want to associate with the firewall. This is used with CreateFirewall and AssociateSubnets . Network Firewall creates an instance of the associated firewall in each subnet that you specify, to filter traffic in the subnet's Availability Zone.",
+        "members": {
+         "SubnetId": {
+          "type": "string",
+          "doc": "The unique identifier for the subnet.",
+          "required": true
+         },
+         "IPAddressType": {
+          "type": "string",
+          "doc": "The subnet's IP address type. You can't change the IP address type after you create the subnet.",
+          "enum": [
+           "DUALSTACK",
+           "IPV4",
+           "IPV6"
+          ]
+         }
+        }
+       },
+       "required": true
+      },
+      "DeleteProtection": {
+       "type": "boolean",
+       "doc": "A flag indicating whether it is possible to delete the firewall. A setting of TRUE indicates that the firewall is protected against deletion. Use this setting to protect against accidentally deleting a firewall that is in use. When you create a firewall, the operation initializes this flag to TRUE ."
+      },
+      "SubnetChangeProtection": {
+       "type": "boolean",
+       "doc": "A setting indicating whether the firewall is protected against changes to the subnet associations. Use this setting to protect against accidentally modifying the subnet associations for a firewall that is in use. When you create a firewall, the operation initializes this setting to TRUE ."
+      },
+      "FirewallPolicyChangeProtection": {
+       "type": "boolean",
+       "doc": "A setting indicating whether the firewall is protected against a change to the firewall policy association. Use this setting to protect against accidentally modifying the firewall policy for a firewall that is in use. When you create a firewall, the operation initializes this setting to TRUE ."
+      },
+      "Description": {
+       "type": "string",
+       "doc": "A description of the firewall."
+      },
+      "FirewallId": {
+       "type": "string",
+       "doc": "The unique identifier for the firewall.",
+       "required": true
+      },
+      "Tags": {
+       "type": "list",
+       "doc": "",
+       "item": {
+        "type": "structure",
+        "doc": "A key:value pair associated with an Amazon Web Services resource. The key:value pair can be anything you define. Typically, the tag key represents a category (such as \"environment\") and the tag value represents a specific value within that category (such as \"test,\" \"development,\" or \"production\"). You can add up to 50 tags to each Amazon Web Services resource.",
+        "members": {
+         "Key": {
+          "type": "string",
+          "doc": "The part of the key:value pair that defines a tag. You can use a tag key to describe a category of information, such as \"customer.\" Tag keys are case-sensitive.",
+          "required": true
+         },
+         "Value": {
+          "type": "string",
+          "doc": "The part of the key:value pair that defines a tag. You can use a tag value to describe a specific value within a category, such as \"companyA\" or \"companyB.\" Tag values are case-sensitive.",
+          "required": true
+         }
+        }
+       }
+      },
+      "EncryptionConfiguration": {
+       "type": "structure",
+       "doc": "A complex type that contains the Amazon Web Services KMS encryption configuration settings for your firewall.",
+       "members": {
+        "KeyId": {
+         "type": "string",
+         "doc": "The ID of the Amazon Web Services Key Management Service (KMS) customer managed key. You can use any of the key identifiers that KMS supports, unless you're using a key that's managed by another account. If you're using a key managed by another account, then specify the key ARN. For more information, see Key ID in the Amazon Web Services KMS Developer Guide ."
+        },
+        "Type": {
+         "type": "string",
+         "doc": "The type of Amazon Web Services KMS key to use for encryption of your Network Firewall resources.",
+         "enum": [
+          "CUSTOMER_KMS",
+          "AWS_OWNED_KMS_KEY"
+         ],
+         "required": true
+        }
+       }
+      },
+      "EnabledAnalysisTypes": {
+       "type": "list",
+       "doc": "An optional setting indicating the specific traffic analysis types to enable on the firewall.",
+       "item": {
+        "type": "string",
+        "enum": [
+         "TLS_SNI",
+         "HTTP_HOST"
+        ]
+       }
+      }
+     }
+    },
+    "FirewallStatus": {
+     "type": "structure",
+     "doc": "Detailed information about the current status of a Firewall . You can retrieve this for a firewall by calling DescribeFirewall and providing the firewall name and ARN.",
+     "members": {
+      "Status": {
+       "type": "string",
+       "doc": "The readiness of the configured firewall to handle network traffic across all of the Availability Zones where you've configured it. This setting is READY only when the ConfigurationSyncStateSummary value is IN_SYNC and the Attachment Status values for all of the configured subnets are READY .",
+       "enum": [
+        "PROVISIONING",
+        "DELETING",
+        "READY"
+       ],
+       "required": true
+      },
+      "ConfigurationSyncStateSummary": {
+       "type": "string",
+       "doc": "The configuration sync state for the firewall. This summarizes the sync states reported in the Config settings for all of the Availability Zones where you have configured the firewall. When you create a firewall or update its configuration, for example by adding a rule group to its firewall policy, Network Firewall distributes the configuration changes to all zones where the firewall is in use. This summary indicates whether the configuration changes have been applied everywhere. This status mu…",
+       "enum": [
+        "PENDING",
+        "IN_SYNC",
+        "CAPACITY_CONSTRAINED"
+       ],
+       "required": true
+      },
+      "SyncStates": {
+       "type": "map",
+       "doc": "The subnets that you've configured for use by the Network Firewall firewall. This contains one array element per Availability Zone where you've configured a subnet. These objects provide details of the information that is summarized in the ConfigurationSyncStateSummary and Status , broken down by zone and configuration object.",
+       "key": {
+        "type": "string"
+       },
+       "value": {
+        "type": "structure",
+        "doc": "The status of the firewall endpoint and firewall policy configuration for a single VPC subnet. For each VPC subnet that you associate with a firewall, Network Firewall does the following: Instantiates a firewall endpoint in the subnet, ready to take traffic. Configures the endpoint with the current firewall policy settings, to provide the filtering behavior for the endpoint. When you update a firewall, for example to add a subnet association or change a rule group in the firewall policy, the af…",
+        "members": {
+         "Attachment": {
+          "type": "structure",
+          "doc": "The attachment status of the firewall's association with a single VPC subnet. For each configured subnet, Network Firewall creates the attachment by instantiating the firewall endpoint in the subnet so that it's ready to take traffic. This is part of the FirewallStatus .",
+          "members": {
+           "SubnetId": {
+            "type": "string",
+            "doc": "The unique identifier of the subnet that you've specified to be used for a firewall endpoint."
+           },
+           "EndpointId": {
+            "type": "string",
+            "doc": "The identifier of the firewall endpoint that Network Firewall has instantiated in the subnet. You use this to identify the firewall endpoint in the VPC route tables, when you redirect the VPC traffic through the endpoint."
+           },
+           "Status": {
+            "type": "string",
+            "doc": "The current status of the firewall endpoint in the subnet. This value reflects both the instantiation of the endpoint in the VPC subnet and the sync states that are reported in the Config settings. When this value is READY , the endpoint is available and configured properly to handle network traffic. When the endpoint isn't available for traffic, this value will reflect its state, for example CREATING or DELETING .",
+            "enum": [
+             "CREATING",
+             "DELETING",
+             "FAILED",
+             "ERROR",
+             "SCALING",
+             "READY"
+            ]
+           },
+           "StatusMessage": {
+            "type": "string",
+            "doc": "If Network Firewall fails to create or delete the firewall endpoint in the subnet, it populates this with the reason for the error or failure and how to resolve it. A FAILED status indicates a non-recoverable state, and a ERROR status indicates an issue that you can fix. Depending on the error, it can take as many as 15 minutes to populate this field. For more information about the causes for failiure or errors and solutions available for this field, see Troubleshooting firewall endpoint failur…"
+           }
+          }
+         },
+         "Config": {
+          "type": "map",
+          "doc": "The configuration status of the firewall endpoint in a single VPC subnet. Network Firewall provides each endpoint with the rules that are configured in the firewall policy. Each time you add a subnet or modify the associated firewall policy, Network Firewall synchronizes the rules in the endpoint, so it can properly filter network traffic. This is part of the FirewallStatus .",
+          "key": {
+           "type": "string"
+          },
+          "value": {
+           "type": "structure",
+           "doc": "Provides configuration status for a single policy or rule group that is used for a firewall endpoint. Network Firewall provides each endpoint with the rules that are configured in the firewall policy. Each time you add a subnet or modify the associated firewall policy, Network Firewall synchronizes the rules in the endpoint, so it can properly filter network traffic. This is part of a SyncState for a firewall.",
+           "members": {
+            "SyncStatus": {
+             "type": "string",
+             "doc": "Indicates whether this object is in sync with the version indicated in the update token.",
+             "enum": [
+              "PENDING",
+              "IN_SYNC",
+              "CAPACITY_CONSTRAINED"
+             ]
+            },
+            "UpdateToken": {
+             "type": "string",
+             "doc": "The current version of the object that is either in sync or pending synchronization."
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "CapacityUsageSummary": {
+       "type": "structure",
+       "doc": "Describes the capacity usage of the resources contained in a firewall's reference sets. Network Firewall calclulates the capacity usage by taking an aggregated count of all of the resources used by all of the reference sets in a firewall.",
+       "members": {
+        "CIDRs": {
+         "type": "structure",
+         "doc": "Describes the capacity usage of the CIDR blocks used by the IP set references in a firewall.",
+         "members": {
+          "AvailableCIDRCount": {
+           "type": "integer",
+           "doc": "The number of CIDR blocks available for use by the IP set references in a firewall."
+          },
+          "UtilizedCIDRCount": {
+           "type": "integer",
+           "doc": "The number of CIDR blocks used by the IP set references in a firewall."
+          },
+          "IPSetReferences": {
+           "type": "map",
+           "doc": "The list of the IP set references used by a firewall.",
+           "key": {
+            "type": "string"
+           },
+           "value": {
+            "type": "structure",
+            "doc": "General information about the IP set.",
+            "members": {
+             "ResolvedCIDRCount": {
+              "type": "integer",
+              "doc": "Describes the total number of CIDR blocks currently in use by the IP set references in a firewall. To determine how many CIDR blocks are available for you to use in a firewall, you can call AvailableCIDRCount ."
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "Firewall.AvailabilityZoneChangeProtection",
+   "Firewall.AvailabilityZoneMappings",
+   "Firewall.AvailabilityZoneMappings[].AvailabilityZone",
+   "Firewall.NatGatewayMappings",
+   "Firewall.NatGatewayMappings[].NatGatewayId",
+   "Firewall.NoSourcePreservation",
+   "Firewall.NumberOfAssociations",
+   "Firewall.ProxySettings",
+   "Firewall.ProxySettings.ListenerProperties",
+   "Firewall.ProxySettings.ListenerProperties[].Port",
+   "Firewall.ProxySettings.ListenerProperties[].Type",
+   "Firewall.TransitGatewayId",
+   "Firewall.TransitGatewayOwnerAccountId",
+   "Firewall.VpcEndpoint",
+   "Firewall.VpcEndpoint.SubnetMappings",
+   "Firewall.VpcEndpoint.SubnetMappings[].IPAddressType",
+   "Firewall.VpcEndpoint.SubnetMappings[].SubnetId",
+   "Firewall.VpcEndpoint.VpcId",
+   "FirewallStatus.SyncStates{}.Attachment.DnsName",
+   "FirewallStatus.SyncStates{}.NatGatewayAttachments",
+   "FirewallStatus.SyncStates{}.NatGatewayAttachments[].DnsName",
+   "FirewallStatus.SyncStates{}.NatGatewayAttachments[].NatGatewayId",
+   "FirewallStatus.SyncStates{}.NatGatewayAttachments[].Status",
+   "FirewallStatus.SyncStates{}.NatGatewayAttachments[].StatusMessage",
+   "FirewallStatus.TransitGatewayAttachmentSyncState",
+   "FirewallStatus.TransitGatewayAttachmentSyncState.AttachmentId",
+   "FirewallStatus.TransitGatewayAttachmentSyncState.StatusMessage",
+   "FirewallStatus.TransitGatewayAttachmentSyncState.TransitGatewayAttachmentStatus"
+  ],
+  "raw_keys": [
+   "networkfirewall.list_firewalls"
+  ],
+  "rules": [
+   "REME-0104000001",
+   "REME-0104000002",
+   "REME-0106100009"
+  ]
+ },
+ "network-firewall.ListFirewalls": {
+  "service": "network-firewall",
+  "operation": "ListFirewalls",
+  "method": "list_firewalls",
+  "doc": "Retrieves the metadata for the firewalls that you have defined. If you provide VPC identifiers in your request, this returns only the firewalls for those VPCs. Depending on your setting for max results and the number of firewalls, a single call might not return the full list.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/network-firewall/client/list_firewalls.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/network-firewall-2020-11-12/ListFirewalls"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextToken": {
+     "type": "string",
+     "doc": "When you request a list of objects with a MaxResults setting, if the number of objects that are still available for retrieval exceeds the maximum you requested, Network Firewall returns a NextToken value in the response. To retrieve the next batch of objects, use the token returned from the prior request in your next request."
+    },
+    "Firewalls": {
+     "type": "list",
+     "doc": "The firewall metadata objects for the VPCs that you specified. Depending on your setting for max results and the number of firewalls you have, a single call might not be the full list.",
+     "item": {
+      "type": "structure",
+      "doc": "High-level information about a firewall, returned by operations like create and describe. You can use the information provided in the metadata to retrieve and manage a firewall.",
+      "members": {
+       "FirewallName": {
+        "type": "string",
+        "doc": "The descriptive name of the firewall. You can't change the name of a firewall after you create it."
+       },
+       "FirewallArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the firewall."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "Firewalls[].TransitGatewayAttachmentId"
+  ],
+  "raw_keys": [
+   "networkfirewall.list_firewalls"
+  ],
+  "rules": [
+   "REME-0104000001",
+   "REME-0104000002",
+   "REME-0106100009"
+  ]
+ },
+ "network-firewall.ListTagsForResource": {
+  "service": "network-firewall",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "Retrieves the tags associated with the specified resource. Tags are key:value pairs that you can use to categorize and manage your resources, for purposes like billing. For example, you might set the tag key to \"customer\" and the value to the customer name or ID. You can specify one or more tags to add to each Amazon Web Services resource, up to 50 tags for a resource. You can tag the Amazon Web Services resources that you manage through Network Firewall: firewalls, firewall policies, and rule groups.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/network-firewall/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/network-firewall-2020-11-12/ListTagsForResource"
+  },
+  "paginated": true,
+  "input_required": [
+   "ResourceArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextToken": {
+     "type": "string",
+     "doc": "When you request a list of objects with a MaxResults setting, if the number of objects that are still available for retrieval exceeds the maximum you requested, Network Firewall returns a NextToken value in the response. To retrieve the next batch of objects, use the token returned from the prior request in your next request."
+    },
+    "Tags": {
+     "type": "list",
+     "doc": "The tags that are associated with the resource.",
+     "item": {
+      "type": "structure",
+      "doc": "A key:value pair associated with an Amazon Web Services resource. The key:value pair can be anything you define. Typically, the tag key represents a category (such as \"environment\") and the tag value represents a specific value within that category (such as \"test,\" \"development,\" or \"production\"). You can add up to 50 tags to each Amazon Web Services resource.",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "The part of the key:value pair that defines a tag. You can use a tag key to describe a category of information, such as \"customer.\" Tag keys are case-sensitive.",
+        "required": true
+       },
+       "Value": {
+        "type": "string",
+        "doc": "The part of the key:value pair that defines a tag. You can use a tag value to describe a specific value within a category, such as \"companyA\" or \"companyB.\" Tag values are case-sensitive.",
+        "required": true
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "networkfirewall.list_firewalls"
+  ],
+  "rules": [
+   "REME-0104000001",
+   "REME-0104000002",
+   "REME-0106100009"
+  ]
+ }
+}

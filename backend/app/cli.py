@@ -3,6 +3,7 @@
     uv run rv cases [--variant baseline] [--only F001,F002] [-v]   재현 케이스 실행
     uv run rv run <diag_dir> [--variants baseline,improved]        받아 둔 진단(컨디션 + raw)으로 실행
     uv run rv serve [--port 8600]                                   API 서버
+    uv run rv apiref [--variant baseline]                           엔진이 부르는 AWS API 참고 자료 → catalog/aws_api/
 """
 
 from __future__ import annotations
@@ -45,6 +46,23 @@ def _run(a) -> int:
     return 0
 
 
+def _apiref(a) -> int:
+    from app import apiref
+    from app.config import RULE_META_PATH
+    from app.engine.runner import run_job
+    from app.engine.source import engine_src, get_variant, resolve_ref
+
+    v = get_variant(a.variant)
+    inv = run_job(v, {"mode": "inventory"}, timeout=300)  # 룰 → 서비스(service_code_func)
+    ref = resolve_ref(v.engine_ref)
+    meta = json.loads(RULE_META_PATH.read_text(encoding="utf-8"))
+    doc = apiref.build(engine_src(v.engine_ref), v.engine_ref, ref.get("sha"), inv["rules"], meta)
+    apiref.write(doc)
+    m = doc["meta"]
+    print(f"{apiref.OUT_DIR} — {m['counts']} · botocore {m['botocore']}" + (f" · 최신 비교 실패 {list(m['latest_errors'])}" if m["latest_errors"] else ""))
+    return 0
+
+
 def _serve(a) -> int:
     import uvicorn
 
@@ -65,6 +83,9 @@ def main() -> None:
     r.add_argument("--variants", default="baseline,improved")
     r.add_argument("--ruleset")
     r.set_defaults(fn=_run)
+    ar = sub.add_parser("apiref")
+    ar.add_argument("--variant", default="baseline")
+    ar.set_defaults(fn=_apiref)
     s = sub.add_parser("serve")
     s.add_argument("--host", default="127.0.0.1")
     s.add_argument("--port", type=int, default=8600)

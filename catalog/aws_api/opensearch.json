@@ -1,0 +1,1346 @@
+{
+ "opensearch.DescribeDomainHealth": {
+  "service": "opensearch",
+  "operation": "DescribeDomainHealth",
+  "method": "describe_domain_health",
+  "doc": "Returns information about domain and node health, the standby Availability Zone, number of nodes per Availability Zone, and shard count per node.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/opensearch/client/describe_domain_health.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomainHealth"
+  },
+  "paginated": false,
+  "input_required": [
+   "DomainName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "The result of a DescribeDomainHealth request. Contains health information for the requested domain.",
+   "members": {
+    "DomainState": {
+     "type": "string",
+     "doc": "The current state of the domain. Processing - The domain has updates in progress. Active - Requested changes have been processed and deployed to the domain.",
+     "enum": [
+      "Active",
+      "Processing",
+      "NotAvailable"
+     ]
+    },
+    "AvailabilityZoneCount": {
+     "type": "string",
+     "doc": "The number of Availability Zones configured for the domain. If the service is unable to fetch this information, it will return NotAvailable ."
+    },
+    "ActiveAvailabilityZoneCount": {
+     "type": "string",
+     "doc": "The number of active Availability Zones configured for the domain. If the service is unable to fetch this information, it will return NotAvailable ."
+    },
+    "StandByAvailabilityZoneCount": {
+     "type": "string",
+     "doc": "The number of standby Availability Zones configured for the domain. If the service is unable to fetch this information, it will return NotAvailable ."
+    },
+    "DataNodeCount": {
+     "type": "string",
+     "doc": "The number of data nodes configured for the domain. If the service is unable to fetch this information, it will return NotAvailable ."
+    },
+    "DedicatedMaster": {
+     "type": "boolean",
+     "doc": "A boolean that indicates if dedicated master nodes are activated for the domain."
+    },
+    "MasterEligibleNodeCount": {
+     "type": "string",
+     "doc": "The number of nodes that can be elected as a master node. If dedicated master nodes is turned on, this value is the number of dedicated master nodes configured for the domain. If the service is unable to fetch this information, it will return NotAvailable ."
+    },
+    "WarmNodeCount": {
+     "type": "string",
+     "doc": "The number of warm nodes configured for the domain."
+    },
+    "MasterNode": {
+     "type": "string",
+     "doc": "Indicates whether the domain has an elected master node. Available - The domain has an elected master node. UnAvailable - The master node hasn't yet been elected, and a quorum to elect a new master node hasn't been reached.",
+     "enum": [
+      "Available",
+      "UnAvailable"
+     ]
+    },
+    "ClusterHealth": {
+     "type": "string",
+     "doc": "The current health status of your cluster. Red - At least one primary shard is not allocated to any node. Yellow - All primary shards are allocated to nodes, but some replicas aren’t. Green - All primary shards and their replicas are allocated to nodes. NotAvailable - Unable to retrieve cluster health.",
+     "enum": [
+      "Red",
+      "Yellow",
+      "Green",
+      "NotAvailable"
+     ]
+    },
+    "TotalShards": {
+     "type": "string",
+     "doc": "The total number of primary and replica shards for the domain."
+    },
+    "TotalUnAssignedShards": {
+     "type": "string",
+     "doc": "The total number of primary and replica shards not allocated to any of the nodes for the cluster."
+    },
+    "EnvironmentInformation": {
+     "type": "list",
+     "doc": "A list of EnvironmentInfo for the domain.",
+     "item": {
+      "type": "structure",
+      "doc": "Information about the active domain environment.",
+      "members": {
+       "AvailabilityZoneInformation": {
+        "type": "list",
+        "doc": "A list of AvailabilityZoneInfo for the domain.",
+        "item": {
+         "type": "structure",
+         "doc": "Information about an Availability Zone on a domain.",
+         "members": {
+          "AvailabilityZoneName": {
+           "type": "string",
+           "doc": "The name of the Availability Zone."
+          },
+          "ZoneStatus": {
+           "type": "string",
+           "doc": "The current state of the Availability Zone. Current options are Active and StandBy . Active - Data nodes in the Availability Zone are in use. StandBy - Data nodes in the Availability Zone are in a standby state. NotAvailable - Unable to retrieve information.",
+           "enum": [
+            "Active",
+            "StandBy",
+            "NotAvailable"
+           ]
+          },
+          "ConfiguredDataNodeCount": {
+           "type": "string",
+           "doc": "The total number of data nodes configured in the Availability Zone."
+          },
+          "AvailableDataNodeCount": {
+           "type": "string",
+           "doc": "The number of data nodes active in the Availability Zone."
+          },
+          "TotalShards": {
+           "type": "string",
+           "doc": "The total number of primary and replica shards in the Availability Zone."
+          },
+          "TotalUnAssignedShards": {
+           "type": "string",
+           "doc": "The total number of primary and replica shards that aren't allocated to any of the nodes in the Availability Zone."
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "opensearch.describe_domains"
+  ],
+  "rules": [
+   "REME-0104800001",
+   "REME-0104800002",
+   "REME-0104800003",
+   "REME-0104800004"
+  ]
+ },
+ "opensearch.DescribeDomains": {
+  "service": "opensearch",
+  "operation": "DescribeDomains",
+  "method": "describe_domains",
+  "doc": "Returns domain configuration information about the specified Amazon OpenSearch Service domains.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/opensearch/client/describe_domains.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomains"
+  },
+  "paginated": false,
+  "input_required": [
+   "DomainNames"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "Contains the status of the specified domains or all domains owned by the account.",
+   "members": {
+    "DomainStatusList": {
+     "type": "list",
+     "doc": "The status of the requested domains.",
+     "item": {
+      "type": "structure",
+      "doc": "The current status of an OpenSearch Service domain.",
+      "members": {
+       "DomainId": {
+        "type": "string",
+        "doc": "Unique identifier for the domain.",
+        "required": true
+       },
+       "DomainName": {
+        "type": "string",
+        "doc": "Name of the domain. Domain names are unique across all domains owned by the same account within an Amazon Web Services Region.",
+        "required": true
+       },
+       "ARN": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the domain. For more information, see IAM identifiers in the AWS Identity and Access Management User Guide .",
+        "required": true
+       },
+       "Created": {
+        "type": "boolean",
+        "doc": "Creation status of an OpenSearch Service domain. True if domain creation is complete. False if domain creation is still in progress."
+       },
+       "Deleted": {
+        "type": "boolean",
+        "doc": "Deletion status of an OpenSearch Service domain. True if domain deletion is complete. False if domain deletion is still in progress. Once deletion is complete, the status of the domain is no longer returned."
+       },
+       "Endpoint": {
+        "type": "string",
+        "doc": "Domain-specific endpoint used to submit index, search, and data upload requests to the domain."
+       },
+       "EndpointV2": {
+        "type": "string",
+        "doc": "If IPAddressType to set to dualstack , a version 2 domain endpoint is provisioned. This endpoint functions like a normal endpoint, except that it works with both IPv4 and IPv6 IP addresses. Normal endpoints work only with IPv4 IP addresses."
+       },
+       "Endpoints": {
+        "type": "map",
+        "doc": "The key-value pair that exists if the OpenSearch Service domain uses VPC endpoints. For example: IPv4 IP addresses - 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com' Dual stack IP addresses - 'vpcv2':'vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.aos.us-east-1.on.aws'",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string",
+         "doc": "The domain endpoint to which index and search requests are submitted. For example, search-imdb-movies-oopcnjfn6ugo.eu-west-1.es.amazonaws.com or doc-imdb-movies-oopcnjfn6u.eu-west-1.es.amazonaws.com ."
+        }
+       },
+       "DomainEndpointV2HostedZoneId": {
+        "type": "string",
+        "doc": "The dual stack hosted zone ID for the domain."
+       },
+       "Processing": {
+        "type": "boolean",
+        "doc": "The status of the domain configuration. True if OpenSearch Service is processing configuration changes. False if the configuration is active."
+       },
+       "UpgradeProcessing": {
+        "type": "boolean",
+        "doc": "The status of a domain version upgrade to a new version of OpenSearch or Elasticsearch. True if OpenSearch Service is in the process of a version upgrade. False if the configuration is active."
+       },
+       "EngineVersion": {
+        "type": "string",
+        "doc": "Version of OpenSearch or Elasticsearch that the domain is running, in the format Elasticsearch_X.Y or OpenSearch_X.Y ."
+       },
+       "ClusterConfig": {
+        "type": "structure",
+        "doc": "Container for the cluster configuration of the domain.",
+        "members": {
+         "InstanceType": {
+          "type": "string",
+          "doc": "Instance type of data nodes in the cluster.",
+          "enum": [
+           "m3.medium.search",
+           "m3.large.search",
+           "m3.xlarge.search",
+           "m3.2xlarge.search",
+           "m4.large.search",
+           "m4.xlarge.search",
+           "m4.2xlarge.search",
+           "m4.4xlarge.search",
+           "m4.10xlarge.search",
+           "m5.large.search",
+           "m5.xlarge.search",
+           "m5.2xlarge.search",
+           "m5.4xlarge.search",
+           "m5.12xlarge.search",
+           "m5.24xlarge.search",
+           "r5.large.search",
+           "r5.xlarge.search",
+           "r5.2xlarge.search",
+           "r5.4xlarge.search",
+           "r5.12xlarge.search",
+           "r5.24xlarge.search",
+           "c5.large.search",
+           "c5.xlarge.search",
+           "c5.2xlarge.search",
+           "c5.4xlarge.search",
+           "c5.9xlarge.search",
+           "c5.18xlarge.search",
+           "t3.nano.search",
+           "t3.micro.search",
+           "t3.small.search",
+           "t3.medium.search",
+           "t3.large.search",
+           "t3.xlarge.search",
+           "t3.2xlarge.search",
+           "or1.medium.search",
+           "or1.large.search",
+           "or1.xlarge.search",
+           "or1.2xlarge.search",
+           "or1.4xlarge.search",
+           "or1.8xlarge.search",
+           "or1.12xlarge.search",
+           "or1.16xlarge.search",
+           "ultrawarm1.medium.search",
+           "ultrawarm1.large.search",
+           "ultrawarm1.xlarge.search",
+           "t2.micro.search",
+           "t2.small.search",
+           "t2.medium.search",
+           "r3.large.search",
+           "r3.xlarge.search",
+           "r3.2xlarge.search",
+           "r3.4xlarge.search",
+           "r3.8xlarge.search",
+           "i2.xlarge.search",
+           "i2.2xlarge.search",
+           "d2.xlarge.search",
+           "d2.2xlarge.search",
+           "d2.4xlarge.search",
+           "d2.8xlarge.search",
+           "c4.large.search",
+           "c4.xlarge.search",
+           "c4.2xlarge.search",
+           "c4.4xlarge.search",
+           "c4.8xlarge.search",
+           "r4.large.search",
+           "r4.xlarge.search",
+           "r4.2xlarge.search",
+           "r4.4xlarge.search",
+           "r4.8xlarge.search",
+           "r4.16xlarge.search",
+           "i3.large.search",
+           "i3.xlarge.search",
+           "i3.2xlarge.search",
+           "i3.4xlarge.search",
+           "i3.8xlarge.search",
+           "i3.16xlarge.search",
+           "r6g.large.search",
+           "r6g.xlarge.search",
+           "r6g.2xlarge.search",
+           "r6g.4xlarge.search",
+           "r6g.8xlarge.search",
+           "r6g.12xlarge.search",
+           "m6g.large.search",
+           "m6g.xlarge.search",
+           "m6g.2xlarge.search",
+           "m6g.4xlarge.search",
+           "m6g.8xlarge.search",
+           "m6g.12xlarge.search",
+           "c6g.large.search",
+           "c6g.xlarge.search",
+           "c6g.2xlarge.search",
+           "c6g.4xlarge.search",
+           "c6g.8xlarge.search",
+           "c6g.12xlarge.search",
+           "r6gd.large.search",
+           "r6gd.xlarge.search",
+           "r6gd.2xlarge.search",
+           "r6gd.4xlarge.search",
+           "r6gd.8xlarge.search",
+           "r6gd.12xlarge.search",
+           "r6gd.16xlarge.search",
+           "t4g.small.search",
+           "t4g.medium.search"
+          ]
+         },
+         "InstanceCount": {
+          "type": "integer",
+          "doc": "Number of data nodes in the cluster. This number must be greater than 1, otherwise you receive a validation exception."
+         },
+         "DedicatedMasterEnabled": {
+          "type": "boolean",
+          "doc": "Indicates whether dedicated master nodes are enabled for the cluster. True if the cluster will use a dedicated master node. False if the cluster will not."
+         },
+         "ZoneAwarenessEnabled": {
+          "type": "boolean",
+          "doc": "Indicates whether multiple Availability Zones are enabled. For more information, see Configuring a multi-AZ domain in Amazon OpenSearch Service ."
+         },
+         "ZoneAwarenessConfig": {
+          "type": "structure",
+          "doc": "Container for zone awareness configuration options. Only required if ZoneAwarenessEnabled is true .",
+          "members": {
+           "AvailabilityZoneCount": {
+            "type": "integer",
+            "doc": "If you enabled multiple Availability Zones, this value is the number of zones that you want the domain to use. Valid values are 2 and 3 . If your domain is provisioned within a VPC, this value be equal to number of subnets."
+           }
+          }
+         },
+         "DedicatedMasterType": {
+          "type": "string",
+          "doc": "OpenSearch Service instance type of the dedicated master nodes in the cluster.",
+          "enum": [
+           "m3.medium.search",
+           "m3.large.search",
+           "m3.xlarge.search",
+           "m3.2xlarge.search",
+           "m4.large.search",
+           "m4.xlarge.search",
+           "m4.2xlarge.search",
+           "m4.4xlarge.search",
+           "m4.10xlarge.search",
+           "m5.large.search",
+           "m5.xlarge.search",
+           "m5.2xlarge.search",
+           "m5.4xlarge.search",
+           "m5.12xlarge.search",
+           "m5.24xlarge.search",
+           "r5.large.search",
+           "r5.xlarge.search",
+           "r5.2xlarge.search",
+           "r5.4xlarge.search",
+           "r5.12xlarge.search",
+           "r5.24xlarge.search",
+           "c5.large.search",
+           "c5.xlarge.search",
+           "c5.2xlarge.search",
+           "c5.4xlarge.search",
+           "c5.9xlarge.search",
+           "c5.18xlarge.search",
+           "t3.nano.search",
+           "t3.micro.search",
+           "t3.small.search",
+           "t3.medium.search",
+           "t3.large.search",
+           "t3.xlarge.search",
+           "t3.2xlarge.search",
+           "or1.medium.search",
+           "or1.large.search",
+           "or1.xlarge.search",
+           "or1.2xlarge.search",
+           "or1.4xlarge.search",
+           "or1.8xlarge.search",
+           "or1.12xlarge.search",
+           "or1.16xlarge.search",
+           "ultrawarm1.medium.search",
+           "ultrawarm1.large.search",
+           "ultrawarm1.xlarge.search",
+           "t2.micro.search",
+           "t2.small.search",
+           "t2.medium.search",
+           "r3.large.search",
+           "r3.xlarge.search",
+           "r3.2xlarge.search",
+           "r3.4xlarge.search",
+           "r3.8xlarge.search",
+           "i2.xlarge.search",
+           "i2.2xlarge.search",
+           "d2.xlarge.search",
+           "d2.2xlarge.search",
+           "d2.4xlarge.search",
+           "d2.8xlarge.search",
+           "c4.large.search",
+           "c4.xlarge.search",
+           "c4.2xlarge.search",
+           "c4.4xlarge.search",
+           "c4.8xlarge.search",
+           "r4.large.search",
+           "r4.xlarge.search",
+           "r4.2xlarge.search",
+           "r4.4xlarge.search",
+           "r4.8xlarge.search",
+           "r4.16xlarge.search",
+           "i3.large.search",
+           "i3.xlarge.search",
+           "i3.2xlarge.search",
+           "i3.4xlarge.search",
+           "i3.8xlarge.search",
+           "i3.16xlarge.search",
+           "r6g.large.search",
+           "r6g.xlarge.search",
+           "r6g.2xlarge.search",
+           "r6g.4xlarge.search",
+           "r6g.8xlarge.search",
+           "r6g.12xlarge.search",
+           "m6g.large.search",
+           "m6g.xlarge.search",
+           "m6g.2xlarge.search",
+           "m6g.4xlarge.search",
+           "m6g.8xlarge.search",
+           "m6g.12xlarge.search",
+           "c6g.large.search",
+           "c6g.xlarge.search",
+           "c6g.2xlarge.search",
+           "c6g.4xlarge.search",
+           "c6g.8xlarge.search",
+           "c6g.12xlarge.search",
+           "r6gd.large.search",
+           "r6gd.xlarge.search",
+           "r6gd.2xlarge.search",
+           "r6gd.4xlarge.search",
+           "r6gd.8xlarge.search",
+           "r6gd.12xlarge.search",
+           "r6gd.16xlarge.search",
+           "t4g.small.search",
+           "t4g.medium.search"
+          ]
+         },
+         "DedicatedMasterCount": {
+          "type": "integer",
+          "doc": "Number of dedicated master nodes in the cluster. This number must be greater than 2 and not 4, otherwise you receive a validation exception."
+         },
+         "WarmEnabled": {
+          "type": "boolean",
+          "doc": "Whether to enable warm storage for the cluster."
+         },
+         "WarmType": {
+          "type": "string",
+          "doc": "The instance type for the cluster's warm nodes.",
+          "enum": [
+           "ultrawarm1.medium.search",
+           "ultrawarm1.large.search",
+           "ultrawarm1.xlarge.search"
+          ]
+         },
+         "WarmCount": {
+          "type": "integer",
+          "doc": "The number of warm nodes in the cluster."
+         },
+         "ColdStorageOptions": {
+          "type": "structure",
+          "doc": "Container for cold storage configuration options.",
+          "members": {
+           "Enabled": {
+            "type": "boolean",
+            "doc": "Whether to enable or disable cold storage on the domain. You must enable UltraWarm storage to enable cold storage.",
+            "required": true
+           }
+          }
+         },
+         "MultiAZWithStandbyEnabled": {
+          "type": "boolean",
+          "doc": "A boolean that indicates whether a multi-AZ domain is turned on with a standby AZ. For more information, see Configuring a multi-AZ domain in Amazon OpenSearch Service ."
+         },
+         "NodeOptions": {
+          "type": "list",
+          "doc": "List of node options for the domain.",
+          "item": {
+           "type": "structure",
+           "doc": "Container for specifying node type.",
+           "members": {
+            "NodeType": {
+             "type": "string",
+             "doc": "Container for node type like coordinating.",
+             "enum": [
+              "coordinator"
+             ]
+            },
+            "NodeConfig": {
+             "type": "structure",
+             "doc": "Container for specifying configuration of any node type.",
+             "members": {
+              "Enabled": {
+               "type": "boolean",
+               "doc": "A boolean that indicates whether a particular node type is enabled or not."
+              },
+              "Type": {
+               "type": "string",
+               "doc": "The instance type of a particular node type in the cluster.",
+               "enum": [
+                "m3.medium.search",
+                "m3.large.search",
+                "m3.xlarge.search",
+                "m3.2xlarge.search",
+                "m4.large.search",
+                "m4.xlarge.search",
+                "m4.2xlarge.search",
+                "m4.4xlarge.search",
+                "m4.10xlarge.search",
+                "m5.large.search",
+                "m5.xlarge.search",
+                "m5.2xlarge.search",
+                "m5.4xlarge.search",
+                "m5.12xlarge.search",
+                "m5.24xlarge.search",
+                "r5.large.search",
+                "r5.xlarge.search",
+                "r5.2xlarge.search",
+                "r5.4xlarge.search",
+                "r5.12xlarge.search",
+                "r5.24xlarge.search",
+                "c5.large.search",
+                "c5.xlarge.search",
+                "c5.2xlarge.search",
+                "c5.4xlarge.search",
+                "c5.9xlarge.search",
+                "c5.18xlarge.search",
+                "t3.nano.search",
+                "t3.micro.search",
+                "t3.small.search",
+                "t3.medium.search",
+                "t3.large.search",
+                "t3.xlarge.search",
+                "t3.2xlarge.search",
+                "or1.medium.search",
+                "or1.large.search",
+                "or1.xlarge.search",
+                "or1.2xlarge.search",
+                "or1.4xlarge.search",
+                "or1.8xlarge.search",
+                "or1.12xlarge.search",
+                "or1.16xlarge.search",
+                "ultrawarm1.medium.search",
+                "ultrawarm1.large.search",
+                "ultrawarm1.xlarge.search",
+                "t2.micro.search",
+                "t2.small.search",
+                "t2.medium.search",
+                "r3.large.search",
+                "r3.xlarge.search",
+                "r3.2xlarge.search",
+                "r3.4xlarge.search",
+                "r3.8xlarge.search",
+                "i2.xlarge.search",
+                "i2.2xlarge.search",
+                "d2.xlarge.search",
+                "d2.2xlarge.search",
+                "d2.4xlarge.search",
+                "d2.8xlarge.search",
+                "c4.large.search",
+                "c4.xlarge.search",
+                "c4.2xlarge.search",
+                "c4.4xlarge.search",
+                "c4.8xlarge.search",
+                "r4.large.search",
+                "r4.xlarge.search",
+                "r4.2xlarge.search",
+                "r4.4xlarge.search",
+                "r4.8xlarge.search",
+                "r4.16xlarge.search",
+                "i3.large.search",
+                "i3.xlarge.search",
+                "i3.2xlarge.search",
+                "i3.4xlarge.search",
+                "i3.8xlarge.search",
+                "i3.16xlarge.search",
+                "r6g.large.search",
+                "r6g.xlarge.search",
+                "r6g.2xlarge.search",
+                "r6g.4xlarge.search",
+                "r6g.8xlarge.search",
+                "r6g.12xlarge.search",
+                "m6g.large.search",
+                "m6g.xlarge.search",
+                "m6g.2xlarge.search",
+                "m6g.4xlarge.search",
+                "m6g.8xlarge.search",
+                "m6g.12xlarge.search",
+                "c6g.large.search",
+                "c6g.xlarge.search",
+                "c6g.2xlarge.search",
+                "c6g.4xlarge.search",
+                "c6g.8xlarge.search",
+                "c6g.12xlarge.search",
+                "r6gd.large.search",
+                "r6gd.xlarge.search",
+                "r6gd.2xlarge.search",
+                "r6gd.4xlarge.search",
+                "r6gd.8xlarge.search",
+                "r6gd.12xlarge.search",
+                "r6gd.16xlarge.search",
+                "t4g.small.search",
+                "t4g.medium.search"
+               ]
+              },
+              "Count": {
+               "type": "integer",
+               "doc": "The number of nodes of a particular node type in the cluster."
+              }
+             }
+            }
+           }
+          }
+         }
+        },
+        "required": true
+       },
+       "EBSOptions": {
+        "type": "structure",
+        "doc": "Container for EBS-based storage settings for the domain.",
+        "members": {
+         "EBSEnabled": {
+          "type": "boolean",
+          "doc": "Indicates whether EBS volumes are attached to data nodes in an OpenSearch Service domain."
+         },
+         "VolumeType": {
+          "type": "string",
+          "doc": "Specifies the type of EBS volumes attached to data nodes.",
+          "enum": [
+           "standard",
+           "gp2",
+           "io1",
+           "gp3"
+          ]
+         },
+         "VolumeSize": {
+          "type": "integer",
+          "doc": "Specifies the size (in GiB) of EBS volumes attached to data nodes."
+         },
+         "Iops": {
+          "type": "integer",
+          "doc": "Specifies the baseline input/output (I/O) performance of EBS volumes attached to data nodes. Applicable only for the gp3 and provisioned IOPS EBS volume types."
+         },
+         "Throughput": {
+          "type": "integer",
+          "doc": "Specifies the throughput (in MiB/s) of the EBS volumes attached to data nodes. Applicable only for the gp3 volume type."
+         }
+        }
+       },
+       "AccessPolicies": {
+        "type": "string",
+        "doc": "Identity and Access Management (IAM) policy document specifying the access policies for the domain."
+       },
+       "IPAddressType": {
+        "type": "string",
+        "doc": "The type of IP addresses supported by the endpoint for the domain.",
+        "enum": [
+         "ipv4",
+         "dualstack"
+        ]
+       },
+       "SnapshotOptions": {
+        "type": "structure",
+        "doc": "DEPRECATED. Container for parameters required to configure automated snapshots of domain indexes.",
+        "members": {
+         "AutomatedSnapshotStartHour": {
+          "type": "integer",
+          "doc": "The time, in UTC format, when OpenSearch Service takes a daily automated snapshot of the specified domain. Default is 0 hours."
+         }
+        }
+       },
+       "VPCOptions": {
+        "type": "structure",
+        "doc": "The VPC configuration for the domain.",
+        "members": {
+         "VPCId": {
+          "type": "string",
+          "doc": "The ID for your VPC. Amazon VPC generates this value when you create a VPC."
+         },
+         "SubnetIds": {
+          "type": "list",
+          "doc": "A list of subnet IDs associated with the VPC endpoints for the domain.",
+          "item": {
+           "type": "string"
+          }
+         },
+         "AvailabilityZones": {
+          "type": "list",
+          "doc": "The list of Availability Zones associated with the VPC subnets.",
+          "item": {
+           "type": "string"
+          }
+         },
+         "SecurityGroupIds": {
+          "type": "list",
+          "doc": "The list of security group IDs associated with the VPC endpoints for the domain.",
+          "item": {
+           "type": "string"
+          }
+         }
+        }
+       },
+       "CognitoOptions": {
+        "type": "structure",
+        "doc": "Key-value pairs to configure Amazon Cognito authentication for OpenSearch Dashboards.",
+        "members": {
+         "Enabled": {
+          "type": "boolean",
+          "doc": "Whether to enable or disable Amazon Cognito authentication for OpenSearch Dashboards."
+         },
+         "UserPoolId": {
+          "type": "string",
+          "doc": "The Amazon Cognito user pool ID that you want OpenSearch Service to use for OpenSearch Dashboards authentication."
+         },
+         "IdentityPoolId": {
+          "type": "string",
+          "doc": "The Amazon Cognito identity pool ID that you want OpenSearch Service to use for OpenSearch Dashboards authentication."
+         },
+         "RoleArn": {
+          "type": "string",
+          "doc": "The AmazonOpenSearchServiceCognitoAccess role that allows OpenSearch Service to configure your user pool and identity pool."
+         }
+        }
+       },
+       "EncryptionAtRestOptions": {
+        "type": "structure",
+        "doc": "Encryption at rest settings for the domain.",
+        "members": {
+         "Enabled": {
+          "type": "boolean",
+          "doc": "True to enable encryption at rest."
+         },
+         "KmsKeyId": {
+          "type": "string",
+          "doc": "The KMS key ID. Takes the form 1a2a3a4-1a2a-3a4a-5a6a-1a2a3a4a5a6a ."
+         }
+        }
+       },
+       "NodeToNodeEncryptionOptions": {
+        "type": "structure",
+        "doc": "Whether node-to-node encryption is enabled or disabled.",
+        "members": {
+         "Enabled": {
+          "type": "boolean",
+          "doc": "True to enable node-to-node encryption."
+         }
+        }
+       },
+       "AdvancedOptions": {
+        "type": "map",
+        "doc": "Key-value pairs that specify advanced configuration options.",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string"
+        }
+       },
+       "LogPublishingOptions": {
+        "type": "map",
+        "doc": "Log publishing options for the domain.",
+        "key": {
+         "type": "string",
+         "doc": "The type of log file. Can be one of the following: INDEX_SLOW_LOGS - Index slow logs contain insert requests that took more time than the configured index query log threshold to execute. SEARCH_SLOW_LOGS - Search slow logs contain search queries that took more time than the configured search query log threshold to execute. ES_APPLICATION_LOGS - OpenSearch application logs contain information about errors and warnings raised during the operation of the service and can be useful for troubleshooti…",
+         "enum": [
+          "INDEX_SLOW_LOGS",
+          "SEARCH_SLOW_LOGS",
+          "ES_APPLICATION_LOGS",
+          "AUDIT_LOGS"
+         ]
+        },
+        "value": {
+         "type": "structure",
+         "doc": "Specifies whether the Amazon OpenSearch Service domain publishes the OpenSearch application and slow logs to Amazon CloudWatch. For more information, see Monitoring OpenSearch logs with Amazon CloudWatch Logs . After you enable log publishing, you still have to enable the collection of slow logs using the OpenSearch REST API.",
+         "members": {
+          "CloudWatchLogsLogGroupArn": {
+           "type": "string",
+           "doc": "The Amazon Resource Name (ARN) of the CloudWatch Logs group to publish logs to."
+          },
+          "Enabled": {
+           "type": "boolean",
+           "doc": "Whether the log should be published."
+          }
+         }
+        }
+       },
+       "ServiceSoftwareOptions": {
+        "type": "structure",
+        "doc": "The current status of the domain's service software.",
+        "members": {
+         "CurrentVersion": {
+          "type": "string",
+          "doc": "The current service software version present on the domain."
+         },
+         "NewVersion": {
+          "type": "string",
+          "doc": "The new service software version, if one is available."
+         },
+         "UpdateAvailable": {
+          "type": "boolean",
+          "doc": "True if you're able to update your service software version. False if you can't update your service software version."
+         },
+         "Cancellable": {
+          "type": "boolean",
+          "doc": "True if you're able to cancel your service software version update. False if you can't cancel your service software update."
+         },
+         "UpdateStatus": {
+          "type": "string",
+          "doc": "The status of your service software update.",
+          "enum": [
+           "PENDING_UPDATE",
+           "IN_PROGRESS",
+           "COMPLETED",
+           "NOT_ELIGIBLE",
+           "ELIGIBLE"
+          ]
+         },
+         "Description": {
+          "type": "string",
+          "doc": "A description of the service software update status."
+         },
+         "AutomatedUpdateDate": {
+          "type": "timestamp",
+          "doc": "The timestamp, in Epoch time, until which you can manually request a service software update. After this date, we automatically update your service software."
+         },
+         "OptionalDeployment": {
+          "type": "boolean",
+          "doc": "True if a service software is never automatically updated. False if a service software is automatically updated after the automated update date."
+         }
+        }
+       },
+       "DomainEndpointOptions": {
+        "type": "structure",
+        "doc": "Additional options for the domain endpoint, such as whether to require HTTPS for all traffic.",
+        "members": {
+         "EnforceHTTPS": {
+          "type": "boolean",
+          "doc": "True to require that all traffic to the domain arrive over HTTPS."
+         },
+         "TLSSecurityPolicy": {
+          "type": "string",
+          "doc": "Specify the TLS security policy to apply to the HTTPS endpoint of the domain. The policy can be one of the following values: Policy-Min-TLS-1-0-2019-07: TLS security policy that supports TLS version 1.0 to TLS version 1.2 Policy-Min-TLS-1-2-2019-07: TLS security policy that supports only TLS version 1.2 Policy-Min-TLS-1-2-PFS-2023-10: TLS security policy that supports TLS version 1.2 to TLS version 1.3 with perfect forward secrecy cipher suites",
+          "enum": [
+           "Policy-Min-TLS-1-0-2019-07",
+           "Policy-Min-TLS-1-2-2019-07",
+           "Policy-Min-TLS-1-2-PFS-2023-10"
+          ]
+         },
+         "CustomEndpointEnabled": {
+          "type": "boolean",
+          "doc": "Whether to enable a custom endpoint for the domain."
+         },
+         "CustomEndpoint": {
+          "type": "string",
+          "doc": "The fully qualified URL for the custom endpoint."
+         },
+         "CustomEndpointCertificateArn": {
+          "type": "string",
+          "doc": "The ARN for your security certificate, managed in Amazon Web Services Certificate Manager (ACM)."
+         }
+        }
+       },
+       "AdvancedSecurityOptions": {
+        "type": "structure",
+        "doc": "Settings for fine-grained access control.",
+        "members": {
+         "Enabled": {
+          "type": "boolean",
+          "doc": "True if fine-grained access control is enabled."
+         },
+         "InternalUserDatabaseEnabled": {
+          "type": "boolean",
+          "doc": "True if the internal user database is enabled."
+         },
+         "SAMLOptions": {
+          "type": "structure",
+          "doc": "Container for information about the SAML configuration for OpenSearch Dashboards.",
+          "members": {
+           "Enabled": {
+            "type": "boolean",
+            "doc": "True if SAML is enabled."
+           },
+           "Idp": {
+            "type": "structure",
+            "doc": "Describes the SAML identity provider's information.",
+            "members": {
+             "MetadataContent": {
+              "type": "string",
+              "doc": "The metadata of the SAML application, in XML format.",
+              "required": true
+             },
+             "EntityId": {
+              "type": "string",
+              "doc": "The unique entity ID of the application in the SAML identity provider.",
+              "required": true
+             }
+            }
+           },
+           "SubjectKey": {
+            "type": "string",
+            "doc": "The key used for matching the SAML subject attribute."
+           },
+           "RolesKey": {
+            "type": "string",
+            "doc": "The key used for matching the SAML roles attribute."
+           },
+           "SessionTimeoutMinutes": {
+            "type": "integer",
+            "doc": "The duration, in minutes, after which a user session becomes inactive."
+           }
+          }
+         },
+         "JWTOptions": {
+          "type": "structure",
+          "doc": "Container for information about the JWT configuration of the Amazon OpenSearch Service.",
+          "members": {
+           "Enabled": {
+            "type": "boolean",
+            "doc": "True if JWT use is enabled."
+           },
+           "SubjectKey": {
+            "type": "string",
+            "doc": "The key used for matching the JWT subject attribute."
+           },
+           "RolesKey": {
+            "type": "string",
+            "doc": "The key used for matching the JWT roles attribute."
+           },
+           "PublicKey": {
+            "type": "string",
+            "doc": "The key used to verify the signature of incoming JWT requests."
+           }
+          }
+         },
+         "AnonymousAuthDisableDate": {
+          "type": "timestamp",
+          "doc": "Date and time when the migration period will be disabled. Only necessary when enabling fine-grained access control on an existing domain ."
+         },
+         "AnonymousAuthEnabled": {
+          "type": "boolean",
+          "doc": "True if a 30-day migration period is enabled, during which administrators can create role mappings. Only necessary when enabling fine-grained access control on an existing domain ."
+         }
+        }
+       },
+       "IdentityCenterOptions": {
+        "type": "structure",
+        "doc": "Container for IAM Identity Center Option control for the domain.",
+        "members": {
+         "EnabledAPIAccess": {
+          "type": "boolean",
+          "doc": "True to enable IAM Identity Center for API access in Amazon OpenSearch Service."
+         },
+         "IdentityCenterInstanceARN": {
+          "type": "string",
+          "doc": "The ARN for IAM Identity Center Instance."
+         },
+         "SubjectKey": {
+          "type": "string",
+          "doc": "Specify the attribute that contains the subject (username, userID, email) of IAM Identity Center.",
+          "enum": [
+           "UserName",
+           "UserId",
+           "Email"
+          ]
+         },
+         "RolesKey": {
+          "type": "string",
+          "doc": "Specify the attribute that contains the backend role (groupName, groupID) of IAM Identity Center",
+          "enum": [
+           "GroupName",
+           "GroupId"
+          ]
+         },
+         "IdentityCenterApplicationARN": {
+          "type": "string",
+          "doc": "The ARN for IAM Identity Center Application which will integrate with Amazon OpenSearch Service."
+         },
+         "IdentityStoreId": {
+          "type": "string",
+          "doc": "The ID of IAM Identity Store."
+         }
+        }
+       },
+       "AutoTuneOptions": {
+        "type": "structure",
+        "doc": "Auto-Tune settings for the domain.",
+        "members": {
+         "State": {
+          "type": "string",
+          "doc": "The current state of Auto-Tune on the domain.",
+          "enum": [
+           "ENABLED",
+           "DISABLED",
+           "ENABLE_IN_PROGRESS",
+           "DISABLE_IN_PROGRESS",
+           "DISABLED_AND_ROLLBACK_SCHEDULED",
+           "DISABLED_AND_ROLLBACK_IN_PROGRESS",
+           "DISABLED_AND_ROLLBACK_COMPLETE",
+           "DISABLED_AND_ROLLBACK_ERROR",
+           "ERROR"
+          ]
+         },
+         "ErrorMessage": {
+          "type": "string",
+          "doc": "Any errors that occurred while enabling or disabling Auto-Tune."
+         },
+         "UseOffPeakWindow": {
+          "type": "boolean",
+          "doc": "Whether the domain's off-peak window will be used to deploy Auto-Tune changes rather than a maintenance schedule."
+         }
+        }
+       },
+       "ChangeProgressDetails": {
+        "type": "structure",
+        "doc": "Information about a configuration change happening on the domain.",
+        "members": {
+         "ChangeId": {
+          "type": "string",
+          "doc": "The ID of the configuration change."
+         },
+         "Message": {
+          "type": "string",
+          "doc": "A message corresponding to the status of the configuration change."
+         },
+         "ConfigChangeStatus": {
+          "type": "string",
+          "doc": "The current status of the configuration change.",
+          "enum": [
+           "Pending",
+           "Initializing",
+           "Validating",
+           "ValidationFailed",
+           "ApplyingChanges",
+           "Completed",
+           "PendingUserInput",
+           "Cancelled"
+          ]
+         },
+         "InitiatedBy": {
+          "type": "string",
+          "doc": "The IAM principal who initiated the configuration change.",
+          "enum": [
+           "CUSTOMER",
+           "SERVICE"
+          ]
+         },
+         "StartTime": {
+          "type": "timestamp",
+          "doc": "The time that the configuration change was initiated, in Universal Coordinated Time (UTC)."
+         },
+         "LastUpdatedTime": {
+          "type": "timestamp",
+          "doc": "The last time that the configuration change was updated."
+         }
+        }
+       },
+       "OffPeakWindowOptions": {
+        "type": "structure",
+        "doc": "Options that specify a custom 10-hour window during which OpenSearch Service can perform configuration changes on the domain.",
+        "members": {
+         "Enabled": {
+          "type": "boolean",
+          "doc": "Whether to enable an off-peak window. This option is only available when modifying a domain created prior to February 16, 2023, not when creating a new domain. All domains created after this date have the off-peak window enabled by default. You can't disable the off-peak window after it's enabled for a domain."
+         },
+         "OffPeakWindow": {
+          "type": "structure",
+          "doc": "Off-peak window settings for the domain.",
+          "members": {
+           "WindowStartTime": {
+            "type": "structure",
+            "doc": "A custom start time for the off-peak window, in Coordinated Universal Time (UTC). The window length will always be 10 hours, so you can't specify an end time. For example, if you specify 11:00 P.M. UTC as a start time, the end time will automatically be set to 9:00 A.M.",
+            "members": {
+             "Hours": {
+              "type": "long",
+              "doc": "The start hour of the window in Coordinated Universal Time (UTC), using 24-hour time. For example, 17 refers to 5:00 P.M. UTC.",
+              "required": true
+             },
+             "Minutes": {
+              "type": "long",
+              "doc": "The start minute of the window, in UTC.",
+              "required": true
+             }
+            }
+           }
+          }
+         }
+        }
+       },
+       "SoftwareUpdateOptions": {
+        "type": "structure",
+        "doc": "Service software update options for the domain.",
+        "members": {
+         "AutoSoftwareUpdateEnabled": {
+          "type": "boolean",
+          "doc": "Whether automatic service software updates are enabled for the domain."
+         }
+        }
+       },
+       "DomainProcessingStatus": {
+        "type": "string",
+        "doc": "The status of any changes that are currently in progress for the domain.",
+        "enum": [
+         "Creating",
+         "Active",
+         "Modifying",
+         "UpgradingEngineVersion",
+         "UpdatingServiceSoftware",
+         "Isolated",
+         "Deleting"
+        ]
+       },
+       "ModifyingProperties": {
+        "type": "list",
+        "doc": "Information about the domain properties that are currently being modified.",
+        "item": {
+         "type": "structure",
+         "doc": "Information about the domain properties that are currently being modified.",
+         "members": {
+          "Name": {
+           "type": "string",
+           "doc": "The name of the property that is currently being modified."
+          },
+          "ActiveValue": {
+           "type": "string",
+           "doc": "The current value of the domain property that is being modified."
+          },
+          "PendingValue": {
+           "type": "string",
+           "doc": "The value that the property that is currently being modified will eventually have."
+          },
+          "ValueType": {
+           "type": "string",
+           "doc": "The type of value that is currently being modified. Properties can have two types: PLAIN_TEXT : Contain direct values such as \"1\", \"True\", or \"c5.large.search\". STRINGIFIED_JSON : Contain content in JSON format, such as {\"Enabled\":\"True\"}\".",
+           "enum": [
+            "PLAIN_TEXT",
+            "STRINGIFIED_JSON"
+           ]
+          }
+         }
+        }
+       },
+       "AIMLOptions": {
+        "type": "structure",
+        "doc": "Container for parameters required to enable all machine learning features.",
+        "members": {
+         "NaturalLanguageQueryGenerationOptions": {
+          "type": "structure",
+          "doc": "Container for parameters required for natural language query generation on the specified domain.",
+          "members": {
+           "DesiredState": {
+            "type": "string",
+            "doc": "The desired state of the natural language query generation feature. Valid values are ENABLED and DISABLED.",
+            "enum": [
+             "ENABLED",
+             "DISABLED"
+            ]
+           },
+           "CurrentState": {
+            "type": "string",
+            "doc": "The current state of the natural language query generation feature, indicating completion, in progress, or failure.",
+            "enum": [
+             "NOT_ENABLED",
+             "ENABLE_COMPLETE",
+             "ENABLE_IN_PROGRESS",
+             "ENABLE_FAILED",
+             "DISABLE_COMPLETE",
+             "DISABLE_IN_PROGRESS",
+             "DISABLE_FAILED"
+            ]
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "required": true
+    }
+   }
+  },
+  "added_in_latest": [
+   "DomainStatusList[].AIMLOptions.S3VectorsEngine",
+   "DomainStatusList[].AIMLOptions.S3VectorsEngine.Enabled",
+   "DomainStatusList[].AIMLOptions.ServerlessVectorAcceleration",
+   "DomainStatusList[].AIMLOptions.ServerlessVectorAcceleration.Enabled",
+   "DomainStatusList[].AdvancedSecurityOptions.IAMFederationOptions",
+   "DomainStatusList[].AdvancedSecurityOptions.IAMFederationOptions.Enabled",
+   "DomainStatusList[].AdvancedSecurityOptions.IAMFederationOptions.RolesKey",
+   "DomainStatusList[].AdvancedSecurityOptions.IAMFederationOptions.SubjectKey",
+   "DomainStatusList[].AdvancedSecurityOptions.JWTOptions.JwksUrl",
+   "DomainStatusList[].AutomatedSnapshotPauseOptions",
+   "DomainStatusList[].AutomatedSnapshotPauseOptions.Enabled",
+   "DomainStatusList[].AutomatedSnapshotPauseOptions.EndTime",
+   "DomainStatusList[].AutomatedSnapshotPauseOptions.StartTime",
+   "DomainStatusList[].AutomatedSnapshotPauseOptions.State",
+   "DomainStatusList[].DeploymentStrategyOptions",
+   "DomainStatusList[].DeploymentStrategyOptions.DeploymentStrategy",
+   "DomainStatusList[].EncryptionAtRestOptions.EncryptionMode",
+   "DomainStatusList[].EngineMode",
+   "DomainStatusList[].IdentityCenterOptions.IdentityCenterInstanceRegion",
+   "DomainStatusList[].SoftwareUpdateOptions.UseLatestServiceSoftwareForBlueGreen",
+   "DomainStatusList[].UseCase",
+   "DomainStatusList[].VPCOptions.EgressEnabled"
+  ],
+  "raw_keys": [
+   "opensearch.describe_domains"
+  ],
+  "rules": [
+   "REME-0104800001",
+   "REME-0104800002",
+   "REME-0104800003",
+   "REME-0104800004"
+  ]
+ },
+ "opensearch.ListDomainNames": {
+  "service": "opensearch",
+  "operation": "ListDomainNames",
+  "method": "list_domain_names",
+  "doc": "Returns the names of all Amazon OpenSearch Service domains owned by the current user in the active Region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/opensearch/client/list_domain_names.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListDomainNames"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "The results of a ListDomainNames operation. Contains the names of all domains owned by this account and their respective engine types.",
+   "members": {
+    "DomainNames": {
+     "type": "list",
+     "doc": "The names of all OpenSearch Service domains owned by the current user and their respective engine types.",
+     "item": {
+      "type": "structure",
+      "doc": "Information about an OpenSearch Service domain.",
+      "members": {
+       "DomainName": {
+        "type": "string",
+        "doc": "Name of the domain."
+       },
+       "EngineType": {
+        "type": "string",
+        "doc": "The type of search engine that the domain is running. OpenSearch for an OpenSearch engine, or Elasticsearch for a legacy Elasticsearch OSS engine.",
+        "enum": [
+         "OpenSearch",
+         "Elasticsearch"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "opensearch.describe_domains"
+  ],
+  "rules": [
+   "REME-0104800001",
+   "REME-0104800002",
+   "REME-0104800003",
+   "REME-0104800004"
+  ]
+ },
+ "opensearch.ListTags": {
+  "service": "opensearch",
+  "operation": "ListTags",
+  "method": "list_tags",
+  "doc": "Returns all resource tags for an Amazon OpenSearch Service domain, data source, or application. For more information, see Tagging Amazon OpenSearch Service resources .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/opensearch/client/list_tags.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListTags"
+  },
+  "paginated": false,
+  "input_required": [
+   "ARN"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "The results of a ListTags operation.",
+   "members": {
+    "TagList": {
+     "type": "list",
+     "doc": "List of resource tags associated with the specified domain, data source, or application.",
+     "item": {
+      "type": "structure",
+      "doc": "A tag (key-value pair) for an Amazon OpenSearch Service resource.",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "The tag key. Tag keys must be unique for the domain to which they are attached.",
+        "required": true
+       },
+       "Value": {
+        "type": "string",
+        "doc": "The value assigned to the corresponding tag key. Tag values can be null and don't have to be unique in a tag set. For example, you can have a key value pair in a tag set of project : Trinity and cost-center : Trinity",
+        "required": true
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "opensearch.describe_domains"
+  ],
+  "rules": [
+   "REME-0104800001",
+   "REME-0104800002",
+   "REME-0104800003",
+   "REME-0104800004"
+  ]
+ }
+}

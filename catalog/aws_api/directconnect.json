@@ -1,0 +1,187 @@
+{
+ "directconnect.DescribeConnections": {
+  "service": "directconnect",
+  "operation": "DescribeConnections",
+  "method": "describe_connections",
+  "doc": "Displays the specified connection or all connections in this Region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/directconnect/client/describe_connections.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnections"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "connections": {
+     "type": "list",
+     "doc": "The connections.",
+     "item": {
+      "type": "structure",
+      "doc": "Information about an Direct Connect connection.",
+      "members": {
+       "ownerAccount": {
+        "type": "string",
+        "doc": "The ID of the Amazon Web Services account that owns the connection."
+       },
+       "connectionId": {
+        "type": "string",
+        "doc": "The ID of the connection."
+       },
+       "connectionName": {
+        "type": "string",
+        "doc": "The name of the connection."
+       },
+       "connectionState": {
+        "type": "string",
+        "doc": "The state of the connection. The following are the possible values: ordering : The initial state of a hosted connection provisioned on an interconnect. The connection stays in the ordering state until the owner of the hosted connection confirms or declines the connection order. requested : The initial state of a standard connection. The connection stays in the requested state until the Letter of Authorization (LOA) is sent to the customer. pending : The connection has been approved and is being…",
+        "enum": [
+         "ordering",
+         "requested",
+         "pending",
+         "available",
+         "down",
+         "deleting",
+         "deleted",
+         "rejected",
+         "unknown"
+        ]
+       },
+       "region": {
+        "type": "string",
+        "doc": "The Amazon Web Services Region where the connection is located."
+       },
+       "location": {
+        "type": "string",
+        "doc": "The location of the connection."
+       },
+       "bandwidth": {
+        "type": "string",
+        "doc": "The bandwidth of the connection."
+       },
+       "vlan": {
+        "type": "integer",
+        "doc": "The ID of the VLAN."
+       },
+       "partnerName": {
+        "type": "string",
+        "doc": "The name of the Direct Connect service provider associated with the connection."
+       },
+       "loaIssueTime": {
+        "type": "timestamp",
+        "doc": "The time of the most recent call to DescribeLoa for this connection."
+       },
+       "lagId": {
+        "type": "string",
+        "doc": "The ID of the LAG."
+       },
+       "awsDevice": {
+        "type": "string",
+        "doc": "The Direct Connect endpoint on which the physical connection terminates."
+       },
+       "jumboFrameCapable": {
+        "type": "boolean",
+        "doc": "Indicates whether jumbo frames are supported."
+       },
+       "awsDeviceV2": {
+        "type": "string",
+        "doc": "The Direct Connect endpoint that terminates the physical connection."
+       },
+       "awsLogicalDeviceId": {
+        "type": "string",
+        "doc": "The Direct Connect endpoint that terminates the logical connection. This device might be different than the device that terminates the physical connection."
+       },
+       "hasLogicalRedundancy": {
+        "type": "string",
+        "doc": "Indicates whether the connection supports a secondary BGP peer in the same address family (IPv4/IPv6).",
+        "enum": [
+         "unknown",
+         "yes",
+         "no"
+        ]
+       },
+       "tags": {
+        "type": "list",
+        "doc": "The tags associated with the connection.",
+        "item": {
+         "type": "structure",
+         "doc": "Information about a tag.",
+         "members": {
+          "key": {
+           "type": "string",
+           "doc": "The key.",
+           "required": true
+          },
+          "value": {
+           "type": "string",
+           "doc": "The value."
+          }
+         }
+        }
+       },
+       "providerName": {
+        "type": "string",
+        "doc": "The name of the service provider associated with the connection."
+       },
+       "macSecCapable": {
+        "type": "boolean",
+        "doc": "Indicates whether the connection supports MAC Security (MACsec)."
+       },
+       "portEncryptionStatus": {
+        "type": "string",
+        "doc": "The MAC Security (MACsec) port link status of the connection. The valid values are Encryption Up , which means that there is an active Connection Key Name, or Encryption Down ."
+       },
+       "encryptionMode": {
+        "type": "string",
+        "doc": "The MAC Security (MACsec) connection encryption mode. The valid values are no_encrypt , should_encrypt , and must_encrypt ."
+       },
+       "macSecKeys": {
+        "type": "list",
+        "doc": "The MAC Security (MACsec) security keys associated with the connection.",
+        "item": {
+         "type": "structure",
+         "doc": "Information about the MAC Security (MACsec) secret key.",
+         "members": {
+          "secretARN": {
+           "type": "string",
+           "doc": "The Amazon Resource Name (ARN) of the MAC Security (MACsec) secret key."
+          },
+          "ckn": {
+           "type": "string",
+           "doc": "The Connection Key Name (CKN) for the MAC Security secret key."
+          },
+          "state": {
+           "type": "string",
+           "doc": "The state of the MAC Security (MACsec) secret key. The possible values are: associating : The MAC Security (MACsec) secret key is being validated and not yet associated with the connection or LAG. associated : The MAC Security (MACsec) secret key is validated and associated with the connection or LAG. disassociating : The MAC Security (MACsec) secret key is being disassociated from the connection or LAG disassociated : The MAC Security (MACsec) secret key is no longer associated with the connec…"
+          },
+          "startOn": {
+           "type": "string",
+           "doc": "The date that the MAC Security (MACsec) secret key takes effect. The value is displayed in UTC format."
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "connections[].billingMode",
+   "connections[].partnerInterconnectMacSecCapable",
+   "connections[].prefixPoolSizeIpv4",
+   "connections[].prefixPoolSizeIpv6",
+   "connections[].prefixPoolUnallocatedCountIpv4",
+   "connections[].prefixPoolUnallocatedCountIpv6",
+   "connections[].rateLimiterStatus",
+   "connections[].rateLimiterStatus.inUse",
+   "connections[].rateLimiterStatus.maxAllowed",
+   "connections[].rateLimiterStatus.remaining",
+   "connections[].rateLimiterStatus.totalBandwidth",
+   "nextToken"
+  ],
+  "raw_keys": [
+   "directconnect.describe_connections"
+  ]
+ }
+}

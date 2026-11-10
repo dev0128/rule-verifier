@@ -1,0 +1,143 @@
+{
+ "sqs.GetQueueAttributes": {
+  "service": "sqs",
+  "operation": "GetQueueAttributes",
+  "method": "get_queue_attributes",
+  "doc": "Gets attributes for the specified queue. To determine whether a queue is FIFO , you can check whether QueueName ends with the .fifo suffix.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs/client/get_queue_attributes.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/sqs-2012-11-05/GetQueueAttributes"
+  },
+  "paginated": false,
+  "input_required": [
+   "QueueUrl"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "A list of returned queue attributes.",
+   "members": {
+    "Attributes": {
+     "type": "map",
+     "doc": "A map of attributes to their respective values.",
+     "key": {
+      "type": "string",
+      "enum": [
+       "All",
+       "Policy",
+       "VisibilityTimeout",
+       "MaximumMessageSize",
+       "MessageRetentionPeriod",
+       "ApproximateNumberOfMessages",
+       "ApproximateNumberOfMessagesNotVisible",
+       "CreatedTimestamp",
+       "LastModifiedTimestamp",
+       "QueueArn",
+       "ApproximateNumberOfMessagesDelayed",
+       "DelaySeconds",
+       "ReceiveMessageWaitTimeSeconds",
+       "RedrivePolicy",
+       "FifoQueue",
+       "ContentBasedDeduplication",
+       "KmsMasterKeyId",
+       "KmsDataKeyReusePeriodSeconds",
+       "DeduplicationScope",
+       "FifoThroughputLimit",
+       "RedriveAllowPolicy",
+       "SqsManagedSseEnabled"
+      ]
+     },
+     "value": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "sqs.get_queue_attributes",
+   "sqs.list_queues"
+  ],
+  "rules": [
+   "REME-0103100001",
+   "REME-0103100002",
+   "REME-0103100003"
+  ]
+ },
+ "sqs.ListQueueTags": {
+  "service": "sqs",
+  "operation": "ListQueueTags",
+  "method": "list_queue_tags",
+  "doc": "List all cost allocation tags added to the specified Amazon SQS queue. For an overview, see Tagging Your Amazon SQS Queues in the Amazon SQS Developer Guide . Cross-account permissions don't apply to this action. For more information, see Grant cross-account permissions to a role and a username in the Amazon SQS Developer Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs/client/list_queue_tags.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/sqs-2012-11-05/ListQueueTags"
+  },
+  "paginated": false,
+  "input_required": [
+   "QueueUrl"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Tags": {
+     "type": "map",
+     "doc": "The list of all tags added to the specified queue.",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "sqs.get_queue_attributes"
+  ],
+  "rules": [
+   "REME-0103100001",
+   "REME-0103100002",
+   "REME-0103100003"
+  ]
+ },
+ "sqs.ListQueues": {
+  "service": "sqs",
+  "operation": "ListQueues",
+  "method": "list_queues",
+  "doc": "Returns a list of your queues in the current region. The response includes a maximum of 1,000 results. If you specify a value for the optional QueueNamePrefix parameter, only queues with a name that begins with the specified value are returned. The listQueues methods supports pagination. Set parameter MaxResults in the request to specify the maximum number of results to be returned in the response. If you do not set MaxResults , the response includes a maximum of 1,000 results. If you set MaxResults and there are additional results to display, the response includes a value for NextToken . Use NextToken as a parameter in your next request to listQueues to receive the next page of results. Cross-account permissions don't apply to this action. For more information, see Grant cross-account permissions to a role and a username in the Amazon SQS Developer Guide .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs/client/list_queues.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/sqs-2012-11-05/ListQueues"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "A list of your queues.",
+   "members": {
+    "QueueUrls": {
+     "type": "list",
+     "doc": "A list of queue URLs, up to 1,000 entries, or the value of MaxResults that you sent in the request.",
+     "item": {
+      "type": "string"
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "Pagination token to include in the next request. Token value is null if there are no additional results to request, or if you did not set MaxResults in the request."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "sqs.get_queue_attributes",
+   "sqs.list_queues"
+  ],
+  "rules": [
+   "REME-0103100001",
+   "REME-0103100002",
+   "REME-0103100003"
+  ]
+ }
+}

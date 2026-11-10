@@ -1,0 +1,84 @@
+{
+ "account.GetAlternateContact": {
+  "service": "account",
+  "operation": "GetAlternateContact",
+  "method": "get_alternate_contact",
+  "doc": "Retrieves the specified alternate contact attached to an Amazon Web Services account. For complete details about how to use the alternate contact operations, see Access or updating the alternate contacts . Before you can update the alternate contact information for an Amazon Web Services account that is managed by Organizations, you must first enable integration between Amazon Web Services Account Management and Organizations. For more information, see Enabling trusted access for Amazon Web Services Account Management .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/account/client/get_alternate_contact.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/account-2021-02-01/GetAlternateContact"
+  },
+  "paginated": false,
+  "input_required": [
+   "AlternateContactType"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "AlternateContact": {
+     "type": "structure",
+     "doc": "A structure that contains the details for the specified alternate contact.",
+     "members": {
+      "AlternateContactType": {
+       "type": "string",
+       "doc": "The type of alternate contact.",
+       "enum": [
+        "BILLING",
+        "OPERATIONS",
+        "SECURITY"
+       ]
+      },
+      "EmailAddress": {
+       "type": "string",
+       "doc": "The email address associated with this alternate contact."
+      },
+      "Name": {
+       "type": "string",
+       "doc": "The name associated with this alternate contact."
+      },
+      "PhoneNumber": {
+       "type": "string",
+       "doc": "The phone number associated with this alternate contact."
+      },
+      "Title": {
+       "type": "string",
+       "doc": "The title associated with this alternate contact."
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "account.get_alternate_contact",
+   "account.get_owner_id"
+  ],
+  "rules": [
+   "REME-0101400001",
+   "REME-0105400001",
+   "REME-0106300001",
+   "REME-0106300002",
+   "REME-0106300003",
+   "REME-0106300004",
+   "REME-0106300005",
+   "REME-0106300006",
+   "REME-0106300007",
+   "REME-0106300008",
+   "REME-0106300009",
+   "REME-0106300010",
+   "REME-0106300011",
+   "REME-0106300012",
+   "REME-0106300013",
+   "REME-0106300014",
+   "REME-0106300015",
+   "REME-0106300016",
+   "REME-0106300017",
+   "REME-0100100016",
+   "REME-0104000001",
+   "REME-0103900002",
+   "REME-0105200001",
+   "REME-0106100003",
+   "REME-0102800001"
+  ]
+ }
+}

@@ -8,9 +8,9 @@
   },
   {
     "id": "improved",
-    "label": "개선안",
-    "engine_ref": "ops-2026.10.28.1",
-    "overlay": "improved",
-    "description": "운영 엔진 + backend/overlays/improved 의 수정 룰. 엔진에 반영되면 engine_ref 를 그 커밋으로 바꾸고 오버레이에서 뺀다."
+    "label": "수정 브랜치",
+    "engine_ref": "WORKTREE:k8s-engine-fix",
+    "overlay": null,
+    "description": "k8s-engine fix/aws-master-rules (dev 에서 분기, ~/dclo/k8s-engine-fix worktree, 미커밋 수정 포함). 커밋 후 비교만 하려면 engine_ref 를 브랜치명으로."
   }
 ]

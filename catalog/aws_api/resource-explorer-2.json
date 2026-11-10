@@ -1,0 +1,92 @@
+{
+ "resource-explorer-2.ListIndexes": {
+  "service": "resource-explorer-2",
+  "operation": "ListIndexes",
+  "method": "list_indexes",
+  "doc": "Retrieves a list of all of the indexes in Amazon Web Services Regions that are currently collecting resource information for Amazon Web Services Resource Explorer.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/resource-explorer-2/client/list_indexes.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/resource-explorer-2-2022-07-28/ListIndexes"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Indexes": {
+     "type": "list",
+     "doc": "A structure that contains the details and status of each index.",
+     "item": {
+      "type": "structure",
+      "doc": "An index is the data store used by Amazon Web Services Resource Explorer to hold information about your Amazon Web Services resources that the service discovers. Creating an index in an Amazon Web Services Region turns on Resource Explorer and lets it discover your resources. By default, an index is local , meaning that it contains information about resources in only the same Region as the index. However, you can promote the index of one Region in the account by calling UpdateIndexType to conve…",
+      "members": {
+       "Arn": {
+        "type": "string",
+        "doc": "The Amazon resource name (ARN) of the index."
+       },
+       "Region": {
+        "type": "string",
+        "doc": "The Amazon Web Services Region in which the index exists."
+       },
+       "Type": {
+        "type": "string",
+        "doc": "The type of index. It can be one of the following values: LOCAL – The index contains information about resources from only the same Amazon Web Services Region. AGGREGATOR – Resource Explorer replicates copies of the indexed information about resources in all other Amazon Web Services Regions to the aggregator index. This lets search results in the Region with the aggregator index to include resources from all Regions in the account where Resource Explorer is turned on.",
+        "enum": [
+         "LOCAL",
+         "AGGREGATOR"
+        ]
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "If present, indicates that more output is available than is included in the current response. Use this value in the NextToken request parameter in a subsequent call to the operation to get the next part of the output. You should repeat this until the NextToken response element comes back as null . The pagination tokens expire after 24 hours."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "resourceexplorer2.list_indexes"
+  ],
+  "rules": [
+   "REME-0105500001"
+  ]
+ },
+ "resource-explorer-2.ListTagsForResource": {
+  "service": "resource-explorer-2",
+  "operation": "ListTagsForResource",
+  "method": "list_tags_for_resource",
+  "doc": "Lists the tags that are attached to the specified resource.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/resource-explorer-2/client/list_tags_for_resource.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/resource-explorer-2-2022-07-28/ListTagsForResource"
+  },
+  "paginated": false,
+  "input_required": [
+   "resourceArn"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Tags": {
+     "type": "map",
+     "doc": "The tag key and value pairs that you want to attach to the specified view or index.",
+     "key": {
+      "type": "string"
+     },
+     "value": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "resourceexplorer2.list_indexes"
+  ],
+  "rules": [
+   "REME-0105500001"
+  ]
+ }
+}

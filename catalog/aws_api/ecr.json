@@ -1,0 +1,914 @@
+{
+ "ecr.DescribeImageScanFindings": {
+  "service": "ecr",
+  "operation": "DescribeImageScanFindings",
+  "method": "describe_image_scan_findings",
+  "doc": "Returns the scan findings for the specified image.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr/client/describe_image_scan_findings.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/DescribeImageScanFindings"
+  },
+  "paginated": true,
+  "input_required": [
+   "repositoryName",
+   "imageId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "registryId": {
+     "type": "string",
+     "doc": "The registry ID associated with the request."
+    },
+    "repositoryName": {
+     "type": "string",
+     "doc": "The repository name associated with the request."
+    },
+    "imageId": {
+     "type": "structure",
+     "doc": "An object with identifying information for an image in an Amazon ECR repository.",
+     "members": {
+      "imageDigest": {
+       "type": "string",
+       "doc": "The sha256 digest of the image manifest."
+      },
+      "imageTag": {
+       "type": "string",
+       "doc": "The tag used for the image."
+      }
+     }
+    },
+    "imageScanStatus": {
+     "type": "structure",
+     "doc": "The current state of the scan.",
+     "members": {
+      "status": {
+       "type": "string",
+       "doc": "The current state of an image scan.",
+       "enum": [
+        "IN_PROGRESS",
+        "COMPLETE",
+        "FAILED",
+        "UNSUPPORTED_IMAGE",
+        "ACTIVE",
+        "PENDING",
+        "SCAN_ELIGIBILITY_EXPIRED",
+        "FINDINGS_UNAVAILABLE",
+        "LIMIT_EXCEEDED"
+       ]
+      },
+      "description": {
+       "type": "string",
+       "doc": "The description of the image scan status."
+      }
+     }
+    },
+    "imageScanFindings": {
+     "type": "structure",
+     "doc": "The information contained in the image scan findings.",
+     "members": {
+      "imageScanCompletedAt": {
+       "type": "timestamp",
+       "doc": "The time of the last completed image scan."
+      },
+      "vulnerabilitySourceUpdatedAt": {
+       "type": "timestamp",
+       "doc": "The time when the vulnerability data was last scanned."
+      },
+      "findingSeverityCounts": {
+       "type": "map",
+       "doc": "The image vulnerability counts, sorted by severity.",
+       "key": {
+        "type": "string",
+        "enum": [
+         "INFORMATIONAL",
+         "LOW",
+         "MEDIUM",
+         "HIGH",
+         "CRITICAL",
+         "UNDEFINED"
+        ]
+       },
+       "value": {
+        "type": "integer"
+       }
+      },
+      "findings": {
+       "type": "list",
+       "doc": "The findings from the image scan.",
+       "item": {
+        "type": "structure",
+        "doc": "Contains information about an image scan finding.",
+        "members": {
+         "name": {
+          "type": "string",
+          "doc": "The name associated with the finding, usually a CVE number."
+         },
+         "description": {
+          "type": "string",
+          "doc": "The description of the finding."
+         },
+         "uri": {
+          "type": "string",
+          "doc": "A link containing additional details about the security vulnerability."
+         },
+         "severity": {
+          "type": "string",
+          "doc": "The finding severity.",
+          "enum": [
+           "INFORMATIONAL",
+           "LOW",
+           "MEDIUM",
+           "HIGH",
+           "CRITICAL",
+           "UNDEFINED"
+          ]
+         },
+         "attributes": {
+          "type": "list",
+          "doc": "A collection of attributes of the host from which the finding is generated.",
+          "item": {
+           "type": "structure",
+           "doc": "This data type is used in the ImageScanFinding data type.",
+           "members": {
+            "key": {
+             "type": "string",
+             "doc": "The attribute key.",
+             "required": true
+            },
+            "value": {
+             "type": "string",
+             "doc": "The value assigned to the attribute key."
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "enhancedFindings": {
+       "type": "list",
+       "doc": "Details about the enhanced scan findings from Amazon Inspector.",
+       "item": {
+        "type": "structure",
+        "doc": "The details of an enhanced image scan. This is returned when enhanced scanning is enabled for your private registry.",
+        "members": {
+         "awsAccountId": {
+          "type": "string",
+          "doc": "The Amazon Web Services account ID associated with the image."
+         },
+         "description": {
+          "type": "string",
+          "doc": "The description of the finding."
+         },
+         "findingArn": {
+          "type": "string",
+          "doc": "The Amazon Resource Number (ARN) of the finding."
+         },
+         "firstObservedAt": {
+          "type": "timestamp",
+          "doc": "The date and time that the finding was first observed."
+         },
+         "lastObservedAt": {
+          "type": "timestamp",
+          "doc": "The date and time that the finding was last observed."
+         },
+         "packageVulnerabilityDetails": {
+          "type": "structure",
+          "doc": "An object that contains the details of a package vulnerability finding.",
+          "members": {
+           "cvss": {
+            "type": "list",
+            "doc": "An object that contains details about the CVSS score of a finding.",
+            "item": {
+             "type": "structure",
+             "doc": "The CVSS score for a finding.",
+             "members": {
+              "baseScore": {
+               "type": "double",
+               "doc": "The base CVSS score used for the finding."
+              },
+              "scoringVector": {
+               "type": "string",
+               "doc": "The vector string of the CVSS score."
+              },
+              "source": {
+               "type": "string",
+               "doc": "The source of the CVSS score."
+              },
+              "version": {
+               "type": "string",
+               "doc": "The version of CVSS used for the score."
+              }
+             }
+            }
+           },
+           "referenceUrls": {
+            "type": "list",
+            "doc": "One or more URLs that contain details about this vulnerability type.",
+            "item": {
+             "type": "string"
+            }
+           },
+           "relatedVulnerabilities": {
+            "type": "list",
+            "doc": "One or more vulnerabilities related to the one identified in this finding.",
+            "item": {
+             "type": "string"
+            }
+           },
+           "source": {
+            "type": "string",
+            "doc": "The source of the vulnerability information."
+           },
+           "sourceUrl": {
+            "type": "string",
+            "doc": "A URL to the source of the vulnerability information."
+           },
+           "vendorCreatedAt": {
+            "type": "timestamp",
+            "doc": "The date and time that this vulnerability was first added to the vendor's database."
+           },
+           "vendorSeverity": {
+            "type": "string",
+            "doc": "The severity the vendor has given to this vulnerability type."
+           },
+           "vendorUpdatedAt": {
+            "type": "timestamp",
+            "doc": "The date and time the vendor last updated this vulnerability in their database."
+           },
+           "vulnerabilityId": {
+            "type": "string",
+            "doc": "The ID given to this vulnerability."
+           },
+           "vulnerablePackages": {
+            "type": "list",
+            "doc": "The packages impacted by this vulnerability.",
+            "item": {
+             "type": "structure",
+             "doc": "Information on the vulnerable package identified by a finding.",
+             "members": {
+              "arch": {
+               "type": "string",
+               "doc": "The architecture of the vulnerable package."
+              },
+              "epoch": {
+               "type": "integer",
+               "doc": "The epoch of the vulnerable package."
+              },
+              "filePath": {
+               "type": "string",
+               "doc": "The file path of the vulnerable package."
+              },
+              "name": {
+               "type": "string",
+               "doc": "The name of the vulnerable package."
+              },
+              "packageManager": {
+               "type": "string",
+               "doc": "The package manager of the vulnerable package."
+              },
+              "release": {
+               "type": "string",
+               "doc": "The release of the vulnerable package."
+              },
+              "sourceLayerHash": {
+               "type": "string",
+               "doc": "The source layer hash of the vulnerable package."
+              },
+              "version": {
+               "type": "string",
+               "doc": "The version of the vulnerable package."
+              },
+              "fixedInVersion": {
+               "type": "string",
+               "doc": "The version of the package that contains the vulnerability fix."
+              }
+             }
+            }
+           }
+          }
+         },
+         "remediation": {
+          "type": "structure",
+          "doc": "An object that contains the details about how to remediate a finding.",
+          "members": {
+           "recommendation": {
+            "type": "structure",
+            "doc": "An object that contains information about the recommended course of action to remediate the finding.",
+            "members": {
+             "url": {
+              "type": "string",
+              "doc": "The URL address to the CVE remediation recommendations."
+             },
+             "text": {
+              "type": "string",
+              "doc": "The recommended course of action to remediate the finding."
+             }
+            }
+           }
+          }
+         },
+         "resources": {
+          "type": "list",
+          "doc": "Contains information on the resources involved in a finding.",
+          "item": {
+           "type": "structure",
+           "doc": "Details about the resource involved in a finding.",
+           "members": {
+            "details": {
+             "type": "structure",
+             "doc": "An object that contains details about the resource involved in a finding.",
+             "members": {
+              "awsEcrContainerImage": {
+               "type": "structure",
+               "doc": "An object that contains details about the Amazon ECR container image involved in the finding.",
+               "members": {
+                "architecture": {
+                 "type": "string",
+                 "doc": "The architecture of the Amazon ECR container image."
+                },
+                "author": {
+                 "type": "string",
+                 "doc": "The image author of the Amazon ECR container image."
+                },
+                "imageHash": {
+                 "type": "string",
+                 "doc": "The image hash of the Amazon ECR container image."
+                },
+                "imageTags": {
+                 "type": "list",
+                 "doc": "The image tags attached to the Amazon ECR container image.",
+                 "item": {
+                  "type": "string"
+                 }
+                },
+                "platform": {
+                 "type": "string",
+                 "doc": "The platform of the Amazon ECR container image."
+                },
+                "pushedAt": {
+                 "type": "timestamp",
+                 "doc": "The date and time the Amazon ECR container image was pushed."
+                },
+                "registry": {
+                 "type": "string",
+                 "doc": "The registry the Amazon ECR container image belongs to."
+                },
+                "repositoryName": {
+                 "type": "string",
+                 "doc": "The name of the repository the Amazon ECR container image resides in."
+                }
+               }
+              }
+             }
+            },
+            "id": {
+             "type": "string",
+             "doc": "The ID of the resource."
+            },
+            "tags": {
+             "type": "map",
+             "doc": "The tags attached to the resource.",
+             "key": {
+              "type": "string"
+             },
+             "value": {
+              "type": "string"
+             }
+            },
+            "type": {
+             "type": "string",
+             "doc": "The type of resource."
+            }
+           }
+          }
+         },
+         "score": {
+          "type": "double",
+          "doc": "The Amazon Inspector score given to the finding."
+         },
+         "scoreDetails": {
+          "type": "structure",
+          "doc": "An object that contains details of the Amazon Inspector score.",
+          "members": {
+           "cvss": {
+            "type": "structure",
+            "doc": "An object that contains details about the CVSS score given to a finding.",
+            "members": {
+             "adjustments": {
+              "type": "list",
+              "doc": "An object that contains details about adjustment Amazon Inspector made to the CVSS score.",
+              "item": {
+               "type": "structure",
+               "doc": "Details on adjustments Amazon Inspector made to the CVSS score for a finding.",
+               "members": {
+                "metric": {
+                 "type": "string",
+                 "doc": "The metric used to adjust the CVSS score."
+                },
+                "reason": {
+                 "type": "string",
+                 "doc": "The reason the CVSS score has been adjustment."
+                }
+               }
+              }
+             },
+             "score": {
+              "type": "double",
+              "doc": "The CVSS score."
+             },
+             "scoreSource": {
+              "type": "string",
+              "doc": "The source for the CVSS score."
+             },
+             "scoringVector": {
+              "type": "string",
+              "doc": "The vector for the CVSS score."
+             },
+             "version": {
+              "type": "string",
+              "doc": "The CVSS version used in scoring."
+             }
+            }
+           }
+          }
+         },
+         "severity": {
+          "type": "string",
+          "doc": "The severity of the finding."
+         },
+         "status": {
+          "type": "string",
+          "doc": "The status of the finding."
+         },
+         "title": {
+          "type": "string",
+          "doc": "The title of the finding."
+         },
+         "type": {
+          "type": "string",
+          "doc": "The type of the finding."
+         },
+         "updatedAt": {
+          "type": "timestamp",
+          "doc": "The date and time the finding was last updated at."
+         },
+         "fixAvailable": {
+          "type": "string",
+          "doc": "Details on whether a fix is available through a version update. This value can be YES , NO , or PARTIAL . A PARTIAL fix means that some, but not all, of the packages identified in the finding have fixes available through updated versions."
+         },
+         "exploitAvailable": {
+          "type": "string",
+          "doc": "If a finding discovered in your environment has an exploit available."
+         }
+        }
+       }
+      }
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future DescribeImageScanFindings request. When the results of a DescribeImageScanFindings request exceed maxResults , this value can be used to retrieve the next page of results. This value is null when there are no more results to return."
+    }
+   }
+  },
+  "added_in_latest": [
+   "imageScanFindings.enhancedFindings[].resources[].details.awsEcrContainerImage.inUseCount",
+   "imageScanFindings.enhancedFindings[].resources[].details.awsEcrContainerImage.lastInUseAt"
+  ],
+  "raw_keys": [
+   "ecr.describe_images"
+  ],
+  "rules": [
+   "REME-0106000004"
+  ]
+ },
+ "ecr.DescribeImages": {
+  "service": "ecr",
+  "operation": "DescribeImages",
+  "method": "describe_images",
+  "doc": "Returns metadata about the images in a repository. Beginning with Docker version 1.9, the Docker client compresses image layers before pushing them to a V2 Docker registry. The output of the docker images command shows the uncompressed image size, so it may return a larger image size than the image sizes returned by DescribeImages .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr/client/describe_images.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/DescribeImages"
+  },
+  "paginated": true,
+  "input_required": [
+   "repositoryName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "imageDetails": {
+     "type": "list",
+     "doc": "A list of ImageDetail objects that contain data about the image.",
+     "item": {
+      "type": "structure",
+      "doc": "An object that describes an image returned by a DescribeImages operation.",
+      "members": {
+       "registryId": {
+        "type": "string",
+        "doc": "The Amazon Web Services account ID associated with the registry to which this image belongs."
+       },
+       "repositoryName": {
+        "type": "string",
+        "doc": "The name of the repository to which this image belongs."
+       },
+       "imageDigest": {
+        "type": "string",
+        "doc": "The sha256 digest of the image manifest."
+       },
+       "imageTags": {
+        "type": "list",
+        "doc": "The list of tags associated with this image.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "imageSizeInBytes": {
+        "type": "long",
+        "doc": "The size, in bytes, of the image in the repository. If the image is a manifest list, this will be the max size of all manifests in the list. Beginning with Docker version 1.9, the Docker client compresses image layers before pushing them to a V2 Docker registry. The output of the docker images command shows the uncompressed image size, so it may return a larger image size than the image sizes returned by DescribeImages ."
+       },
+       "imagePushedAt": {
+        "type": "timestamp",
+        "doc": "The date and time, expressed in standard JavaScript date format, at which the current image was pushed to the repository."
+       },
+       "imageScanStatus": {
+        "type": "structure",
+        "doc": "The current state of the scan.",
+        "members": {
+         "status": {
+          "type": "string",
+          "doc": "The current state of an image scan.",
+          "enum": [
+           "IN_PROGRESS",
+           "COMPLETE",
+           "FAILED",
+           "UNSUPPORTED_IMAGE",
+           "ACTIVE",
+           "PENDING",
+           "SCAN_ELIGIBILITY_EXPIRED",
+           "FINDINGS_UNAVAILABLE",
+           "LIMIT_EXCEEDED"
+          ]
+         },
+         "description": {
+          "type": "string",
+          "doc": "The description of the image scan status."
+         }
+        }
+       },
+       "imageScanFindingsSummary": {
+        "type": "structure",
+        "doc": "A summary of the last completed image scan.",
+        "members": {
+         "imageScanCompletedAt": {
+          "type": "timestamp",
+          "doc": "The time of the last completed image scan."
+         },
+         "vulnerabilitySourceUpdatedAt": {
+          "type": "timestamp",
+          "doc": "The time when the vulnerability data was last scanned."
+         },
+         "findingSeverityCounts": {
+          "type": "map",
+          "doc": "The image vulnerability counts, sorted by severity.",
+          "key": {
+           "type": "string",
+           "enum": [
+            "INFORMATIONAL",
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL",
+            "UNDEFINED"
+           ]
+          },
+          "value": {
+           "type": "integer"
+          }
+         }
+        }
+       },
+       "imageManifestMediaType": {
+        "type": "string",
+        "doc": "The media type of the image manifest."
+       },
+       "artifactMediaType": {
+        "type": "string",
+        "doc": "The artifact media type of the image."
+       },
+       "lastRecordedPullTime": {
+        "type": "timestamp",
+        "doc": "The date and time, expressed in standard JavaScript date format, when Amazon ECR recorded the last image pull. Amazon ECR refreshes the last image pull timestamp at least once every 24 hours. For example, if you pull an image once a day then the lastRecordedPullTime timestamp will indicate the exact time that the image was last pulled. However, if you pull an image once an hour, because Amazon ECR refreshes the lastRecordedPullTime timestamp at least once every 24 hours, the result may not be t…"
+       }
+      }
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future DescribeImages request. When the results of a DescribeImages request exceed maxResults , this value can be used to retrieve the next page of results. This value is null when there are no more results to return."
+    }
+   }
+  },
+  "added_in_latest": [
+   "imageDetails[].imageStatus",
+   "imageDetails[].lastActivatedAt",
+   "imageDetails[].lastArchivedAt",
+   "imageDetails[].subjectManifestDigest"
+  ],
+  "raw_keys": [
+   "ecr.describe_images",
+   "ecr.describe_repositories"
+  ],
+  "rules": [
+   "REME-0106000001",
+   "REME-0106000003",
+   "REME-0106000004",
+   "REME-0106000005",
+   "REME-0106000006",
+   "REME-0106000007"
+  ]
+ },
+ "ecr.DescribeRegistry": {
+  "service": "ecr",
+  "operation": "DescribeRegistry",
+  "method": "describe_registry",
+  "doc": "Describes the settings for a registry. The replication configuration for a repository can be created or updated with the PutReplicationConfiguration API action.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr/client/describe_registry.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/DescribeRegistry"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "registryId": {
+     "type": "string",
+     "doc": "The registry ID associated with the request."
+    },
+    "replicationConfiguration": {
+     "type": "structure",
+     "doc": "The replication configuration for the registry.",
+     "members": {
+      "rules": {
+       "type": "list",
+       "doc": "An array of objects representing the replication destinations and repository filters for a replication configuration.",
+       "item": {
+        "type": "structure",
+        "doc": "An array of objects representing the replication destinations and repository filters for a replication configuration.",
+        "members": {
+         "destinations": {
+          "type": "list",
+          "doc": "An array of objects representing the destination for a replication rule.",
+          "item": {
+           "type": "structure",
+           "doc": "An array of objects representing the destination for a replication rule.",
+           "members": {
+            "region": {
+             "type": "string",
+             "doc": "The Region to replicate to.",
+             "required": true
+            },
+            "registryId": {
+             "type": "string",
+             "doc": "The Amazon Web Services account ID of the Amazon ECR private registry to replicate to. When configuring cross-Region replication within your own registry, specify your own account ID.",
+             "required": true
+            }
+           }
+          },
+          "required": true
+         },
+         "repositoryFilters": {
+          "type": "list",
+          "doc": "An array of objects representing the filters for a replication rule. Specifying a repository filter for a replication rule provides a method for controlling which repositories in a private registry are replicated.",
+          "item": {
+           "type": "structure",
+           "doc": "The filter settings used with image replication. Specifying a repository filter to a replication rule provides a method for controlling which repositories in a private registry are replicated. If no filters are added, the contents of all repositories are replicated.",
+           "members": {
+            "filter": {
+             "type": "string",
+             "doc": "The repository filter details. When the PREFIX_MATCH filter type is specified, this value is required and should be the repository name prefix to configure replication for.",
+             "required": true
+            },
+            "filterType": {
+             "type": "string",
+             "doc": "The repository filter type. The only supported value is PREFIX_MATCH , which is a repository name prefix specified with the filter parameter.",
+             "enum": [
+              "PREFIX_MATCH"
+             ],
+             "required": true
+            }
+           }
+          }
+         }
+        }
+       },
+       "required": true
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ecr.describe_registry"
+  ]
+ },
+ "ecr.DescribeRepositories": {
+  "service": "ecr",
+  "operation": "DescribeRepositories",
+  "method": "describe_repositories",
+  "doc": "Describes image repositories in a registry.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr/client/describe_repositories.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/DescribeRepositories"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "repositories": {
+     "type": "list",
+     "doc": "A list of repository objects corresponding to valid repositories.",
+     "item": {
+      "type": "structure",
+      "doc": "An object representing a repository.",
+      "members": {
+       "repositoryArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) that identifies the repository. The ARN contains the arn:aws:ecr namespace, followed by the region of the repository, Amazon Web Services account ID of the repository owner, repository namespace, and repository name. For example, arn:aws:ecr:region:012345678910:repository-namespace/repository-name ."
+       },
+       "registryId": {
+        "type": "string",
+        "doc": "The Amazon Web Services account ID associated with the registry that contains the repository."
+       },
+       "repositoryName": {
+        "type": "string",
+        "doc": "The name of the repository."
+       },
+       "repositoryUri": {
+        "type": "string",
+        "doc": "The URI for the repository. You can use this URI for container image push and pull operations."
+       },
+       "createdAt": {
+        "type": "timestamp",
+        "doc": "The date and time, in JavaScript date format, when the repository was created."
+       },
+       "imageTagMutability": {
+        "type": "string",
+        "doc": "The tag mutability setting for the repository.",
+        "enum": [
+         "MUTABLE",
+         "IMMUTABLE"
+        ]
+       },
+       "imageScanningConfiguration": {
+        "type": "structure",
+        "doc": "The image scanning configuration for a repository.",
+        "members": {
+         "scanOnPush": {
+          "type": "boolean",
+          "doc": "The setting that determines whether images are scanned after being pushed to a repository. If set to true , images will be scanned after being pushed. If this parameter is not specified, it will default to false and images will not be scanned unless a scan is manually started with the API_StartImageScan API."
+         }
+        }
+       },
+       "encryptionConfiguration": {
+        "type": "structure",
+        "doc": "The encryption configuration for the repository. This determines how the contents of your repository are encrypted at rest.",
+        "members": {
+         "encryptionType": {
+          "type": "string",
+          "doc": "The encryption type to use. If you use the KMS encryption type, the contents of the repository will be encrypted using server-side encryption with Key Management Service key stored in KMS. When you use KMS to encrypt your data, you can either use the default Amazon Web Services managed KMS key for Amazon ECR, or specify your own KMS key, which you already created. If you use the KMS_DSSE encryption type, the contents of the repository will be encrypted with two layers of encryption using server…",
+          "enum": [
+           "AES256",
+           "KMS",
+           "KMS_DSSE"
+          ],
+          "required": true
+         },
+         "kmsKey": {
+          "type": "string",
+          "doc": "If you use the KMS encryption type, specify the KMS key to use for encryption. The alias, key ID, or full ARN of the KMS key can be specified. The key must exist in the same Region as the repository. If no key is specified, the default Amazon Web Services managed KMS key for Amazon ECR will be used."
+         }
+        }
+       }
+      }
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future DescribeRepositories request. When the results of a DescribeRepositories request exceed maxResults , this value can be used to retrieve the next page of results. This value is null when there are no more results to return."
+    }
+   }
+  },
+  "added_in_latest": [
+   "repositories[].imageTagMutabilityExclusionFilters",
+   "repositories[].imageTagMutabilityExclusionFilters[].filter",
+   "repositories[].imageTagMutabilityExclusionFilters[].filterType"
+  ],
+  "raw_keys": [
+   "ecr.describe_images",
+   "ecr.describe_repositories"
+  ],
+  "rules": [
+   "REME-0106000001",
+   "REME-0106000003",
+   "REME-0106000004",
+   "REME-0106000005",
+   "REME-0106000006",
+   "REME-0106000007"
+  ]
+ },
+ "ecr.GetLifecyclePolicy": {
+  "service": "ecr",
+  "operation": "GetLifecyclePolicy",
+  "method": "get_lifecycle_policy",
+  "doc": "Retrieves the lifecycle policy for the specified repository.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr/client/get_lifecycle_policy.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/GetLifecyclePolicy"
+  },
+  "paginated": false,
+  "input_required": [
+   "repositoryName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "registryId": {
+     "type": "string",
+     "doc": "The registry ID associated with the request."
+    },
+    "repositoryName": {
+     "type": "string",
+     "doc": "The repository name associated with the request."
+    },
+    "lifecyclePolicyText": {
+     "type": "string",
+     "doc": "The JSON lifecycle policy text."
+    },
+    "lastEvaluatedAt": {
+     "type": "timestamp",
+     "doc": "The time stamp of the last time that the lifecycle policy was run."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ecr.describe_repositories"
+  ],
+  "rules": [
+   "REME-0106000001",
+   "REME-0106000003",
+   "REME-0106000005",
+   "REME-0106000006",
+   "REME-0106000007"
+  ]
+ },
+ "ecr.GetRepositoryPolicy": {
+  "service": "ecr",
+  "operation": "GetRepositoryPolicy",
+  "method": "get_repository_policy",
+  "doc": "Retrieves the repository policy for the specified repository.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr/client/get_repository_policy.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/GetRepositoryPolicy"
+  },
+  "paginated": false,
+  "input_required": [
+   "repositoryName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "registryId": {
+     "type": "string",
+     "doc": "The registry ID associated with the request."
+    },
+    "repositoryName": {
+     "type": "string",
+     "doc": "The repository name associated with the request."
+    },
+    "policyText": {
+     "type": "string",
+     "doc": "The JSON repository policy text associated with the repository."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ecr.describe_repositories"
+  ],
+  "rules": [
+   "REME-0106000001",
+   "REME-0106000003",
+   "REME-0106000005",
+   "REME-0106000006",
+   "REME-0106000007"
+  ]
+ }
+}

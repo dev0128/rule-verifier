@@ -1,0 +1,384 @@
+{
+ "workspaces.DescribeTags": {
+  "service": "workspaces",
+  "operation": "DescribeTags",
+  "method": "describe_tags",
+  "doc": "Describes the specified tags for the specified WorkSpaces resource.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/workspaces/client/describe_tags.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeTags"
+  },
+  "paginated": false,
+  "input_required": [
+   "ResourceId"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "TagList": {
+     "type": "list",
+     "doc": "The tags.",
+     "item": {
+      "type": "structure",
+      "doc": "Describes a tag.",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "The key of the tag.",
+        "required": true
+       },
+       "Value": {
+        "type": "string",
+        "doc": "The value of the tag."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "workspaces.describe_workspaces"
+  ],
+  "rules": [
+   "REME-0102600001",
+   "REME-0102600002"
+  ]
+ },
+ "workspaces.DescribeWorkspaces": {
+  "service": "workspaces",
+  "operation": "DescribeWorkspaces",
+  "method": "describe_workspaces",
+  "doc": "Describes the specified WorkSpaces. You can filter the results by using the bundle identifier, directory identifier, or owner, but you can specify only one filter at a time.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/workspaces/client/describe_workspaces.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaces"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Workspaces": {
+     "type": "list",
+     "doc": "Information about the WorkSpaces. Because CreateWorkspaces is an asynchronous operation, some of the returned information could be incomplete.",
+     "item": {
+      "type": "structure",
+      "doc": "Describes a WorkSpace.",
+      "members": {
+       "WorkspaceId": {
+        "type": "string",
+        "doc": "The identifier of the WorkSpace."
+       },
+       "DirectoryId": {
+        "type": "string",
+        "doc": "The identifier of the Directory Service directory for the WorkSpace."
+       },
+       "UserName": {
+        "type": "string",
+        "doc": "The user for the WorkSpace."
+       },
+       "IpAddress": {
+        "type": "string",
+        "doc": "The IP address of the WorkSpace."
+       },
+       "State": {
+        "type": "string",
+        "doc": "The operational state of the WorkSpace. PENDING – The WorkSpace is in a waiting state (for example, the WorkSpace is being created). AVAILABLE – The WorkSpace is running and has passed the health checks. IMPAIRED – Refer to UNHEALTHY state. UNHEALTHY – The WorkSpace is not responding to health checks. REBOOTING – The WorkSpace is being rebooted (restarted). STARTING – The WorkSpace is starting up and health checks are being run. REBUILDING – The WorkSpace is being rebuilt. RESTORING – The WorkS…",
+        "enum": [
+         "PENDING",
+         "AVAILABLE",
+         "IMPAIRED",
+         "UNHEALTHY",
+         "REBOOTING",
+         "STARTING",
+         "REBUILDING",
+         "RESTORING",
+         "MAINTENANCE",
+         "ADMIN_MAINTENANCE",
+         "TERMINATING",
+         "TERMINATED",
+         "SUSPENDED",
+         "UPDATING",
+         "STOPPING",
+         "STOPPED",
+         "ERROR"
+        ]
+       },
+       "BundleId": {
+        "type": "string",
+        "doc": "The identifier of the bundle used to create the WorkSpace."
+       },
+       "SubnetId": {
+        "type": "string",
+        "doc": "The identifier of the subnet for the WorkSpace."
+       },
+       "ErrorMessage": {
+        "type": "string",
+        "doc": "The text of the error message that is returned if the WorkSpace cannot be created."
+       },
+       "ErrorCode": {
+        "type": "string",
+        "doc": "The error code that is returned if the WorkSpace cannot be created."
+       },
+       "ComputerName": {
+        "type": "string",
+        "doc": "The name of the WorkSpace, as seen by the operating system. The format of this name varies. For more information, see Launch a WorkSpace ."
+       },
+       "VolumeEncryptionKey": {
+        "type": "string",
+        "doc": "The ARN of the symmetric KMS key used to encrypt data stored on your WorkSpace. Amazon WorkSpaces does not support asymmetric KMS keys."
+       },
+       "UserVolumeEncryptionEnabled": {
+        "type": "boolean",
+        "doc": "Indicates whether the data stored on the user volume is encrypted."
+       },
+       "RootVolumeEncryptionEnabled": {
+        "type": "boolean",
+        "doc": "Indicates whether the data stored on the root volume is encrypted."
+       },
+       "WorkspaceName": {
+        "type": "string",
+        "doc": "The name of the user-decoupled WorkSpace."
+       },
+       "WorkspaceProperties": {
+        "type": "structure",
+        "doc": "The properties of the WorkSpace.",
+        "members": {
+         "RunningMode": {
+          "type": "string",
+          "doc": "The running mode. For more information, see Manage the WorkSpace Running Mode . The MANUAL value is only supported by Amazon WorkSpaces Core. Contact your account team to be allow-listed to use this value. For more information, see Amazon WorkSpaces Core . Review your running mode to ensure you are using one that is optimal for your needs and budget. For more information on switching running modes, see Can I switch between hourly and monthly billing?",
+          "enum": [
+           "AUTO_STOP",
+           "ALWAYS_ON",
+           "MANUAL"
+          ]
+         },
+         "RunningModeAutoStopTimeoutInMinutes": {
+          "type": "integer",
+          "doc": "The time after a user logs off when WorkSpaces are automatically stopped. Configured in 60-minute intervals."
+         },
+         "RootVolumeSizeGib": {
+          "type": "integer",
+          "doc": "The size of the root volume. For important information about how to modify the size of the root and user volumes, see Modify a WorkSpace ."
+         },
+         "UserVolumeSizeGib": {
+          "type": "integer",
+          "doc": "The size of the user storage. For important information about how to modify the size of the root and user volumes, see Modify a WorkSpace ."
+         },
+         "ComputeTypeName": {
+          "type": "string",
+          "doc": "The compute type. For more information, see Amazon WorkSpaces Bundles .",
+          "enum": [
+           "VALUE",
+           "STANDARD",
+           "PERFORMANCE",
+           "POWER",
+           "GRAPHICS",
+           "POWERPRO",
+           "GENERALPURPOSE_4XLARGE",
+           "GENERALPURPOSE_8XLARGE",
+           "GRAPHICSPRO",
+           "GRAPHICS_G4DN",
+           "GRAPHICSPRO_G4DN"
+          ]
+         },
+         "Protocols": {
+          "type": "list",
+          "doc": "The protocol. For more information, see Protocols for Amazon WorkSpaces . Only available for WorkSpaces created with PCoIP bundles. The Protocols property is case sensitive. Ensure you use PCOIP or DCV (formerly WSP). Unavailable for Windows 7 WorkSpaces and WorkSpaces using GPU-based bundles (Graphics, GraphicsPro, Graphics.g4dn, and GraphicsPro.g4dn).",
+          "item": {
+           "type": "string",
+           "enum": [
+            "PCOIP",
+            "WSP"
+           ]
+          }
+         },
+         "OperatingSystemName": {
+          "type": "string",
+          "doc": "The name of the operating system.",
+          "enum": [
+           "AMAZON_LINUX_2",
+           "UBUNTU_18_04",
+           "UBUNTU_20_04",
+           "UBUNTU_22_04",
+           "UNKNOWN",
+           "WINDOWS_10",
+           "WINDOWS_11",
+           "WINDOWS_7",
+           "WINDOWS_SERVER_2016",
+           "WINDOWS_SERVER_2019",
+           "WINDOWS_SERVER_2022",
+           "RHEL_8",
+           "ROCKY_8"
+          ]
+         },
+         "GlobalAccelerator": {
+          "type": "structure",
+          "doc": "Indicates the Global Accelerator properties.",
+          "members": {
+           "Mode": {
+            "type": "string",
+            "doc": "Indicates if Global Accelerator for WorkSpaces is enabled, disabled, or the same mode as the associated directory.",
+            "enum": [
+             "ENABLED_AUTO",
+             "DISABLED",
+             "INHERITED"
+            ],
+            "required": true
+           },
+           "PreferredProtocol": {
+            "type": "string",
+            "doc": "Indicates the preferred protocol for Global Accelerator.",
+            "enum": [
+             "TCP",
+             "NONE",
+             "INHERITED"
+            ]
+           }
+          }
+         }
+        }
+       },
+       "ModificationStates": {
+        "type": "list",
+        "doc": "The modification states of the WorkSpace.",
+        "item": {
+         "type": "structure",
+         "doc": "Describes a WorkSpace modification.",
+         "members": {
+          "Resource": {
+           "type": "string",
+           "doc": "The resource.",
+           "enum": [
+            "ROOT_VOLUME",
+            "USER_VOLUME",
+            "COMPUTE_TYPE"
+           ]
+          },
+          "State": {
+           "type": "string",
+           "doc": "The modification state.",
+           "enum": [
+            "UPDATE_INITIATED",
+            "UPDATE_IN_PROGRESS"
+           ]
+          }
+         }
+        }
+       },
+       "RelatedWorkspaces": {
+        "type": "list",
+        "doc": "The standby WorkSpace or primary WorkSpace related to the specified WorkSpace.",
+        "item": {
+         "type": "structure",
+         "doc": "Describes the related WorkSpace. The related WorkSpace could be a standby WorkSpace or primary WorkSpace related to the specified WorkSpace.",
+         "members": {
+          "WorkspaceId": {
+           "type": "string",
+           "doc": "The identifier of the related WorkSpace."
+          },
+          "Region": {
+           "type": "string",
+           "doc": "The Region of the related WorkSpace."
+          },
+          "State": {
+           "type": "string",
+           "doc": "Indicates the state of the WorkSpace.",
+           "enum": [
+            "PENDING",
+            "AVAILABLE",
+            "IMPAIRED",
+            "UNHEALTHY",
+            "REBOOTING",
+            "STARTING",
+            "REBUILDING",
+            "RESTORING",
+            "MAINTENANCE",
+            "ADMIN_MAINTENANCE",
+            "TERMINATING",
+            "TERMINATED",
+            "SUSPENDED",
+            "UPDATING",
+            "STOPPING",
+            "STOPPED",
+            "ERROR"
+           ]
+          },
+          "Type": {
+           "type": "string",
+           "doc": "Indicates the type of WorkSpace.",
+           "enum": [
+            "PRIMARY",
+            "STANDBY"
+           ]
+          }
+         }
+        }
+       },
+       "DataReplicationSettings": {
+        "type": "structure",
+        "doc": "Indicates the settings of the data replication.",
+        "members": {
+         "DataReplication": {
+          "type": "string",
+          "doc": "Indicates whether data replication is enabled, and if enabled, the type of data replication.",
+          "enum": [
+           "NO_REPLICATION",
+           "PRIMARY_AS_SOURCE"
+          ]
+         },
+         "RecoverySnapshotTime": {
+          "type": "timestamp",
+          "doc": "The date and time at which the last successful snapshot was taken of the primary WorkSpace used for replicating data."
+         }
+        }
+       },
+       "StandbyWorkspacesProperties": {
+        "type": "list",
+        "doc": "The properties of the standby WorkSpace",
+        "item": {
+         "type": "structure",
+         "doc": "Describes the properties of the related standby WorkSpaces.",
+         "members": {
+          "StandbyWorkspaceId": {
+           "type": "string",
+           "doc": "The identifier of the standby WorkSpace"
+          },
+          "DataReplication": {
+           "type": "string",
+           "doc": "Indicates whether data replication is enabled, and if enabled, the type of data replication.",
+           "enum": [
+            "NO_REPLICATION",
+            "PRIMARY_AS_SOURCE"
+           ]
+          },
+          "RecoverySnapshotTime": {
+           "type": "timestamp",
+           "doc": "The date and time at which the last successful snapshot was taken of the primary WorkSpace used for replicating data."
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The token to use to retrieve the next page of results. This value is null when there are no more results to return."
+    }
+   }
+  },
+  "added_in_latest": [
+   "Workspaces[].Ipv6Address",
+   "Workspaces[].WorkspaceProperties.NestedVirtualizationEnabled"
+  ],
+  "raw_keys": [
+   "workspaces.describe_workspaces"
+  ],
+  "rules": [
+   "REME-0102600001",
+   "REME-0102600002"
+  ]
+ }
+}

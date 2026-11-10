@@ -1,0 +1,517 @@
+{
+ "cloudformation.DescribeStacks": {
+  "service": "cloudformation",
+  "operation": "DescribeStacks",
+  "method": "describe_stacks",
+  "doc": "Returns the description for the specified stack; if no stack name was specified, then it returns the description for all the stacks created. For more information about a stack's event history, see Understand CloudFormation stack creation events in the CloudFormation User Guide . If the stack doesn't exist, a ValidationError is returned.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation/client/describe_stacks.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/DescribeStacks"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "The output for a DescribeStacks action.",
+   "members": {
+    "Stacks": {
+     "type": "list",
+     "doc": "A list of stack structures.",
+     "item": {
+      "type": "structure",
+      "doc": "The Stack data type.",
+      "members": {
+       "StackId": {
+        "type": "string",
+        "doc": "Unique identifier of the stack."
+       },
+       "StackName": {
+        "type": "string",
+        "doc": "The name associated with the stack.",
+        "required": true
+       },
+       "ChangeSetId": {
+        "type": "string",
+        "doc": "The unique ID of the change set."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "A user-defined description associated with the stack."
+       },
+       "Parameters": {
+        "type": "list",
+        "doc": "A list of Parameter structures.",
+        "item": {
+         "type": "structure",
+         "doc": "The Parameter data type.",
+         "members": {
+          "ParameterKey": {
+           "type": "string",
+           "doc": "The key associated with the parameter. If you don't specify a key and value for a particular parameter, CloudFormation uses the default value that's specified in your template."
+          },
+          "ParameterValue": {
+           "type": "string",
+           "doc": "The input value associated with the parameter."
+          },
+          "UsePreviousValue": {
+           "type": "boolean",
+           "doc": "During a stack update, use the existing parameter value that the stack is using for a given parameter key. If you specify true , do not specify a parameter value."
+          },
+          "ResolvedValue": {
+           "type": "string",
+           "doc": "Read-only. The value that corresponds to a Systems Manager parameter key. This field is returned only for Systems Manager parameter types in the template. For more information, see Specify existing resources at runtime with CloudFormation-supplied parameter types in the CloudFormation User Guide ."
+          }
+         }
+        }
+       },
+       "CreationTime": {
+        "type": "timestamp",
+        "doc": "The time at which the stack was created.",
+        "required": true
+       },
+       "DeletionTime": {
+        "type": "timestamp",
+        "doc": "The time the stack was deleted."
+       },
+       "LastUpdatedTime": {
+        "type": "timestamp",
+        "doc": "The time the stack was last updated. This field will only be returned if the stack has been updated at least once."
+       },
+       "RollbackConfiguration": {
+        "type": "structure",
+        "doc": "The rollback triggers for CloudFormation to monitor during stack creation and updating operations, and for the specified monitoring period afterwards.",
+        "members": {
+         "RollbackTriggers": {
+          "type": "list",
+          "doc": "The triggers to monitor during stack creation or update actions. By default, CloudFormation saves the rollback triggers specified for a stack and applies them to any subsequent update operations for the stack, unless you specify otherwise. If you do specify rollback triggers for this parameter, those triggers replace any list of triggers previously specified for the stack. This means: To use the rollback triggers previously specified for this stack, if any, don't specify this parameter. To spec…",
+          "item": {
+           "type": "structure",
+           "doc": "A rollback trigger CloudFormation monitors during creation and updating of stacks. If any of the alarms you specify goes to ALARM state during the stack operation or within the specified monitoring period afterwards, CloudFormation rolls back the entire stack operation.",
+           "members": {
+            "Arn": {
+             "type": "string",
+             "doc": "The Amazon Resource Name (ARN) of the rollback trigger. If a specified trigger is missing, the entire stack operation fails and is rolled back.",
+             "required": true
+            },
+            "Type": {
+             "type": "string",
+             "doc": "The resource type of the rollback trigger. Specify either AWS::CloudWatch::Alarm or AWS::CloudWatch::CompositeAlarm resource types.",
+             "required": true
+            }
+           }
+          }
+         },
+         "MonitoringTimeInMinutes": {
+          "type": "integer",
+          "doc": "The amount of time, in minutes, during which CloudFormation should monitor all the rollback triggers after the stack creation or update operation deploys all necessary resources. The default is 0 minutes. If you specify a monitoring period but don't specify any rollback triggers, CloudFormation still waits the specified period of time before cleaning up old resources after update operations. You can use this monitoring period to perform any manual stack validation desired, and manually cancel t…"
+         }
+        }
+       },
+       "StackStatus": {
+        "type": "string",
+        "doc": "Current status of the stack.",
+        "enum": [
+         "CREATE_IN_PROGRESS",
+         "CREATE_FAILED",
+         "CREATE_COMPLETE",
+         "ROLLBACK_IN_PROGRESS",
+         "ROLLBACK_FAILED",
+         "ROLLBACK_COMPLETE",
+         "DELETE_IN_PROGRESS",
+         "DELETE_FAILED",
+         "DELETE_COMPLETE",
+         "UPDATE_IN_PROGRESS",
+         "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
+         "UPDATE_COMPLETE",
+         "UPDATE_FAILED",
+         "UPDATE_ROLLBACK_IN_PROGRESS",
+         "UPDATE_ROLLBACK_FAILED",
+         "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
+         "UPDATE_ROLLBACK_COMPLETE",
+         "REVIEW_IN_PROGRESS",
+         "IMPORT_IN_PROGRESS",
+         "IMPORT_COMPLETE",
+         "IMPORT_ROLLBACK_IN_PROGRESS",
+         "IMPORT_ROLLBACK_FAILED",
+         "IMPORT_ROLLBACK_COMPLETE"
+        ],
+        "required": true
+       },
+       "StackStatusReason": {
+        "type": "string",
+        "doc": "Success/failure message associated with the stack status."
+       },
+       "DisableRollback": {
+        "type": "boolean",
+        "doc": "Boolean to enable or disable rollback on stack creation failures: true : disable rollback. false : enable rollback."
+       },
+       "NotificationARNs": {
+        "type": "list",
+        "doc": "Amazon SNS topic Amazon Resource Names (ARNs) to which stack related events are published.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "TimeoutInMinutes": {
+        "type": "integer",
+        "doc": "The amount of time within which stack creation should complete."
+       },
+       "Capabilities": {
+        "type": "list",
+        "doc": "The capabilities allowed in the stack.",
+        "item": {
+         "type": "string",
+         "enum": [
+          "CAPABILITY_IAM",
+          "CAPABILITY_NAMED_IAM",
+          "CAPABILITY_AUTO_EXPAND"
+         ]
+        }
+       },
+       "Outputs": {
+        "type": "list",
+        "doc": "A list of output structures.",
+        "item": {
+         "type": "structure",
+         "doc": "The Output data type.",
+         "members": {
+          "OutputKey": {
+           "type": "string",
+           "doc": "The key associated with the output."
+          },
+          "OutputValue": {
+           "type": "string",
+           "doc": "The value associated with the output."
+          },
+          "Description": {
+           "type": "string",
+           "doc": "User defined description associated with the output."
+          },
+          "ExportName": {
+           "type": "string",
+           "doc": "The name of the export associated with the output."
+          }
+         }
+        }
+       },
+       "RoleARN": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of an IAM role that's associated with the stack. During a stack operation, CloudFormation uses this role's credentials to make calls on your behalf."
+       },
+       "Tags": {
+        "type": "list",
+        "doc": "A list of Tag s that specify information about the stack.",
+        "item": {
+         "type": "structure",
+         "doc": "The Tag type enables you to specify a key-value pair that can be used to store information about an CloudFormation stack.",
+         "members": {
+          "Key": {
+           "type": "string",
+           "doc": "Required . A string used to identify this tag. You can specify a maximum of 128 characters for a tag key. Tags owned by Amazon Web Services have the reserved prefix: aws: .",
+           "required": true
+          },
+          "Value": {
+           "type": "string",
+           "doc": "Required . A string containing the value for this tag. You can specify a maximum of 256 characters for a tag value.",
+           "required": true
+          }
+         }
+        }
+       },
+       "EnableTerminationProtection": {
+        "type": "boolean",
+        "doc": "Whether termination protection is enabled for the stack. For nested stacks , termination protection is set on the root stack and can't be changed directly on the nested stack. For more information, see Protect a CloudFormation stack from being deleted in the CloudFormation User Guide ."
+       },
+       "ParentId": {
+        "type": "string",
+        "doc": "For nested stacks--stacks created as resources for another stack--the stack ID of the direct parent of this stack. For the first level of nested stacks, the root stack is also the parent stack. For more information, see Embed stacks within other stacks using nested stacks in the CloudFormation User Guide ."
+       },
+       "RootId": {
+        "type": "string",
+        "doc": "For nested stacks--stacks created as resources for another stack--the stack ID of the top-level stack to which the nested stack ultimately belongs. For more information, see Embed stacks within other stacks using nested stacks in the CloudFormation User Guide ."
+       },
+       "DriftInformation": {
+        "type": "structure",
+        "doc": "Information about whether a stack's actual configuration differs, or has drifted , from its expected configuration, as defined in the stack template and any values specified as template parameters. For more information, see Detect unmanaged configuration changes to stacks and resources with drift detection .",
+        "members": {
+         "StackDriftStatus": {
+          "type": "string",
+          "doc": "Status of the stack's actual configuration compared to its expected template configuration. DRIFTED : The stack differs from its expected template configuration. A stack is considered to have drifted if one or more of its resources have drifted. NOT_CHECKED : CloudFormation hasn't checked if the stack differs from its expected template configuration. IN_SYNC : The stack's actual configuration matches its expected template configuration. UNKNOWN : This value is reserved for future use.",
+          "enum": [
+           "DRIFTED",
+           "IN_SYNC",
+           "UNKNOWN",
+           "NOT_CHECKED"
+          ],
+          "required": true
+         },
+         "LastCheckTimestamp": {
+          "type": "timestamp",
+          "doc": "Most recent time when a drift detection operation was initiated on the stack, or any of its individual resources that support drift detection."
+         }
+        }
+       },
+       "RetainExceptOnCreate": {
+        "type": "boolean",
+        "doc": "When set to true , newly created resources are deleted when the operation rolls back. This includes newly created resources marked with a deletion policy of Retain . Default: false"
+       },
+       "DeletionMode": {
+        "type": "string",
+        "doc": "Specifies the deletion mode for the stack. Possible values are: STANDARD - Use the standard behavior. Specifying this value is the same as not specifying this parameter. FORCE_DELETE_STACK - Delete the stack if it's stuck in a DELETE_FAILED state due to resource deletion failure.",
+        "enum": [
+         "STANDARD",
+         "FORCE_DELETE_STACK"
+        ]
+       },
+       "DetailedStatus": {
+        "type": "string",
+        "doc": "The detailed status of the resource or stack. If CONFIGURATION_COMPLETE is present, the resource or resource configuration phase has completed and the stabilization of the resources is in progress. The stack sets CONFIGURATION_COMPLETE when all of the resources in the stack have reached that event. For more information, see Understand CloudFormation stack creation events in the CloudFormation User Guide .",
+        "enum": [
+         "CONFIGURATION_COMPLETE",
+         "VALIDATION_FAILED"
+        ]
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "If the output exceeds 1 MB in size, a string that identifies the next page of stacks. If no additional page exists, this value is null."
+    }
+   }
+  },
+  "added_in_latest": [
+   "Stacks[].DeploymentConfig",
+   "Stacks[].DeploymentConfig.DisableRollback",
+   "Stacks[].DeploymentConfig.Mode",
+   "Stacks[].LastOperations",
+   "Stacks[].LastOperations[].OperationId",
+   "Stacks[].LastOperations[].OperationType"
+  ],
+  "raw_keys": [
+   "cloudformation.list_stacks"
+  ],
+  "rules": [
+   "REME-0102000001",
+   "REME-0102000002",
+   "REME-0102000003",
+   "REME-0102000004",
+   "REME-0102000005"
+  ]
+ },
+ "cloudformation.GetStackPolicy": {
+  "service": "cloudformation",
+  "operation": "GetStackPolicy",
+  "method": "get_stack_policy",
+  "doc": "Returns the stack policy for a specified stack. If a stack doesn't have a policy, a null value is returned.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation/client/get_stack_policy.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/GetStackPolicy"
+  },
+  "paginated": false,
+  "input_required": [
+   "StackName"
+  ],
+  "output": {
+   "type": "structure",
+   "doc": "The output for the GetStackPolicy action.",
+   "members": {
+    "StackPolicyBody": {
+     "type": "string",
+     "doc": "Structure containing the stack policy body. (For more information, see Prevent updates to stack resources in the CloudFormation User Guide .)"
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "cloudformation.list_stacks"
+  ],
+  "rules": [
+   "REME-0102000001",
+   "REME-0102000002",
+   "REME-0102000003",
+   "REME-0102000004",
+   "REME-0102000005"
+  ]
+ },
+ "cloudformation.GetTemplate": {
+  "service": "cloudformation",
+  "operation": "GetTemplate",
+  "method": "get_template",
+  "doc": "Returns the template body for a specified stack. You can get the template for running or deleted stacks. For deleted stacks, GetTemplate returns the template for up to 90 days after the stack has been deleted. If the template doesn't exist, a ValidationError is returned.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation/client/get_template.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/GetTemplate"
+  },
+  "paginated": false,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "The output for GetTemplate action.",
+   "members": {
+    "TemplateBody": {
+     "type": "string",
+     "doc": "Structure containing the template body. CloudFormation returns the same template that was used when the stack was created."
+    },
+    "StagesAvailable": {
+     "type": "list",
+     "doc": "The stage of the template that you can retrieve. For stacks, the Original and Processed templates are always available. For change sets, the Original template is always available. After CloudFormation finishes creating the change set, the Processed template becomes available.",
+     "item": {
+      "type": "string",
+      "enum": [
+       "Original",
+       "Processed"
+      ]
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "cloudformation.list_stacks"
+  ],
+  "rules": [
+   "REME-0102000001",
+   "REME-0102000002",
+   "REME-0102000003",
+   "REME-0102000004",
+   "REME-0102000005"
+  ]
+ },
+ "cloudformation.ListStacks": {
+  "service": "cloudformation",
+  "operation": "ListStacks",
+  "method": "list_stacks",
+  "doc": "Returns the summary information for stacks whose status matches the specified StackStatusFilter. Summary information for stacks that have been deleted is kept for 90 days after the stack is deleted. If no StackStatusFilter is specified, summary information for all stacks is returned (including existing stacks and stacks that have been deleted).",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation/client/list_stacks.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/cloudformation-2010-05-15/ListStacks"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "The output for ListStacks action.",
+   "members": {
+    "StackSummaries": {
+     "type": "list",
+     "doc": "A list of StackSummary structures containing information about the specified stacks.",
+     "item": {
+      "type": "structure",
+      "doc": "The StackSummary Data Type",
+      "members": {
+       "StackId": {
+        "type": "string",
+        "doc": "Unique stack identifier."
+       },
+       "StackName": {
+        "type": "string",
+        "doc": "The name associated with the stack.",
+        "required": true
+       },
+       "TemplateDescription": {
+        "type": "string",
+        "doc": "The template description of the template used to create the stack."
+       },
+       "CreationTime": {
+        "type": "timestamp",
+        "doc": "The time the stack was created.",
+        "required": true
+       },
+       "LastUpdatedTime": {
+        "type": "timestamp",
+        "doc": "The time the stack was last updated. This field will only be returned if the stack has been updated at least once."
+       },
+       "DeletionTime": {
+        "type": "timestamp",
+        "doc": "The time the stack was deleted."
+       },
+       "StackStatus": {
+        "type": "string",
+        "doc": "The current status of the stack.",
+        "enum": [
+         "CREATE_IN_PROGRESS",
+         "CREATE_FAILED",
+         "CREATE_COMPLETE",
+         "ROLLBACK_IN_PROGRESS",
+         "ROLLBACK_FAILED",
+         "ROLLBACK_COMPLETE",
+         "DELETE_IN_PROGRESS",
+         "DELETE_FAILED",
+         "DELETE_COMPLETE",
+         "UPDATE_IN_PROGRESS",
+         "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
+         "UPDATE_COMPLETE",
+         "UPDATE_FAILED",
+         "UPDATE_ROLLBACK_IN_PROGRESS",
+         "UPDATE_ROLLBACK_FAILED",
+         "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
+         "UPDATE_ROLLBACK_COMPLETE",
+         "REVIEW_IN_PROGRESS",
+         "IMPORT_IN_PROGRESS",
+         "IMPORT_COMPLETE",
+         "IMPORT_ROLLBACK_IN_PROGRESS",
+         "IMPORT_ROLLBACK_FAILED",
+         "IMPORT_ROLLBACK_COMPLETE"
+        ],
+        "required": true
+       },
+       "StackStatusReason": {
+        "type": "string",
+        "doc": "Success/Failure message associated with the stack status."
+       },
+       "ParentId": {
+        "type": "string",
+        "doc": "For nested stacks--stacks created as resources for another stack--the stack ID of the direct parent of this stack. For the first level of nested stacks, the root stack is also the parent stack. For more information, see Embed stacks within other stacks using nested stacks in the CloudFormation User Guide ."
+       },
+       "RootId": {
+        "type": "string",
+        "doc": "For nested stacks--stacks created as resources for another stack--the stack ID of the top-level stack to which the nested stack ultimately belongs. For more information, see Embed stacks within other stacks using nested stacks in the CloudFormation User Guide ."
+       },
+       "DriftInformation": {
+        "type": "structure",
+        "doc": "Summarizes information about whether a stack's actual configuration differs, or has drifted , from its expected configuration, as defined in the stack template and any values specified as template parameters. For more information, see Detect unmanaged configuration changes to stacks and resources with drift detection .",
+        "members": {
+         "StackDriftStatus": {
+          "type": "string",
+          "doc": "Status of the stack's actual configuration compared to its expected template configuration. DRIFTED : The stack differs from its expected template configuration. A stack is considered to have drifted if one or more of its resources have drifted. NOT_CHECKED : CloudFormation hasn't checked if the stack differs from its expected template configuration. IN_SYNC : The stack's actual configuration matches its expected template configuration. UNKNOWN : This value is reserved for future use.",
+          "enum": [
+           "DRIFTED",
+           "IN_SYNC",
+           "UNKNOWN",
+           "NOT_CHECKED"
+          ],
+          "required": true
+         },
+         "LastCheckTimestamp": {
+          "type": "timestamp",
+          "doc": "Most recent time when a drift detection operation was initiated on the stack, or any of its individual resources that support drift detection."
+         }
+        }
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "If the output exceeds 1 MB in size, a string that identifies the next page of stacks. If no additional page exists, this value is null."
+    }
+   }
+  },
+  "added_in_latest": [
+   "StackSummaries[].LastOperations",
+   "StackSummaries[].LastOperations[].OperationId",
+   "StackSummaries[].LastOperations[].OperationType"
+  ],
+  "raw_keys": [
+   "cloudformation.list_stacks"
+  ],
+  "rules": [
+   "REME-0102000001",
+   "REME-0102000002",
+   "REME-0102000003",
+   "REME-0102000004",
+   "REME-0102000005"
+  ]
+ }
+}

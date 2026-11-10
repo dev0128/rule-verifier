@@ -1,0 +1,100 @@
+{
+ "health.DescribeEvents": {
+  "service": "health",
+  "operation": "DescribeEvents",
+  "method": "describe_events",
+  "doc": "Returns information about events that meet the specified filter criteria. Events are returned in a summary form and do not include the detailed description, any additional metadata that depends on the event type, or any affected resources. To retrieve that information, use the DescribeEventDetails and DescribeAffectedEntities operations. If no filter criteria are specified, all events are returned. Results are sorted by lastModifiedTime , starting with the most recent event. When you call the DescribeEvents operation and specify an entity for the entityValues parameter, Health might return public events that aren't specific to that resource. For example, if you call DescribeEvents and specify an ID for an Amazon Elastic Compute Cloud (Amazon EC2) instance, Health might return events that aren't specific to that resource or service. To get events that are specific to a service, use the services parameter in the filter object. For more information, see Event . This API operation uses pagination. Specify the nextToken parameter in the next request to return more results.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/health/client/describe_events.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEvents"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "events": {
+     "type": "list",
+     "doc": "The events that match the specified filter criteria.",
+     "item": {
+      "type": "structure",
+      "doc": "Summary information about an Health event. Health events can be public or account-specific: Public events might be service events that are not specific to an Amazon Web Services account. For example, if there is an issue with an Amazon Web Services Region, Health provides information about the event, even if you don't use services or resources in that Region. Account-specific events are specific to either your Amazon Web Services account or an account in your organization. For example, if there…",
+      "members": {
+       "arn": {
+        "type": "string",
+        "doc": "The unique identifier for the event. The event ARN has the arn:aws:health: event-region ::event/ SERVICE / EVENT_TYPE_CODE / EVENT_TYPE_PLUS_ID format. For example, an event ARN might look like the following: arn:aws:health:us-east-1::event/EC2/EC2_INSTANCE_RETIREMENT_SCHEDULED/EC2_INSTANCE_RETIREMENT_SCHEDULED_ABC123-DEF456"
+       },
+       "service": {
+        "type": "string",
+        "doc": "The Amazon Web Services service that is affected by the event. For example, EC2 , RDS ."
+       },
+       "eventTypeCode": {
+        "type": "string",
+        "doc": "The unique identifier for the event type. The format is AWS_ SERVICE _ DESCRIPTION ; for example, AWS_EC2_SYSTEM_MAINTENANCE_EVENT ."
+       },
+       "eventTypeCategory": {
+        "type": "string",
+        "doc": "A list of event type category codes. Possible values are issue , accountNotification , or scheduledChange . Currently, the investigation value isn't supported at this time.",
+        "enum": [
+         "issue",
+         "accountNotification",
+         "scheduledChange",
+         "investigation"
+        ]
+       },
+       "region": {
+        "type": "string",
+        "doc": "The Amazon Web Services Region name of the event."
+       },
+       "availabilityZone": {
+        "type": "string",
+        "doc": "The Amazon Web Services Availability Zone of the event. For example, us-east-1a."
+       },
+       "startTime": {
+        "type": "timestamp",
+        "doc": "The date and time that the event began."
+       },
+       "endTime": {
+        "type": "timestamp",
+        "doc": "The date and time that the event ended."
+       },
+       "lastUpdatedTime": {
+        "type": "timestamp",
+        "doc": "The most recent date and time that the event was updated."
+       },
+       "statusCode": {
+        "type": "string",
+        "doc": "The most recent status of the event. Possible values are open , closed , and upcoming .",
+        "enum": [
+         "open",
+         "closed",
+         "upcoming"
+        ]
+       },
+       "eventScopeCode": {
+        "type": "string",
+        "doc": "This parameter specifies if the Health event is a public Amazon Web Services service event or an account-specific event. If the eventScopeCode value is PUBLIC , then the affectedAccounts value is always empty. If the eventScopeCode value is ACCOUNT_SPECIFIC , then the affectedAccounts value lists the affected Amazon Web Services accounts in your organization. For example, if an event affects a service such as Amazon Elastic Compute Cloud and you have Amazon Web Services accounts that use that s…",
+        "enum": [
+         "PUBLIC",
+         "ACCOUNT_SPECIFIC",
+         "NONE"
+        ]
+       }
+      }
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "If the results of a search are large, only a portion of the results are returned, and a nextToken pagination token is returned in the response. To retrieve the next batch of results, reissue the search request and include the returned token. When all results have been returned, the response does not contain a pagination token value."
+    }
+   }
+  },
+  "added_in_latest": [
+   "events[].actionability",
+   "events[].personas"
+  ],
+  "raw_keys": [
+   "health.describe_events"
+  ]
+ }
+}

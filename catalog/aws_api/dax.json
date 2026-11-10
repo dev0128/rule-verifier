@@ -1,0 +1,497 @@
+{
+ "dax.DescribeClusters": {
+  "service": "dax",
+  "operation": "DescribeClusters",
+  "method": "describe_clusters",
+  "doc": "Returns information about all provisioned DAX clusters if no cluster identifier is specified, or about a specific DAX cluster if a cluster identifier is supplied. If the cluster is in the CREATING state, only cluster level information will be displayed until all of the nodes are successfully provisioned. If the cluster is in the DELETING state, only cluster level information will be displayed. If nodes are currently being added to the DAX cluster, node endpoint information and creation time for the additional nodes will not be displayed until they are completely provisioned. When the DAX cluster state is available , the cluster is ready for use. If nodes are currently being removed from the DAX cluster, no endpoint information for the removed nodes is displayed.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dax/client/describe_clusters.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeClusters"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextToken": {
+     "type": "string",
+     "doc": "Provides an identifier to allow retrieval of paginated results."
+    },
+    "Clusters": {
+     "type": "list",
+     "doc": "The descriptions of your DAX clusters, in response to a DescribeClusters request.",
+     "item": {
+      "type": "structure",
+      "doc": "Contains all of the attributes of a specific DAX cluster.",
+      "members": {
+       "ClusterName": {
+        "type": "string",
+        "doc": "The name of the DAX cluster."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "The description of the cluster."
+       },
+       "ClusterArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) that uniquely identifies the cluster."
+       },
+       "TotalNodes": {
+        "type": "integer",
+        "doc": "The total number of nodes in the cluster."
+       },
+       "ActiveNodes": {
+        "type": "integer",
+        "doc": "The number of nodes in the cluster that are active (i.e., capable of serving requests)."
+       },
+       "NodeType": {
+        "type": "string",
+        "doc": "The node type for the nodes in the cluster. (All nodes in a DAX cluster are of the same type.)"
+       },
+       "Status": {
+        "type": "string",
+        "doc": "The current status of the cluster."
+       },
+       "ClusterDiscoveryEndpoint": {
+        "type": "structure",
+        "doc": "The endpoint for this DAX cluster, consisting of a DNS name, a port number, and a URL. Applications should use the URL to configure the DAX client to find their cluster.",
+        "members": {
+         "Address": {
+          "type": "string",
+          "doc": "The DNS hostname of the endpoint."
+         },
+         "Port": {
+          "type": "integer",
+          "doc": "The port number that applications should use to connect to the endpoint."
+         },
+         "URL": {
+          "type": "string",
+          "doc": "The URL that applications should use to connect to the endpoint. The default ports are 8111 for the \"dax\" protocol and 9111 for the \"daxs\" protocol."
+         }
+        }
+       },
+       "NodeIdsToRemove": {
+        "type": "list",
+        "doc": "A list of nodes to be removed from the cluster.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "Nodes": {
+        "type": "list",
+        "doc": "A list of nodes that are currently in the cluster.",
+        "item": {
+         "type": "structure",
+         "doc": "Represents an individual node within a DAX cluster.",
+         "members": {
+          "NodeId": {
+           "type": "string",
+           "doc": "A system-generated identifier for the node."
+          },
+          "Endpoint": {
+           "type": "structure",
+           "doc": "The endpoint for the node, consisting of a DNS name and a port number. Client applications can connect directly to a node endpoint, if desired (as an alternative to allowing DAX client software to intelligently route requests and responses to nodes in the DAX cluster.",
+           "members": {
+            "Address": {
+             "type": "string",
+             "doc": "The DNS hostname of the endpoint."
+            },
+            "Port": {
+             "type": "integer",
+             "doc": "The port number that applications should use to connect to the endpoint."
+            },
+            "URL": {
+             "type": "string",
+             "doc": "The URL that applications should use to connect to the endpoint. The default ports are 8111 for the \"dax\" protocol and 9111 for the \"daxs\" protocol."
+            }
+           }
+          },
+          "NodeCreateTime": {
+           "type": "timestamp",
+           "doc": "The date and time (in UNIX epoch format) when the node was launched."
+          },
+          "AvailabilityZone": {
+           "type": "string",
+           "doc": "The Availability Zone (AZ) in which the node has been deployed."
+          },
+          "NodeStatus": {
+           "type": "string",
+           "doc": "The current status of the node. For example: available ."
+          },
+          "ParameterGroupStatus": {
+           "type": "string",
+           "doc": "The status of the parameter group associated with this node. For example, in-sync ."
+          }
+         }
+        }
+       },
+       "PreferredMaintenanceWindow": {
+        "type": "string",
+        "doc": "A range of time when maintenance of DAX cluster software will be performed. For example: sun:01:00-sun:09:00 . Cluster maintenance normally takes less than 30 minutes, and is performed automatically within the maintenance window."
+       },
+       "NotificationConfiguration": {
+        "type": "structure",
+        "doc": "Describes a notification topic and its status. Notification topics are used for publishing DAX events to subscribers using Amazon Simple Notification Service (SNS).",
+        "members": {
+         "TopicArn": {
+          "type": "string",
+          "doc": "The Amazon Resource Name (ARN) that identifies the topic."
+         },
+         "TopicStatus": {
+          "type": "string",
+          "doc": "The current state of the topic. A value of “active” means that notifications will be sent to the topic. A value of “inactive” means that notifications will not be sent to the topic."
+         }
+        }
+       },
+       "SubnetGroup": {
+        "type": "string",
+        "doc": "The subnet group where the DAX cluster is running."
+       },
+       "SecurityGroups": {
+        "type": "list",
+        "doc": "A list of security groups, and the status of each, for the nodes in the cluster.",
+        "item": {
+         "type": "structure",
+         "doc": "An individual VPC security group and its status.",
+         "members": {
+          "SecurityGroupIdentifier": {
+           "type": "string",
+           "doc": "The unique ID for this security group."
+          },
+          "Status": {
+           "type": "string",
+           "doc": "The status of this security group."
+          }
+         }
+        }
+       },
+       "IamRoleArn": {
+        "type": "string",
+        "doc": "A valid Amazon Resource Name (ARN) that identifies an IAM role. At runtime, DAX will assume this role and use the role's permissions to access DynamoDB on your behalf."
+       },
+       "ParameterGroup": {
+        "type": "structure",
+        "doc": "The parameter group being used by nodes in the cluster.",
+        "members": {
+         "ParameterGroupName": {
+          "type": "string",
+          "doc": "The name of the parameter group."
+         },
+         "ParameterApplyStatus": {
+          "type": "string",
+          "doc": "The status of parameter updates."
+         },
+         "NodeIdsToReboot": {
+          "type": "list",
+          "doc": "The node IDs of one or more nodes to be rebooted.",
+          "item": {
+           "type": "string"
+          }
+         }
+        }
+       },
+       "SSEDescription": {
+        "type": "structure",
+        "doc": "The description of the server-side encryption status on the specified DAX cluster.",
+        "members": {
+         "Status": {
+          "type": "string",
+          "doc": "The current state of server-side encryption: ENABLING - Server-side encryption is being enabled. ENABLED - Server-side encryption is enabled. DISABLING - Server-side encryption is being disabled. DISABLED - Server-side encryption is disabled.",
+          "enum": [
+           "ENABLING",
+           "ENABLED",
+           "DISABLING",
+           "DISABLED"
+          ]
+         }
+        }
+       },
+       "ClusterEndpointEncryptionType": {
+        "type": "string",
+        "doc": "The type of encryption supported by the cluster's endpoint. Values are: NONE for no encryption TLS for Transport Layer Security",
+        "enum": [
+         "NONE",
+         "TLS"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "Clusters[].NetworkType"
+  ],
+  "raw_keys": [
+   "dax.describe_clusters"
+  ],
+  "rules": [
+   "REME-0102100001",
+   "REME-0102100002"
+  ]
+ },
+ "dax.DescribeParameterGroups": {
+  "service": "dax",
+  "operation": "DescribeParameterGroups",
+  "method": "describe_parameter_groups",
+  "doc": "Returns a list of parameter group descriptions. If a parameter group name is specified, the list will contain only the descriptions for that group.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dax/client/describe_parameter_groups.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeParameterGroups"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextToken": {
+     "type": "string",
+     "doc": "Provides an identifier to allow retrieval of paginated results."
+    },
+    "ParameterGroups": {
+     "type": "list",
+     "doc": "An array of parameter groups. Each element in the array represents one parameter group.",
+     "item": {
+      "type": "structure",
+      "doc": "A named set of parameters that are applied to all of the nodes in a DAX cluster.",
+      "members": {
+       "ParameterGroupName": {
+        "type": "string",
+        "doc": "The name of the parameter group."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "A description of the parameter group."
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "dax.describe_parameter_groups"
+  ]
+ },
+ "dax.DescribeParameters": {
+  "service": "dax",
+  "operation": "DescribeParameters",
+  "method": "describe_parameters",
+  "doc": "Returns the detailed parameter list for a particular parameter group.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dax/client/describe_parameters.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeParameters"
+  },
+  "paginated": true,
+  "input_required": [
+   "ParameterGroupName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextToken": {
+     "type": "string",
+     "doc": "Provides an identifier to allow retrieval of paginated results."
+    },
+    "Parameters": {
+     "type": "list",
+     "doc": "A list of parameters within a parameter group. Each element in the list represents one parameter.",
+     "item": {
+      "type": "structure",
+      "doc": "Describes an individual setting that controls some aspect of DAX behavior.",
+      "members": {
+       "ParameterName": {
+        "type": "string",
+        "doc": "The name of the parameter."
+       },
+       "ParameterType": {
+        "type": "string",
+        "doc": "Determines whether the parameter can be applied to any nodes, or only nodes of a particular type.",
+        "enum": [
+         "DEFAULT",
+         "NODE_TYPE_SPECIFIC"
+        ]
+       },
+       "ParameterValue": {
+        "type": "string",
+        "doc": "The value for the parameter."
+       },
+       "NodeTypeSpecificValues": {
+        "type": "list",
+        "doc": "A list of node types, and specific parameter values for each node.",
+        "item": {
+         "type": "structure",
+         "doc": "Represents a parameter value that is applicable to a particular node type.",
+         "members": {
+          "NodeType": {
+           "type": "string",
+           "doc": "A node type to which the parameter value applies."
+          },
+          "Value": {
+           "type": "string",
+           "doc": "The parameter value for this node type."
+          }
+         }
+        }
+       },
+       "Description": {
+        "type": "string",
+        "doc": "A description of the parameter"
+       },
+       "Source": {
+        "type": "string",
+        "doc": "How the parameter is defined. For example, system denotes a system-defined parameter."
+       },
+       "DataType": {
+        "type": "string",
+        "doc": "The data type of the parameter. For example, integer :"
+       },
+       "AllowedValues": {
+        "type": "string",
+        "doc": "A range of values within which the parameter can be set."
+       },
+       "IsModifiable": {
+        "type": "string",
+        "doc": "Whether the customer is allowed to modify the parameter.",
+        "enum": [
+         "TRUE",
+         "FALSE",
+         "CONDITIONAL"
+        ]
+       },
+       "ChangeType": {
+        "type": "string",
+        "doc": "The conditions under which changes to this parameter can be applied. For example, requires-reboot indicates that a new value for this parameter will only take effect if a node is rebooted.",
+        "enum": [
+         "IMMEDIATE",
+         "REQUIRES_REBOOT"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "dax.describe_parameter_groups"
+  ]
+ },
+ "dax.DescribeSubnetGroups": {
+  "service": "dax",
+  "operation": "DescribeSubnetGroups",
+  "method": "describe_subnet_groups",
+  "doc": "Returns a list of subnet group descriptions. If a subnet group name is specified, the list will contain only the description of that group.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dax/client/describe_subnet_groups.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeSubnetGroups"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "NextToken": {
+     "type": "string",
+     "doc": "Provides an identifier to allow retrieval of paginated results."
+    },
+    "SubnetGroups": {
+     "type": "list",
+     "doc": "An array of subnet groups. Each element in the array represents a single subnet group.",
+     "item": {
+      "type": "structure",
+      "doc": "Represents the output of one of the following actions: CreateSubnetGroup ModifySubnetGroup",
+      "members": {
+       "SubnetGroupName": {
+        "type": "string",
+        "doc": "The name of the subnet group."
+       },
+       "Description": {
+        "type": "string",
+        "doc": "The description of the subnet group."
+       },
+       "VpcId": {
+        "type": "string",
+        "doc": "The Amazon Virtual Private Cloud identifier (VPC ID) of the subnet group."
+       },
+       "Subnets": {
+        "type": "list",
+        "doc": "A list of subnets associated with the subnet group.",
+        "item": {
+         "type": "structure",
+         "doc": "Represents the subnet associated with a DAX cluster. This parameter refers to subnets defined in Amazon Virtual Private Cloud (Amazon VPC) and used with DAX.",
+         "members": {
+          "SubnetIdentifier": {
+           "type": "string",
+           "doc": "The system-assigned identifier for the subnet."
+          },
+          "SubnetAvailabilityZone": {
+           "type": "string",
+           "doc": "The Availability Zone (AZ) for the subnet."
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "added_in_latest": [
+   "SubnetGroups[].Subnets[].SupportedNetworkTypes",
+   "SubnetGroups[].SupportedNetworkTypes"
+  ],
+  "raw_keys": [
+   "dax.describe_subnet_groups"
+  ]
+ },
+ "dax.ListTags": {
+  "service": "dax",
+  "operation": "ListTags",
+  "method": "list_tags",
+  "doc": "List all of the tags for a DAX cluster. You can call ListTags up to 10 times per second, per account.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dax/client/list_tags.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/ListTags"
+  },
+  "paginated": true,
+  "input_required": [
+   "ResourceName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "Tags": {
+     "type": "list",
+     "doc": "A list of tags currently associated with the DAX cluster.",
+     "item": {
+      "type": "structure",
+      "doc": "A description of a tag. Every tag is a key-value pair. You can add up to 50 tags to a single DAX cluster. AWS-assigned tag names and values are automatically assigned the aws: prefix, which the user cannot assign. AWS-assigned tag names do not count towards the tag limit of 50. User-assigned tag names have the prefix user: . You cannot backdate the application of a tag.",
+      "members": {
+       "Key": {
+        "type": "string",
+        "doc": "The key for the tag. Tag keys are case sensitive. Every DAX cluster can only have one tag with the same key. If you try to add an existing tag (same key), the existing tag value will be updated to the new value."
+       },
+       "Value": {
+        "type": "string",
+        "doc": "The value of the tag. Tag values are case-sensitive and can be null."
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "If this value is present, there are additional results to be displayed. To retrieve them, call ListTags again, with NextToken set to this value."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "dax.describe_clusters"
+  ],
+  "rules": [
+   "REME-0102100001",
+   "REME-0102100002"
+  ]
+ }
+}

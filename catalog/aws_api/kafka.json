@@ -1,0 +1,1022 @@
+{
+ "kafka.ListClusters": {
+  "service": "kafka",
+  "operation": "ListClusters",
+  "method": "list_clusters",
+  "doc": "Returns a list of all the MSK clusters in the current Region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kafka/client/list_clusters.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusters"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Successful response.",
+   "members": {
+    "ClusterInfoList": {
+     "type": "list",
+     "doc": "Information on each of the MSK clusters in the response.",
+     "item": {
+      "type": "structure",
+      "doc": "Returns information about a cluster.",
+      "members": {
+       "ActiveOperationArn": {
+        "type": "string",
+        "doc": "Arn of active cluster operation."
+       },
+       "BrokerNodeGroupInfo": {
+        "type": "structure",
+        "doc": "Information about the broker nodes.",
+        "members": {
+         "BrokerAZDistribution": {
+          "type": "string",
+          "doc": "The distribution of broker nodes across Availability Zones. This is an optional parameter. If you don't specify it, Amazon MSK gives it the value DEFAULT. You can also explicitly set this parameter to the value DEFAULT. No other values are currently allowed. Amazon MSK distributes the broker nodes evenly across the Availability Zones that correspond to the subnets you provide when you create the cluster.",
+          "enum": [
+           "DEFAULT"
+          ]
+         },
+         "ClientSubnets": {
+          "type": "list",
+          "doc": "The list of subnets to connect to in the client virtual private cloud (VPC). AWS creates elastic network interfaces inside these subnets. Client applications use elastic network interfaces to produce and consume data. Client subnets can't occupy the Availability Zone with ID use use1-az3.",
+          "item": {
+           "type": "string"
+          },
+          "required": true
+         },
+         "InstanceType": {
+          "type": "string",
+          "doc": "The type of Amazon EC2 instances to use for Apache Kafka brokers. The following instance types are allowed: kafka.m5.large, kafka.m5.xlarge, kafka.m5.2xlarge, kafka.m5.4xlarge, kafka.m5.12xlarge, and kafka.m5.24xlarge.",
+          "required": true
+         },
+         "SecurityGroups": {
+          "type": "list",
+          "doc": "The AWS security groups to associate with the elastic network interfaces in order to specify who can connect to and communicate with the Amazon MSK cluster. If you don't specify a security group, Amazon MSK uses the default security group associated with the VPC.",
+          "item": {
+           "type": "string"
+          }
+         },
+         "StorageInfo": {
+          "type": "structure",
+          "doc": "Contains information about storage volumes attached to MSK broker nodes.",
+          "members": {
+           "EbsStorageInfo": {
+            "type": "structure",
+            "doc": "EBS volume information.",
+            "members": {
+             "ProvisionedThroughput": {
+              "type": "structure",
+              "doc": "EBS volume provisioned throughput information.",
+              "members": {
+               "Enabled": {
+                "type": "boolean",
+                "doc": "Provisioned throughput is enabled or not."
+               },
+               "VolumeThroughput": {
+                "type": "integer",
+                "doc": "Throughput value of the EBS volumes for the data drive on each kafka broker node in MiB per second."
+               }
+              }
+             },
+             "VolumeSize": {
+              "type": "integer",
+              "doc": "The size in GiB of the EBS volume for the data drive on each broker node."
+             }
+            }
+           }
+          }
+         },
+         "ConnectivityInfo": {
+          "type": "structure",
+          "doc": "Information about the broker access configuration.",
+          "members": {
+           "PublicAccess": {
+            "type": "structure",
+            "doc": "Public access control for brokers.",
+            "members": {
+             "Type": {
+              "type": "string",
+              "doc": "The value DISABLED indicates that public access is turned off. SERVICE_PROVIDED_EIPS indicates that public access is turned on."
+             }
+            }
+           },
+           "VpcConnectivity": {
+            "type": "structure",
+            "doc": "VPC connectivity access control for brokers.",
+            "members": {
+             "ClientAuthentication": {
+              "type": "structure",
+              "doc": "Includes all client authentication information for VPC connectivity.",
+              "members": {
+               "Sasl": {
+                "type": "structure",
+                "doc": "SASL authentication type details for VPC connectivity.",
+                "members": {
+                 "Scram": {
+                  "type": "structure",
+                  "doc": "Details for SASL/SCRAM client authentication for VPC connectivity.",
+                  "members": {
+                   "Enabled": {
+                    "type": "boolean",
+                    "doc": "SASL/SCRAM authentication is on or off for VPC connectivity."
+                   }
+                  }
+                 },
+                 "Iam": {
+                  "type": "structure",
+                  "doc": "Details for SASL/IAM client authentication for VPC connectivity.",
+                  "members": {
+                   "Enabled": {
+                    "type": "boolean",
+                    "doc": "SASL/IAM authentication is on or off for VPC connectivity."
+                   }
+                  }
+                 }
+                }
+               },
+               "Tls": {
+                "type": "structure",
+                "doc": "TLS authentication type details for VPC connectivity.",
+                "members": {
+                 "Enabled": {
+                  "type": "boolean",
+                  "doc": "TLS authentication is on or off for VPC connectivity."
+                 }
+                }
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "ZoneIds": {
+          "type": "list",
+          "doc": "The list of zoneIds for the cluster in the virtual private cloud (VPC).",
+          "item": {
+           "type": "string"
+          }
+         }
+        }
+       },
+       "ClientAuthentication": {
+        "type": "structure",
+        "doc": "Includes all client authentication information.",
+        "members": {
+         "Sasl": {
+          "type": "structure",
+          "doc": "Details for ClientAuthentication using SASL.",
+          "members": {
+           "Scram": {
+            "type": "structure",
+            "doc": "Details for SASL/SCRAM client authentication.",
+            "members": {
+             "Enabled": {
+              "type": "boolean",
+              "doc": "SASL/SCRAM authentication is enabled or not."
+             }
+            }
+           },
+           "Iam": {
+            "type": "structure",
+            "doc": "Indicates whether IAM access control is enabled.",
+            "members": {
+             "Enabled": {
+              "type": "boolean",
+              "doc": "Indicates whether IAM access control is enabled."
+             }
+            }
+           }
+          }
+         },
+         "Tls": {
+          "type": "structure",
+          "doc": "Details for ClientAuthentication using TLS.",
+          "members": {
+           "CertificateAuthorityArnList": {
+            "type": "list",
+            "doc": "List of ACM Certificate Authority ARNs.",
+            "item": {
+             "type": "string"
+            }
+           },
+           "Enabled": {
+            "type": "boolean",
+            "doc": "Specifies whether you want to turn on or turn off TLS authentication."
+           }
+          }
+         },
+         "Unauthenticated": {
+          "type": "structure",
+          "doc": "Contains information about unauthenticated traffic to the cluster.",
+          "members": {
+           "Enabled": {
+            "type": "boolean",
+            "doc": "Specifies whether you want to turn on or turn off unauthenticated traffic to your cluster."
+           }
+          }
+         }
+        }
+       },
+       "ClusterArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) that uniquely identifies the cluster."
+       },
+       "ClusterName": {
+        "type": "string",
+        "doc": "The name of the cluster."
+       },
+       "CreationTime": {
+        "type": "timestamp",
+        "doc": "The time when the cluster was created."
+       },
+       "CurrentBrokerSoftwareInfo": {
+        "type": "structure",
+        "doc": "Information about the version of software currently deployed on the Apache Kafka brokers in the cluster.",
+        "members": {
+         "ConfigurationArn": {
+          "type": "string",
+          "doc": "The Amazon Resource Name (ARN) of the configuration used for the cluster. This field isn't visible in this preview release."
+         },
+         "ConfigurationRevision": {
+          "type": "long",
+          "doc": "The revision of the configuration to use. This field isn't visible in this preview release."
+         },
+         "KafkaVersion": {
+          "type": "string",
+          "doc": "The version of Apache Kafka."
+         }
+        }
+       },
+       "CurrentVersion": {
+        "type": "string",
+        "doc": "The current version of the MSK cluster."
+       },
+       "EncryptionInfo": {
+        "type": "structure",
+        "doc": "Includes all encryption-related information.",
+        "members": {
+         "EncryptionAtRest": {
+          "type": "structure",
+          "doc": "The data-volume encryption details.",
+          "members": {
+           "DataVolumeKMSKeyId": {
+            "type": "string",
+            "doc": "The ARN of the AWS KMS key for encrypting data at rest. If you don't specify a KMS key, MSK creates one for you and uses it.",
+            "required": true
+           }
+          }
+         },
+         "EncryptionInTransit": {
+          "type": "structure",
+          "doc": "The details for encryption in transit.",
+          "members": {
+           "ClientBroker": {
+            "type": "string",
+            "doc": "Indicates the encryption setting for data in transit between clients and brokers. The following are the possible values. TLS means that client-broker communication is enabled with TLS only. TLS_PLAINTEXT means that client-broker communication is enabled for both TLS-encrypted, as well as plaintext data. PLAINTEXT means that client-broker communication is enabled in plaintext only. The default value is TLS_PLAINTEXT.",
+            "enum": [
+             "TLS",
+             "TLS_PLAINTEXT",
+             "PLAINTEXT"
+            ]
+           },
+           "InCluster": {
+            "type": "boolean",
+            "doc": "When set to true, it indicates that data communication among the broker nodes of the cluster is encrypted. When set to false, the communication happens in plaintext. The default value is true."
+           }
+          }
+         }
+        }
+       },
+       "EnhancedMonitoring": {
+        "type": "string",
+        "doc": "Specifies which metrics are gathered for the MSK cluster. This property has the following possible values: DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER, and PER_TOPIC_PER_PARTITION. For a list of the metrics associated with each of these levels of monitoring, see Monitoring .",
+        "enum": [
+         "DEFAULT",
+         "PER_BROKER",
+         "PER_TOPIC_PER_BROKER",
+         "PER_TOPIC_PER_PARTITION"
+        ]
+       },
+       "OpenMonitoring": {
+        "type": "structure",
+        "doc": "Settings for open monitoring using Prometheus.",
+        "members": {
+         "Prometheus": {
+          "type": "structure",
+          "doc": "Prometheus settings.",
+          "members": {
+           "JmxExporter": {
+            "type": "structure",
+            "doc": "Indicates whether you want to turn on or turn off the JMX Exporter.",
+            "members": {
+             "EnabledInBroker": {
+              "type": "boolean",
+              "doc": "Indicates whether you want to turn on or turn off the JMX Exporter.",
+              "required": true
+             }
+            }
+           },
+           "NodeExporter": {
+            "type": "structure",
+            "doc": "Indicates whether you want to turn on or turn off the Node Exporter.",
+            "members": {
+             "EnabledInBroker": {
+              "type": "boolean",
+              "doc": "Indicates whether you want to turn on or turn off the Node Exporter.",
+              "required": true
+             }
+            }
+           }
+          },
+          "required": true
+         }
+        }
+       },
+       "LoggingInfo": {
+        "type": "structure",
+        "members": {
+         "BrokerLogs": {
+          "type": "structure",
+          "members": {
+           "CloudWatchLogs": {
+            "type": "structure",
+            "members": {
+             "Enabled": {
+              "type": "boolean",
+              "required": true
+             },
+             "LogGroup": {
+              "type": "string"
+             }
+            }
+           },
+           "Firehose": {
+            "type": "structure",
+            "members": {
+             "DeliveryStream": {
+              "type": "string"
+             },
+             "Enabled": {
+              "type": "boolean",
+              "required": true
+             }
+            }
+           },
+           "S3": {
+            "type": "structure",
+            "members": {
+             "Bucket": {
+              "type": "string"
+             },
+             "Enabled": {
+              "type": "boolean",
+              "required": true
+             },
+             "Prefix": {
+              "type": "string"
+             }
+            }
+           }
+          },
+          "required": true
+         }
+        }
+       },
+       "NumberOfBrokerNodes": {
+        "type": "integer",
+        "doc": "The number of broker nodes in the cluster."
+       },
+       "State": {
+        "type": "string",
+        "doc": "The state of the cluster. The possible states are ACTIVE, CREATING, DELETING, FAILED, HEALING, MAINTENANCE, REBOOTING_BROKER, and UPDATING.",
+        "enum": [
+         "ACTIVE",
+         "CREATING",
+         "DELETING",
+         "FAILED",
+         "HEALING",
+         "MAINTENANCE",
+         "REBOOTING_BROKER",
+         "UPDATING"
+        ]
+       },
+       "StateInfo": {
+        "type": "structure",
+        "members": {
+         "Code": {
+          "type": "string"
+         },
+         "Message": {
+          "type": "string"
+         }
+        }
+       },
+       "Tags": {
+        "type": "map",
+        "doc": "Tags attached to the cluster.",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string"
+        }
+       },
+       "ZookeeperConnectString": {
+        "type": "string",
+        "doc": "The connection string to use to connect to the Apache ZooKeeper cluster."
+       },
+       "ZookeeperConnectStringTls": {
+        "type": "string",
+        "doc": "The connection string to use to connect to zookeeper cluster on Tls port."
+       },
+       "StorageMode": {
+        "type": "string",
+        "doc": "This controls storage mode for supported storage tiers.",
+        "enum": [
+         "LOCAL",
+         "TIERED"
+        ]
+       },
+       "CustomerActionStatus": {
+        "type": "string",
+        "doc": "Determines if there is an action required from the customer.",
+        "enum": [
+         "CRITICAL_ACTION_REQUIRED",
+         "ACTION_RECOMMENDED",
+         "NONE"
+        ]
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The paginated results marker. When the result of a ListClusters operation is truncated, the call returns NextToken in the response. To get another batch of clusters, provide this token in your next request."
+    }
+   }
+  },
+  "added_in_latest": [
+   "ClusterInfoList[].BrokerNodeGroupInfo.ConnectivityInfo.NetworkType",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.CloudWatchLogs",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.CloudWatchLogs.Enabled",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.CloudWatchLogs.LogGroup",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.Firehose",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.Firehose.DeliveryStream",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.Firehose.Enabled",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.S3",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.S3.Bucket",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.S3.Enabled",
+   "ClusterInfoList[].LoggingInfo.AuthorizerLogs.S3.Prefix",
+   "ClusterInfoList[].Rebalancing",
+   "ClusterInfoList[].Rebalancing.Status"
+  ],
+  "raw_keys": [
+   "kafka.list_clusters",
+   "kafka.list_clusters_v2"
+  ]
+ },
+ "kafka.ListClustersV2": {
+  "service": "kafka",
+  "operation": "ListClustersV2",
+  "method": "list_clusters_v2",
+  "doc": "Returns a list of all the MSK clusters in the current Region.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kafka/client/list_clusters_v2.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClustersV2"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "doc": "Successful response.",
+   "members": {
+    "ClusterInfoList": {
+     "type": "list",
+     "doc": "Information on each of the MSK clusters in the response.",
+     "item": {
+      "type": "structure",
+      "doc": "Returns information about a cluster.",
+      "members": {
+       "ActiveOperationArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) that uniquely identifies a cluster operation."
+       },
+       "ClusterType": {
+        "type": "string",
+        "doc": "Cluster Type.",
+        "enum": [
+         "PROVISIONED",
+         "SERVERLESS"
+        ]
+       },
+       "ClusterArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) that uniquely identifies the cluster."
+       },
+       "ClusterName": {
+        "type": "string",
+        "doc": "The name of the cluster."
+       },
+       "CreationTime": {
+        "type": "timestamp",
+        "doc": "The time when the cluster was created."
+       },
+       "CurrentVersion": {
+        "type": "string",
+        "doc": "The current version of the MSK cluster."
+       },
+       "State": {
+        "type": "string",
+        "doc": "The state of the cluster. The possible states are ACTIVE, CREATING, DELETING, FAILED, HEALING, MAINTENANCE, REBOOTING_BROKER, and UPDATING.",
+        "enum": [
+         "ACTIVE",
+         "CREATING",
+         "DELETING",
+         "FAILED",
+         "HEALING",
+         "MAINTENANCE",
+         "REBOOTING_BROKER",
+         "UPDATING"
+        ]
+       },
+       "StateInfo": {
+        "type": "structure",
+        "doc": "State Info for the Amazon MSK cluster.",
+        "members": {
+         "Code": {
+          "type": "string"
+         },
+         "Message": {
+          "type": "string"
+         }
+        }
+       },
+       "Tags": {
+        "type": "map",
+        "doc": "Tags attached to the cluster.",
+        "key": {
+         "type": "string"
+        },
+        "value": {
+         "type": "string"
+        }
+       },
+       "Provisioned": {
+        "type": "structure",
+        "doc": "Information about the provisioned cluster.",
+        "members": {
+         "BrokerNodeGroupInfo": {
+          "type": "structure",
+          "doc": "Information about the brokers.",
+          "members": {
+           "BrokerAZDistribution": {
+            "type": "string",
+            "doc": "The distribution of broker nodes across Availability Zones. This is an optional parameter. If you don't specify it, Amazon MSK gives it the value DEFAULT. You can also explicitly set this parameter to the value DEFAULT. No other values are currently allowed. Amazon MSK distributes the broker nodes evenly across the Availability Zones that correspond to the subnets you provide when you create the cluster.",
+            "enum": [
+             "DEFAULT"
+            ]
+           },
+           "ClientSubnets": {
+            "type": "list",
+            "doc": "The list of subnets to connect to in the client virtual private cloud (VPC). AWS creates elastic network interfaces inside these subnets. Client applications use elastic network interfaces to produce and consume data. Client subnets can't occupy the Availability Zone with ID use use1-az3.",
+            "item": {
+             "type": "string"
+            },
+            "required": true
+           },
+           "InstanceType": {
+            "type": "string",
+            "doc": "The type of Amazon EC2 instances to use for Apache Kafka brokers. The following instance types are allowed: kafka.m5.large, kafka.m5.xlarge, kafka.m5.2xlarge, kafka.m5.4xlarge, kafka.m5.12xlarge, and kafka.m5.24xlarge.",
+            "required": true
+           },
+           "SecurityGroups": {
+            "type": "list",
+            "doc": "The AWS security groups to associate with the elastic network interfaces in order to specify who can connect to and communicate with the Amazon MSK cluster. If you don't specify a security group, Amazon MSK uses the default security group associated with the VPC.",
+            "item": {
+             "type": "string"
+            }
+           },
+           "StorageInfo": {
+            "type": "structure",
+            "doc": "Contains information about storage volumes attached to MSK broker nodes.",
+            "members": {
+             "EbsStorageInfo": {
+              "type": "structure",
+              "doc": "EBS volume information.",
+              "members": {
+               "ProvisionedThroughput": {
+                "type": "structure",
+                "doc": "EBS volume provisioned throughput information.",
+                "members": {
+                 "Enabled": {
+                  "type": "boolean",
+                  "doc": "Provisioned throughput is enabled or not."
+                 },
+                 "VolumeThroughput": {
+                  "type": "integer",
+                  "doc": "Throughput value of the EBS volumes for the data drive on each kafka broker node in MiB per second."
+                 }
+                }
+               },
+               "VolumeSize": {
+                "type": "integer",
+                "doc": "The size in GiB of the EBS volume for the data drive on each broker node."
+               }
+              }
+             }
+            }
+           },
+           "ConnectivityInfo": {
+            "type": "structure",
+            "doc": "Information about the broker access configuration.",
+            "members": {
+             "PublicAccess": {
+              "type": "structure",
+              "doc": "Public access control for brokers.",
+              "members": {
+               "Type": {
+                "type": "string",
+                "doc": "The value DISABLED indicates that public access is turned off. SERVICE_PROVIDED_EIPS indicates that public access is turned on."
+               }
+              }
+             },
+             "VpcConnectivity": {
+              "type": "structure",
+              "doc": "VPC connectivity access control for brokers.",
+              "members": {
+               "ClientAuthentication": {
+                "type": "structure",
+                "doc": "Includes all client authentication information for VPC connectivity.",
+                "members": {
+                 "Sasl": {
+                  "type": "structure",
+                  "doc": "SASL authentication type details for VPC connectivity.",
+                  "members": {
+                   "Scram": {
+                    "type": "structure",
+                    "doc": "Details for SASL/SCRAM client authentication for VPC connectivity.",
+                    "ref": "VpcConnectivityScram"
+                   },
+                   "Iam": {
+                    "type": "structure",
+                    "doc": "Details for SASL/IAM client authentication for VPC connectivity.",
+                    "ref": "VpcConnectivityIam"
+                   }
+                  }
+                 },
+                 "Tls": {
+                  "type": "structure",
+                  "doc": "TLS authentication type details for VPC connectivity.",
+                  "members": {
+                   "Enabled": {
+                    "type": "boolean",
+                    "doc": "TLS authentication is on or off for VPC connectivity."
+                   }
+                  }
+                 }
+                }
+               }
+              }
+             }
+            }
+           },
+           "ZoneIds": {
+            "type": "list",
+            "doc": "The list of zoneIds for the cluster in the virtual private cloud (VPC).",
+            "item": {
+             "type": "string"
+            }
+           }
+          },
+          "required": true
+         },
+         "CurrentBrokerSoftwareInfo": {
+          "type": "structure",
+          "doc": "Information about the Apache Kafka version deployed on the brokers.",
+          "members": {
+           "ConfigurationArn": {
+            "type": "string",
+            "doc": "The Amazon Resource Name (ARN) of the configuration used for the cluster. This field isn't visible in this preview release."
+           },
+           "ConfigurationRevision": {
+            "type": "long",
+            "doc": "The revision of the configuration to use. This field isn't visible in this preview release."
+           },
+           "KafkaVersion": {
+            "type": "string",
+            "doc": "The version of Apache Kafka."
+           }
+          }
+         },
+         "ClientAuthentication": {
+          "type": "structure",
+          "doc": "Includes all client authentication information.",
+          "members": {
+           "Sasl": {
+            "type": "structure",
+            "doc": "Details for ClientAuthentication using SASL.",
+            "members": {
+             "Scram": {
+              "type": "structure",
+              "doc": "Details for SASL/SCRAM client authentication.",
+              "members": {
+               "Enabled": {
+                "type": "boolean",
+                "doc": "SASL/SCRAM authentication is enabled or not."
+               }
+              }
+             },
+             "Iam": {
+              "type": "structure",
+              "doc": "Indicates whether IAM access control is enabled.",
+              "members": {
+               "Enabled": {
+                "type": "boolean",
+                "doc": "Indicates whether IAM access control is enabled."
+               }
+              }
+             }
+            }
+           },
+           "Tls": {
+            "type": "structure",
+            "doc": "Details for ClientAuthentication using TLS.",
+            "members": {
+             "CertificateAuthorityArnList": {
+              "type": "list",
+              "doc": "List of ACM Certificate Authority ARNs.",
+              "item": {
+               "type": "string"
+              }
+             },
+             "Enabled": {
+              "type": "boolean",
+              "doc": "Specifies whether you want to turn on or turn off TLS authentication."
+             }
+            }
+           },
+           "Unauthenticated": {
+            "type": "structure",
+            "doc": "Contains information about unauthenticated traffic to the cluster.",
+            "members": {
+             "Enabled": {
+              "type": "boolean",
+              "doc": "Specifies whether you want to turn on or turn off unauthenticated traffic to your cluster."
+             }
+            }
+           }
+          }
+         },
+         "EncryptionInfo": {
+          "type": "structure",
+          "doc": "Includes all encryption-related information.",
+          "members": {
+           "EncryptionAtRest": {
+            "type": "structure",
+            "doc": "The data-volume encryption details.",
+            "members": {
+             "DataVolumeKMSKeyId": {
+              "type": "string",
+              "doc": "The ARN of the AWS KMS key for encrypting data at rest. If you don't specify a KMS key, MSK creates one for you and uses it.",
+              "required": true
+             }
+            }
+           },
+           "EncryptionInTransit": {
+            "type": "structure",
+            "doc": "The details for encryption in transit.",
+            "members": {
+             "ClientBroker": {
+              "type": "string",
+              "doc": "Indicates the encryption setting for data in transit between clients and brokers. The following are the possible values. TLS means that client-broker communication is enabled with TLS only. TLS_PLAINTEXT means that client-broker communication is enabled for both TLS-encrypted, as well as plaintext data. PLAINTEXT means that client-broker communication is enabled in plaintext only. The default value is TLS_PLAINTEXT.",
+              "enum": [
+               "TLS",
+               "TLS_PLAINTEXT",
+               "PLAINTEXT"
+              ]
+             },
+             "InCluster": {
+              "type": "boolean",
+              "doc": "When set to true, it indicates that data communication among the broker nodes of the cluster is encrypted. When set to false, the communication happens in plaintext. The default value is true."
+             }
+            }
+           }
+          }
+         },
+         "EnhancedMonitoring": {
+          "type": "string",
+          "doc": "Specifies the level of monitoring for the MSK cluster. The possible values are DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER, and PER_TOPIC_PER_PARTITION.",
+          "enum": [
+           "DEFAULT",
+           "PER_BROKER",
+           "PER_TOPIC_PER_BROKER",
+           "PER_TOPIC_PER_PARTITION"
+          ]
+         },
+         "OpenMonitoring": {
+          "type": "structure",
+          "doc": "The settings for open monitoring.",
+          "members": {
+           "Prometheus": {
+            "type": "structure",
+            "doc": "Prometheus settings.",
+            "members": {
+             "JmxExporter": {
+              "type": "structure",
+              "doc": "Indicates whether you want to turn on or turn off the JMX Exporter.",
+              "members": {
+               "EnabledInBroker": {
+                "type": "boolean",
+                "doc": "Indicates whether you want to turn on or turn off the JMX Exporter.",
+                "required": true
+               }
+              }
+             },
+             "NodeExporter": {
+              "type": "structure",
+              "doc": "Indicates whether you want to turn on or turn off the Node Exporter.",
+              "members": {
+               "EnabledInBroker": {
+                "type": "boolean",
+                "doc": "Indicates whether you want to turn on or turn off the Node Exporter.",
+                "required": true
+               }
+              }
+             }
+            },
+            "required": true
+           }
+          }
+         },
+         "LoggingInfo": {
+          "type": "structure",
+          "doc": "Log delivery information for the cluster.",
+          "members": {
+           "BrokerLogs": {
+            "type": "structure",
+            "members": {
+             "CloudWatchLogs": {
+              "type": "structure",
+              "members": {
+               "Enabled": {
+                "type": "boolean",
+                "required": true
+               },
+               "LogGroup": {
+                "type": "string"
+               }
+              }
+             },
+             "Firehose": {
+              "type": "structure",
+              "members": {
+               "DeliveryStream": {
+                "type": "string"
+               },
+               "Enabled": {
+                "type": "boolean",
+                "required": true
+               }
+              }
+             },
+             "S3": {
+              "type": "structure",
+              "members": {
+               "Bucket": {
+                "type": "string"
+               },
+               "Enabled": {
+                "type": "boolean",
+                "required": true
+               },
+               "Prefix": {
+                "type": "string"
+               }
+              }
+             }
+            },
+            "required": true
+           }
+          }
+         },
+         "NumberOfBrokerNodes": {
+          "type": "integer",
+          "doc": "The number of broker nodes in the cluster.",
+          "required": true
+         },
+         "ZookeeperConnectString": {
+          "type": "string",
+          "doc": "The connection string to use to connect to the Apache ZooKeeper cluster."
+         },
+         "ZookeeperConnectStringTls": {
+          "type": "string",
+          "doc": "The connection string to use to connect to the Apache ZooKeeper cluster on a TLS port."
+         },
+         "StorageMode": {
+          "type": "string",
+          "doc": "This controls storage mode for supported storage tiers.",
+          "enum": [
+           "LOCAL",
+           "TIERED"
+          ]
+         },
+         "CustomerActionStatus": {
+          "type": "string",
+          "doc": "Determines if there is an action required from the customer.",
+          "enum": [
+           "CRITICAL_ACTION_REQUIRED",
+           "ACTION_RECOMMENDED",
+           "NONE"
+          ]
+         }
+        }
+       },
+       "Serverless": {
+        "type": "structure",
+        "doc": "Information about the serverless cluster.",
+        "members": {
+         "VpcConfigs": {
+          "type": "list",
+          "doc": "The configuration of the Amazon VPCs for the cluster.",
+          "item": {
+           "type": "structure",
+           "doc": "The configuration of the Amazon VPCs for the cluster.",
+           "members": {
+            "SubnetIds": {
+             "type": "list",
+             "doc": "The IDs of the subnets associated with the cluster.",
+             "item": {
+              "type": "string"
+             },
+             "required": true
+            },
+            "SecurityGroupIds": {
+             "type": "list",
+             "doc": "The IDs of the security groups associated with the cluster.",
+             "item": {
+              "type": "string"
+             }
+            }
+           }
+          },
+          "required": true
+         },
+         "ClientAuthentication": {
+          "type": "structure",
+          "doc": "Includes all client authentication information.",
+          "members": {
+           "Sasl": {
+            "type": "structure",
+            "doc": "Details for ClientAuthentication using SASL.",
+            "members": {
+             "Iam": {
+              "type": "structure",
+              "doc": "Indicates whether IAM access control is enabled.",
+              "members": {
+               "Enabled": {
+                "type": "boolean",
+                "doc": "Indicates whether IAM access control is enabled."
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "NextToken": {
+     "type": "string",
+     "doc": "The paginated results marker. When the result of a ListClusters operation is truncated, the call returns NextToken in the response. To get another batch of clusters, provide this token in your next request."
+    }
+   }
+  },
+  "added_in_latest": [
+   "ClusterInfoList[].Provisioned.BrokerNodeGroupInfo.ConnectivityInfo.NetworkType",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.CloudWatchLogs",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.CloudWatchLogs.Enabled",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.CloudWatchLogs.LogGroup",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.Firehose",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.Firehose.DeliveryStream",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.Firehose.Enabled",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.S3",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.S3.Bucket",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.S3.Enabled",
+   "ClusterInfoList[].Provisioned.LoggingInfo.AuthorizerLogs.S3.Prefix",
+   "ClusterInfoList[].Provisioned.Rebalancing",
+   "ClusterInfoList[].Provisioned.Rebalancing.Status",
+   "ClusterInfoList[].Serverless.ConnectivityInfo",
+   "ClusterInfoList[].Serverless.ConnectivityInfo.NetworkType"
+  ],
+  "raw_keys": [
+   "kafka.list_clusters",
+   "kafka.list_clusters_v2"
+  ]
+ }
+}

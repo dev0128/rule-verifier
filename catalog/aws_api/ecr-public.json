@@ -1,0 +1,256 @@
+{
+ "ecr-public.DescribeImages": {
+  "service": "ecr-public",
+  "operation": "DescribeImages",
+  "method": "describe_images",
+  "doc": "Returns metadata that's related to the images in a repository in a public registry. Beginning with Docker version 1.9, the Docker client compresses image layers before pushing them to a V2 Docker registry. The output of the docker images command shows the uncompressed image size. Therefore, it might return a larger image size than the image sizes that are returned by DescribeImages .",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr-public/client/describe_images.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-public-2020-10-30/DescribeImages"
+  },
+  "paginated": true,
+  "input_required": [
+   "repositoryName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "imageDetails": {
+     "type": "list",
+     "doc": "A list of ImageDetail objects that contain data about the image.",
+     "item": {
+      "type": "structure",
+      "doc": "An object that describes an image that's returned by a DescribeImages operation.",
+      "members": {
+       "registryId": {
+        "type": "string",
+        "doc": "The Amazon Web Services account ID that's associated with the public registry where this image belongs."
+       },
+       "repositoryName": {
+        "type": "string",
+        "doc": "The name of the repository where this image belongs."
+       },
+       "imageDigest": {
+        "type": "string",
+        "doc": "The sha256 digest of the image manifest."
+       },
+       "imageTags": {
+        "type": "list",
+        "doc": "The list of tags that's associated with this image.",
+        "item": {
+         "type": "string"
+        }
+       },
+       "imageSizeInBytes": {
+        "type": "long",
+        "doc": "The size, in bytes, of the image in the repository. If the image is a manifest list, this is the max size of all manifests in the list. Beginning with Docker version 1.9, the Docker client compresses image layers before pushing them to a V2 Docker registry. The output of the docker images command shows the uncompressed image size, so it might return a larger image size than the image sizes that are returned by DescribeImages ."
+       },
+       "imagePushedAt": {
+        "type": "timestamp",
+        "doc": "The date and time, expressed in standard JavaScript date format, that the current image was pushed to the repository at."
+       },
+       "imageManifestMediaType": {
+        "type": "string",
+        "doc": "The media type of the image manifest."
+       },
+       "artifactMediaType": {
+        "type": "string",
+        "doc": "The artifact media type of the image."
+       }
+      }
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future DescribeImages request. When the results of a DescribeImages request exceed maxResults , you can use this value to retrieve the next page of results. If there are no more results to return, this value is null ."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ecr-public.describe_repositories"
+  ]
+ },
+ "ecr-public.DescribeRegistries": {
+  "service": "ecr-public",
+  "operation": "DescribeRegistries",
+  "method": "describe_registries",
+  "doc": "Returns details for a public registry.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr-public/client/describe_registries.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-public-2020-10-30/DescribeRegistries"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "registries": {
+     "type": "list",
+     "doc": "An object that contains the details for a public registry.",
+     "item": {
+      "type": "structure",
+      "doc": "The details of a public registry.",
+      "members": {
+       "registryId": {
+        "type": "string",
+        "doc": "The Amazon Web Services account ID that's associated with the registry. If you do not specify a registry, the default public registry is assumed.",
+        "required": true
+       },
+       "registryArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) of the public registry.",
+        "required": true
+       },
+       "registryUri": {
+        "type": "string",
+        "doc": "The URI of a public registry. The URI contains a universal prefix and the registry alias.",
+        "required": true
+       },
+       "verified": {
+        "type": "boolean",
+        "doc": "Indicates whether the account is a verified Amazon Web Services Marketplace vendor. If an account is verified, each public repository receives a verified account badge on the Amazon ECR Public Gallery.",
+        "required": true
+       },
+       "aliases": {
+        "type": "list",
+        "doc": "An array of objects that represents the aliases for a public registry.",
+        "item": {
+         "type": "structure",
+         "doc": "An object representing the aliases for a public registry. A public registry is given an alias when it's created. However, a custom alias can be set using the Amazon ECR console. For more information, see Registries in the Amazon Elastic Container Registry User Guide .",
+         "members": {
+          "name": {
+           "type": "string",
+           "doc": "The name of the registry alias.",
+           "required": true
+          },
+          "status": {
+           "type": "string",
+           "doc": "The status of the registry alias.",
+           "enum": [
+            "ACTIVE",
+            "PENDING",
+            "REJECTED"
+           ],
+           "required": true
+          },
+          "primaryRegistryAlias": {
+           "type": "boolean",
+           "doc": "Indicates whether the registry alias is the primary alias for the registry. If true, the alias is the primary registry alias and is displayed in both the repository URL and the image URI used in the docker pull commands on the Amazon ECR Public Gallery. A registry alias that isn't the primary registry alias can be used in the repository URI in a docker pull command.",
+           "required": true
+          },
+          "defaultRegistryAlias": {
+           "type": "boolean",
+           "doc": "Indicates whether the registry alias is the default alias for the registry. When the first public repository is created, your public registry is assigned a default registry alias.",
+           "required": true
+          }
+         }
+        },
+        "required": true
+       }
+      }
+     },
+     "required": true
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future DescribeRepositories request. If the results of a DescribeRepositories request exceed maxResults , you can use this value to retrieve the next page of results. If there are no more results, this value is null ."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ecr-public.describe_registries"
+  ]
+ },
+ "ecr-public.DescribeRepositories": {
+  "service": "ecr-public",
+  "operation": "DescribeRepositories",
+  "method": "describe_repositories",
+  "doc": "Describes repositories that are in a public registry.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr-public/client/describe_repositories.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-public-2020-10-30/DescribeRepositories"
+  },
+  "paginated": true,
+  "input_required": [],
+  "output": {
+   "type": "structure",
+   "members": {
+    "repositories": {
+     "type": "list",
+     "doc": "A list of repository objects corresponding to valid repositories.",
+     "item": {
+      "type": "structure",
+      "doc": "An object representing a repository.",
+      "members": {
+       "repositoryArn": {
+        "type": "string",
+        "doc": "The Amazon Resource Name (ARN) that identifies the repository. The ARN contains the arn:aws:ecr namespace, followed by the region of the repository, Amazon Web Services account ID of the repository owner, repository namespace, and repository name. For example, arn:aws:ecr:region:012345678910:repository/test ."
+       },
+       "registryId": {
+        "type": "string",
+        "doc": "The Amazon Web Services account ID that's associated with the public registry that contains the repository."
+       },
+       "repositoryName": {
+        "type": "string",
+        "doc": "The name of the repository."
+       },
+       "repositoryUri": {
+        "type": "string",
+        "doc": "The URI for the repository. You can use this URI for container image push and pull operations."
+       },
+       "createdAt": {
+        "type": "timestamp",
+        "doc": "The date and time, in JavaScript date format, when the repository was created."
+       }
+      }
+     }
+    },
+    "nextToken": {
+     "type": "string",
+     "doc": "The nextToken value to include in a future DescribeRepositories request. When the results of a DescribeRepositories request exceed maxResults , this value can be used to retrieve the next page of results. If there are no more results to return, this value is null ."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ecr-public.describe_repositories"
+  ]
+ },
+ "ecr-public.GetRepositoryPolicy": {
+  "service": "ecr-public",
+  "operation": "GetRepositoryPolicy",
+  "method": "get_repository_policy",
+  "doc": "Retrieves the repository policy for the specified repository.",
+  "urls": {
+   "boto3": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecr-public/client/get_repository_policy.html",
+   "aws": "https://docs.aws.amazon.com/goto/WebAPI/ecr-public-2020-10-30/GetRepositoryPolicy"
+  },
+  "paginated": false,
+  "input_required": [
+   "repositoryName"
+  ],
+  "output": {
+   "type": "structure",
+   "members": {
+    "registryId": {
+     "type": "string",
+     "doc": "The registry ID that's associated with the request."
+    },
+    "repositoryName": {
+     "type": "string",
+     "doc": "The repository name that's associated with the request."
+    },
+    "policyText": {
+     "type": "string",
+     "doc": "The repository policy text that's associated with the repository. The policy text will be in JSON format."
+    }
+   }
+  },
+  "added_in_latest": [],
+  "raw_keys": [
+   "ecr-public.describe_repositories"
+  ]
+ }
+}

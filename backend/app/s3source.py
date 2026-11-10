@@ -92,7 +92,7 @@ def diag_id(env: str, key: str, his: str) -> str:
     return SAFE.sub("_", f"{env}__{key}__{his}")
 
 
-def download(profile: str, bucket: str, group: str, key: str, his: str, progress=None) -> str:
+def download(profile: str, bucket: str, group: str, key: str, his: str, progress=None, labels: dict | None = None) -> str:
     """컨디션 파일 전부 + raw 를 받아 data/diagnoses/<id>/ 에 둔다. 이미 있으면 raw 는 다시 받지 않는다."""
     m = BUCKET_RE.match(bucket)
     if not m:
@@ -132,6 +132,7 @@ def download(profile: str, bucket: str, group: str, key: str, his: str, progress
         "raw_modified": files["raw"]["modified"],
         "rulesets": [r["name"] for r in files["rulesets"]],
         "downloaded_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "labels": {k: v for k, v in (labels or {}).items() if isinstance(v, (str, int, float, dict, type(None)))},
     }
     (dest / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
     return did
